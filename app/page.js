@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import Image from "next/image";
 import {
   Trophy,
   Users,
@@ -38,57 +37,17 @@ const colors = {
   info: "#3B82F6",
 };
 
-// Genesys Logo Component - uses uploaded logo or falls back to CSS version
+// Genesys Logo Component - uses uploaded logo
 function GenesysLogo({ size = "default" }) {
-  const sizes = {
-    small: { dots: "w-2 h-2", text: "text-lg", gap: "gap-0.5" },
-    default: { dots: "w-3 h-3", text: "text-2xl", gap: "gap-0.5" },
-  };
-  const s = sizes[size] || sizes.default;
-
-  // Try to use uploaded logo, fall back to CSS version
-  return (
-    <div className="flex items-center gap-3">
-      <Image
-        src="/genesys-logo.png"
-        alt="Genesys"
-        width={size === "small" ? 120 : 150}
-        height={size === "small" ? 32 : 40}
-        className="object-contain"
-        onError={(e) => {
-          e.target.style.display = "none";
-          e.target.nextSibling.style.display = "flex";
-        }}
-      />
-      <div className="hidden items-center gap-3">
-        <div className={`flex flex-col ${s.gap}`}>
-          <div className={`${s.dots} rounded-full`} style={{ backgroundColor: colors.primary }}></div>
-          <div className={`${s.dots} rounded-full border-2`} style={{ borderColor: colors.primary }}></div>
-          <div className={`${s.dots} rounded-full`} style={{ backgroundColor: colors.primary }}></div>
-        </div>
-        <span className={`${s.text} font-bold text-white tracking-wider`}>GENESYS</span>
-      </div>
-    </div>
-  );
-}
-
-// Fallback logo (CSS only)
-function GenesysLogoFallback({ size = "default" }) {
-  const sizes = {
-    small: { dots: "w-2 h-2", text: "text-lg", gap: "gap-0.5" },
-    default: { dots: "w-3 h-3", text: "text-2xl", gap: "gap-0.5" },
-  };
-  const s = sizes[size] || sizes.default;
+  const width = size === "small" ? 120 : 150;
 
   return (
-    <div className="flex items-center gap-3">
-      <div className={`flex flex-col ${s.gap}`}>
-        <div className={`${s.dots} rounded-full`} style={{ backgroundColor: colors.primary }}></div>
-        <div className={`${s.dots} rounded-full border-2`} style={{ borderColor: colors.primary }}></div>
-        <div className={`${s.dots} rounded-full`} style={{ backgroundColor: colors.primary }}></div>
-      </div>
-      <span className={`${s.text} font-bold text-white tracking-wider`}>GENESYS</span>
-    </div>
+    <img
+      src="/genesys-logo.png"
+      alt="Genesys"
+      style={{ width: `${width}px`, height: 'auto' }}
+      className="object-contain"
+    />
   );
 }
 
@@ -365,7 +324,7 @@ export default function GenesysSimulation() {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: `linear-gradient(135deg, ${colors.dark} 0%, #1a2744 100%)` }}>
         <header className="p-6">
-          <GenesysLogoFallback />
+          <GenesysLogo />
         </header>
 
         <main className="flex-1 flex items-center justify-center p-6">
@@ -431,7 +390,7 @@ export default function GenesysSimulation() {
       <div className="min-h-screen" style={{ backgroundColor: colors.light }}>
         <header className="sticky top-0 z-50 px-6 py-4" style={{ backgroundColor: colors.dark }}>
           <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <GenesysLogoFallback size="small" />
+            <GenesysLogo size="small" />
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="text-white font-medium">{teamName}</div>
