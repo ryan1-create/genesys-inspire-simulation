@@ -37,18 +37,14 @@ body {
   background: #a1a1a1;
 }
 
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
 /* Focus states */
 input:focus,
 textarea:focus,
 button:focus {
   outline: none;
-  ring: 2px;
-  ring-color: #ff4f1f;
+}
+
+/* Prevent input re-render issues */
+input, textarea {
+  -webkit-appearance: none;
 }
