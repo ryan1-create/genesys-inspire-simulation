@@ -423,39 +423,38 @@ function Header({ teamName, room, table, roundNumber, roundColor, submissions, o
       <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo area */}
         <div className="flex items-center gap-5">
-          <img src="/genesys-logo.png" alt="Genesys" className="h-10 object-contain" />
+          <img src="/genesys-logo.png" alt="Genesys" className="h-12 object-contain" />
           <div className="h-8 w-px" style={{ backgroundColor: theme.darkMuted }} />
           <div
-            className="text-sm font-bold px-4 py-2 rounded-lg"
-            style={{ backgroundColor: `${roundColor}25`, color: roundColor }}
+            className="text-base font-bold px-4 py-2 rounded-lg"
+            style={{ backgroundColor: `${roundColor}30`, color: roundColor }}
           >
             Round {roundNumber}
           </div>
         </div>
 
         {/* Score, Leaderboard & Team */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5">
           {/* Running Score */}
           {completedRounds.length > 0 && (
-            <div className="flex items-center gap-3 px-4 py-2 rounded-lg" style={{ backgroundColor: theme.darker }}>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: theme.darker }}>
               <Flame className="w-5 h-5" style={{ color: theme.orange }} />
-              <span className="text-xl font-black text-white">{totalScore}</span>
-              <span className="text-sm" style={{ color: theme.subtle }}>pts</span>
+              <span className="text-2xl font-black text-white">{totalScore}</span>
             </div>
           )}
 
           {/* Leaderboard Button */}
           <button
             onClick={onLeaderboardClick}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all hover:scale-105"
             style={{ backgroundColor: theme.darker }}
           >
             <Trophy className="w-5 h-5" style={{ color: "#FFD700" }} />
-            <span className="text-sm font-medium text-white">Leaderboard</span>
+            <span className="text-base font-medium text-white">Leaderboard</span>
           </button>
 
           {/* Team Info */}
-          <div className="text-right">
+          <div className="text-right pl-2 border-l" style={{ borderColor: theme.darkMuted }}>
             <div className="text-base font-bold text-white">{teamName}</div>
             <div className="text-sm" style={{ color: theme.subtle }}>R{room} • T{table}</div>
           </div>
@@ -922,56 +921,41 @@ export default function GenesysSimulation() {
 
     return (
       <AnimatedBackground>
-        <div className="min-h-screen flex flex-col items-center justify-center p-6">
-          <div className="w-full max-w-md">
-            {/* Hero */}
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6" style={{ backgroundColor: theme.orangeSubtle }}>
-                <Sparkles className="w-4 h-4" style={{ color: theme.orange }} />
-                <span className="text-sm font-medium" style={{ color: theme.orange }}>FY27 INSPIRE • Day 3</span>
-              </div>
+        <div className="min-h-screen flex flex-col items-center justify-center p-8">
+          <div className="w-full max-w-lg">
+            {/* Logo */}
+            <div className="text-center mb-10">
+              <img src="/genesys-logo.png" alt="Genesys" className="h-16 mx-auto mb-8" />
               <h1
-                className="text-5xl md:text-6xl font-black tracking-tight mb-4"
-                style={{
-                  color: theme.white,
-                  textShadow: `0 0 60px ${theme.orangeGlow}`,
-                }}
+                className="text-4xl md:text-5xl font-black tracking-tight mb-3"
+                style={{ color: theme.white }}
               >
-                Sales<br />Simulation
+                Sales Simulation
               </h1>
               <p className="text-lg" style={{ color: theme.muted }}>
-                4 rounds. Real scenarios. AI coaching.
+                Register your team to begin
               </p>
             </div>
 
             {/* Registration Card */}
-            <Card className="p-8" glow glowColor={theme.orange}>
-              <div className="space-y-5">
+            <Card className="p-8">
+              <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <InputGroup label="Room" icon={Building2}>
-                    <GlowInput
-                      value={roomNumber}
-                      onChange={setRoomNumber}
-                      placeholder="101"
-                    />
-                  </InputGroup>
-                  <InputGroup label="Table" icon={Users}>
-                    <GlowInput
-                      value={tableNumber}
-                      onChange={setTableNumber}
-                      placeholder="5"
-                    />
-                  </InputGroup>
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: theme.muted }}>Room #</label>
+                    <GlowInput value={roomNumber} onChange={setRoomNumber} placeholder="101" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: theme.muted }}>Table #</label>
+                    <GlowInput value={tableNumber} onChange={setTableNumber} placeholder="5" />
+                  </div>
                 </div>
-                <InputGroup label="Team Name" icon={Flag}>
-                  <GlowInput
-                    value={teamName}
-                    onChange={setTeamName}
-                    placeholder="Enter your team name"
-                  />
-                </InputGroup>
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: theme.muted }}>Team Name</label>
+                  <GlowInput value={teamName} onChange={setTeamName} placeholder="Enter your team name" />
+                </div>
 
-                <div className="pt-2 space-y-3">
+                <div className="pt-4 space-y-3">
                   <GlowButton
                     onClick={handleTeamSubmit}
                     disabled={!teamName.trim() || !tableNumber.trim() || !roomNumber.trim()}
@@ -994,11 +978,6 @@ export default function GenesysSimulation() {
                 </div>
               </div>
             </Card>
-
-            {/* Footer */}
-            <div className="text-center mt-10">
-              <img src="/genesys-logo.png" alt="Genesys" className="h-10 mx-auto opacity-60" />
-            </div>
           </div>
         </div>
       </AnimatedBackground>
@@ -1047,115 +1026,79 @@ export default function GenesysSimulation() {
 
             {/* ============ INTRO PHASE ============ */}
             {roundPhase === "intro" && (
-              <div className="space-y-8 animate-fadeIn">
-                {/* Hero Section */}
-                <div className="text-center py-12">
+              <div className="space-y-6 animate-fadeIn">
+                {/* Hero Image + Title */}
+                <div
+                  className="relative rounded-2xl overflow-hidden"
+                  style={{ minHeight: "280px" }}
+                >
+                  {/* Background Image */}
                   <div
-                    className="inline-flex items-center justify-center w-24 h-24 rounded-2xl mb-6"
+                    className="absolute inset-0"
                     style={{
-                      backgroundColor: `${roundColor}20`,
-                      boxShadow: `0 0 40px ${roundColor}30`,
+                      backgroundImage: `url(${industryImages[currentRound.id]})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
                     }}
-                  >
-                    <RoundIcon className="w-12 h-12" style={{ color: roundColor }} />
+                  />
+                  {/* Gradient Overlay */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `linear-gradient(to top, ${theme.black} 0%, ${theme.black}90 40%, transparent 100%)`,
+                    }}
+                  />
+                  {/* Content */}
+                  <div className="relative z-10 p-8 flex flex-col justify-end h-full" style={{ minHeight: "280px" }}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span
+                        className="text-sm font-semibold px-3 py-1 rounded-full"
+                        style={{ backgroundColor: roundColor, color: theme.white }}
+                      >
+                        {currentRound.motion}
+                      </span>
+                    </div>
+                    <h1 className="text-5xl font-black mb-2" style={{ color: theme.white }}>
+                      {currentRound.title}
+                    </h1>
+                    <p className="text-lg" style={{ color: theme.muted }}>
+                      {currentRound.description}
+                    </p>
                   </div>
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <span
-                      className="text-sm font-medium px-4 py-1.5 rounded-full"
-                      style={{ backgroundColor: theme.darkMuted, color: theme.muted }}
-                    >
-                      {currentRound.motion}
-                    </span>
-                    <span
-                      className="text-sm font-medium px-4 py-1.5 rounded-full"
-                      style={{ backgroundColor: theme.darkMuted, color: theme.muted }}
-                    >
-                      {currentRound.subtitle}
-                    </span>
-                  </div>
-                  <h1
-                    className="text-5xl md:text-6xl font-black tracking-tight mb-4"
-                    style={{ color: theme.white }}
-                  >
-                    {currentRound.title}
-                  </h1>
-                  <p className="text-xl max-w-xl mx-auto" style={{ color: theme.muted }}>
-                    {currentRound.description}
-                  </p>
                 </div>
 
-                {/* Customer Card */}
-                <Card className="p-8">
-                  <div className="flex items-start gap-5 mb-6">
-                    <div
-                      className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: `${roundColor}15` }}
-                    >
-                      <Building2 className="w-7 h-7" style={{ color: roundColor }} />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold" style={{ color: theme.white }}>
-                        {currentRound.customer.name}
-                      </h2>
-                      <p className="text-base" style={{ color: theme.muted }}>
-                        {currentRound.customer.industry} • {currentRound.customer.revenue}
-                      </p>
+                {/* Customer Info - Condensed */}
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <Building2 className="w-6 h-6" style={{ color: roundColor }} />
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ color: theme.white }}>
+                          {currentRound.customer.name}
+                        </h2>
+                        <p className="text-sm" style={{ color: theme.muted }}>
+                          {currentRound.customer.industry} • {currentRound.customer.revenue} • {currentRound.customer.currentSolution}
+                        </p>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    {[
-                      { label: "Industry", value: currentRound.customer.industry },
-                      { label: "Size", value: currentRound.customer.size },
-                      { label: "Revenue", value: currentRound.customer.revenue },
-                      { label: "Current", value: currentRound.customer.currentSolution },
-                    ].map((item, idx) => (
-                      <div key={idx} className="p-4 rounded-lg" style={{ backgroundColor: theme.dark }}>
-                        <div className="text-sm mb-1" style={{ color: theme.subtle }}>{item.label}</div>
-                        <div className="text-base font-medium" style={{ color: theme.light }}>{item.value}</div>
+                  <div className="grid md:grid-cols-2 gap-2">
+                    {currentRound.context.slice(0, 4).map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm" style={{ color: theme.light }}>
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: roundColor }} />
+                        {item}
                       </div>
                     ))}
                   </div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold" style={{ color: theme.muted }}>Situation Context</h3>
-                    <div className="grid md:grid-cols-2 gap-3">
-                      {currentRound.context.map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-3 text-base" style={{ color: theme.light }}>
-                          <div
-                            className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                            style={{ backgroundColor: roundColor }}
-                          />
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </Card>
 
-                {/* Challenge Card */}
-                <Card
-                  className="p-8"
-                  glow
-                  glowColor={roundColor}
-                  style={{ borderColor: `${roundColor}30` }}
-                >
-                  <div className="flex items-start gap-5">
-                    <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: roundColor }}
-                    >
-                      <Flag className="w-6 h-6 text-white" />
-                    </div>
+                {/* Challenge - Condensed */}
+                <Card className="p-6 border" style={{ borderColor: `${roundColor}40` }}>
+                  <div className="flex items-start gap-4">
+                    <Flag className="w-6 h-6 flex-shrink-0" style={{ color: roundColor }} />
                     <div>
-                      <h3 className="text-xl font-bold mb-3" style={{ color: theme.white }}>Your Challenge</h3>
-                      <p className="text-base mb-4" style={{ color: theme.light }}>{currentRound.challenge}</p>
-                      <div
-                        className="text-sm px-4 py-3 rounded-lg inline-block"
-                        style={{ backgroundColor: theme.dark, color: theme.muted }}
-                      >
-                        <strong style={{ color: roundColor }}>Objective:</strong> {currentRound.objective}
-                      </div>
+                      <h3 className="text-lg font-bold mb-2" style={{ color: theme.white }}>Your Challenge</h3>
+                      <p className="text-base" style={{ color: theme.light }}>{currentRound.challenge}</p>
                     </div>
                   </div>
                 </Card>
