@@ -80,8 +80,40 @@ const theme = {
 // Animated gradient background with optional industry image
 function AnimatedBackground({ children, industryImage = null }) {
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ backgroundColor: theme.black }}>
-      {/* Industry background image */}
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Base gradient background - Genesys inspired */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(135deg,
+            #0f172a 0%,
+            #1e3a5f 25%,
+            #134e4a 40%,
+            #1e3a5f 60%,
+            #7c2d12 85%,
+            #c2410c 100%
+          )`,
+        }}
+      />
+      {/* Optional: Use uploaded gradient image instead */}
+      {/* Uncomment this and comment out the above gradient to use an image:
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: "url(/gradient-bg.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      */}
+      {/* Dark overlay for content readability */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.4) 100%)`,
+        }}
+      />
+      {/* Industry background image - shows on top of gradient */}
       {industryImage && (
         <div
           className="absolute inset-0 pointer-events-none"
@@ -89,40 +121,11 @@ function AnimatedBackground({ children, industryImage = null }) {
             backgroundImage: `url(${industryImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            opacity: 0.15,
+            opacity: 0.08,
+            mixBlendMode: "overlay",
           }}
         />
       )}
-      {/* Dark gradient overlay for readability */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `linear-gradient(to bottom, ${theme.black}F0 0%, ${theme.black}E0 30%, ${theme.black}E0 70%, ${theme.black}F0 100%)`,
-        }}
-      />
-      {/* Gradient orbs */}
-      <div
-        className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${theme.orangeGlow} 0%, transparent 70%)`,
-          transform: "translate(30%, -30%)",
-        }}
-      />
-      <div
-        className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 blur-3xl pointer-events-none"
-        style={{
-          background: `radial-gradient(circle, ${theme.rounds[2].glow} 0%, transparent 70%)`,
-          transform: "translate(-30%, 30%)",
-        }}
-      />
-      {/* Subtle grid pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.02] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(${theme.white} 1px, transparent 1px), linear-gradient(90deg, ${theme.white} 1px, transparent 1px)`,
-          backgroundSize: "64px 64px",
-        }}
-      />
       <div className="relative z-10">{children}</div>
     </div>
   );
