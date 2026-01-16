@@ -1,5 +1,6 @@
-// Vercel Serverless Function - AI Scoring Endpoint
+// Vercel Serverless Function - AI Scoring Endpoint (V2)
 // Deploy to: /api/score
+// Supports two-phase scoring: initial submission and wobble response
 
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -25,7 +26,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { submission, wobbleResponse, round } = req.body;
+    const { submission, wobbleResponse, round, phase = "initial" } = req.body;
 
     if (!submission || !round) {
       return res.status(400).json({ error: "Missing submission or round data" });
@@ -39,10 +40,20 @@ Your role is to evaluate and coach account teams on their strategic selling appr
 - Expert at value-based selling and executive-level positioning
 - Deeply knowledgeable about competitive dynamics (Avaya, Five9, NICE, AWS Connect, Salesforce Service Cloud)
 - Passionate about the Genesys AI-powered CX platform
+- Familiar with the four "field motions": Legacy Displacement, CCaaS Replacement, Expansion, and Pure-Play AI defense
 
-IMPORTANT: You are scoring submissions from sales teams participating in a competitive simulation. Your scores will determine prizes, so be fair but discerning. Great work should score high (80-95), good work should score moderately (65-79), and work that misses the mark should score lower (45-64).`;
+IMPORTANT: You are scoring submissions from sales teams participating in a competitive simulation at Genesys INSPIRE. Your scores will determine prizes, so be fair but discerning:
+- Championship Caliber (85-95): Executive-level framing, specific business outcomes, competitive awareness, proactive strategy
+- Strong Contender (70-84): Good structure, relevant points, some specificity, addresses key issues
+- Building Momentum (55-69): Basic understanding, generic responses, feature-focused, missing strategic depth
+- Foundation Phase (45-54): Product-centric, misses customer context, lacks executive relevance, surface-level thinking`;
 
-    const scoringPrompt = `## SIMULATION ROUND: ${round.title}
+    // Build the scoring prompt based on phase
+    let scoringPrompt;
+
+    if (phase === "initial") {
+      // Initial submission - generate score AND wobble options
+      scoringPrompt = `## SIMULATION ROUND: ${round.title}
 **Scenario Type:** ${round.subtitle}
 **Customer:** ${round.customer.name} (${round.customer.industry})
 **Revenue:** ${round.customer.revenue}
@@ -55,55 +66,111 @@ ${round.objective}
 ${round.challenge}
 
 ### Customer Context
-${round.context.join("\n- ")}
+${round.context.map(c => `- ${c}`).join("\n")}
 
 ### Scoring Criteria
 ${round.scoringCriteria.map((c) => `- **${c.name}** (${c.weight}%): ${c.description}`).join("\n")}
 
 ---
 
-## TEAM SUBMISSION
+## TEAM'S INITIAL SUBMISSION
 
-### Main Response:
 ${submission}
-
-${wobbleResponse ? `### Wobble Adaptation (${round.wobble.title}):
-The team was presented with this curveball: "${round.wobble.description}"
-
-Their response:
-${wobbleResponse}` : ""}
 
 ---
 
 ## YOUR TASK
 
-Evaluate this submission and provide:
+This is the team's INITIAL submission before they receive the "wobble" (curveball scenario). Evaluate their foundational strategy and prepare them for the challenge ahead.
 
-1. **Individual Criterion Scores** (0-100 for each):
-${round.scoringCriteria.map((c) => `   - ${c.name}: [score]`).join("\n")}
+The upcoming wobble will be: "${round.wobble.title}" - ${round.wobble.description}
 
-2. **Overall Assessment** - A 2-3 sentence summary of the submission's strengths and primary gap
-
-3. **Top Strengths** (2-3 bullet points) - What did this team do well?
-
-4. **Key Improvements** (2-4 bullet points) - Specific, actionable coaching on what would make this stronger
-
-5. **Coach's Challenge** - One thought-provoking question or challenge for the team to consider
-
-Respond in this exact JSON format:
+Provide your evaluation in this EXACT JSON format:
 {
   "scores": {
-    "${round.scoringCriteria.map((c) => c.name).join('": 0, "') + '": 0'}
+    ${round.scoringCriteria.map((c) => `"${c.name}": [0-100]`).join(",\n    ")}
   },
-  "overallAssessment": "string",
-  "strengths": ["string", "string"],
-  "improvements": ["string", "string", "string"],
-  "coachChallenge": "string"
+  "overallAssessment": "[2-3 sentence summary of the submission's strengths and primary gap]",
+  "strengths": ["[strength 1]", "[strength 2]"],
+  "improvements": ["[improvement 1]", "[improvement 2]", "[improvement 3]"],
+  "coachChallenge": "[One thought-provoking question for the team]",
+  "wobbleOptions": [
+    "[Strategic option A: A specific, actionable approach to handle the wobble - 1-2 sentences]",
+    "[Strategic option B: A different approach - 1-2 sentences]",
+    "[Strategic option C: Another viable approach - 1-2 sentences]",
+    "[Strategic option D: A fourth approach - 1-2 sentences]"
+  ]
+}
+
+IMPORTANT for wobbleOptions:
+- Generate 4 distinct, strategic options for responding to the wobble
+- Each should be a reasonable approach that a sales team might take
+- Make them specific to the customer situation and wobble scenario
+- Vary them in approach (e.g., defensive vs. offensive, relationship-focused vs. value-focused)
+- One option should be clearly the best approach, but all should be plausible`;
+
+    } else {
+      // Final submission - includes wobble response
+      scoringPrompt = `## SIMULATION ROUND: ${round.title}
+**Scenario Type:** ${round.subtitle}
+**Customer:** ${round.customer.name} (${round.customer.industry})
+**Revenue:** ${round.customer.revenue}
+**Current Solution:** ${round.customer.currentSolution}
+
+### Selling Objective
+${round.objective}
+
+### Team Challenge
+${round.challenge}
+
+### Customer Context
+${round.context.map(c => `- ${c}`).join("\n")}
+
+### Scoring Criteria
+${round.scoringCriteria.map((c) => `- **${c.name}** (${c.weight}%): ${c.description}`).join("\n")}
+
+---
+
+## TEAM'S INITIAL STRATEGY
+
+${submission}
+
+---
+
+## WOBBLE SCENARIO: ${round.wobble.title}
+
+${round.wobble.description}
+
+**Question posed:** ${round.wobble.question}
+
+### Team's Chosen Response to Wobble:
+${wobbleResponse}
+
+---
+
+## YOUR TASK
+
+Evaluate the team's COMPLETE approach including their wobble adaptation. Consider:
+1. The strength of their initial strategy
+2. How well their wobble response addresses the new information
+3. The coherence between their initial approach and their adaptation
+4. Whether they would likely succeed in this customer scenario
+
+Provide your evaluation in this EXACT JSON format:
+{
+  "scores": {
+    ${round.scoringCriteria.map((c) => `"${c.name}": [0-100]`).join(",\n    ")}
+  },
+  "overallAssessment": "[2-3 sentence summary evaluating their complete approach including wobble adaptation]",
+  "strengths": ["[strength 1]", "[strength 2]", "[strength 3]"],
+  "improvements": ["[improvement 1]", "[improvement 2]"],
+  "coachChallenge": "[Final coaching insight or challenge for the team]"
 }`;
+    }
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 1500,
+      max_tokens: 2000,
       messages: [
         {
           role: "user",
@@ -174,12 +241,21 @@ Respond in this exact JSON format:
         improvements: aiResult.improvements,
         nextSteps: [
           aiResult.coachChallenge,
-          `Review the "${round.title}" scoring criteria to identify specific areas for improvement`,
-          "Discuss with your team: What would make THIS customer say yes?",
+          phase === "initial"
+            ? "Consider how you'll adapt when faced with new information"
+            : `Apply these lessons to your next customer conversation`,
+          phase === "initial"
+            ? "Think about what curveball might be coming..."
+            : "Discuss with your team: What would you do differently next time?",
         ],
         scoreInterpretation,
       },
     };
+
+    // Include wobble options for initial phase
+    if (phase === "initial" && aiResult.wobbleOptions) {
+      result.wobbleOptions = aiResult.wobbleOptions;
+    }
 
     // Set CORS headers and return
     Object.entries(corsHeaders).forEach(([key, value]) => {
