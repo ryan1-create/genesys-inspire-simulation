@@ -77,10 +77,29 @@ const theme = {
 // ANIMATED COMPONENTS
 // ============================================================================
 
-// Animated gradient background
-function AnimatedBackground({ children, variant = "dark" }) {
+// Animated gradient background with optional industry image
+function AnimatedBackground({ children, industryImage = null }) {
   return (
     <div className="relative min-h-screen overflow-hidden" style={{ backgroundColor: theme.black }}>
+      {/* Industry background image */}
+      {industryImage && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${industryImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.15,
+          }}
+        />
+      )}
+      {/* Dark gradient overlay for readability */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `linear-gradient(to bottom, ${theme.black}F0 0%, ${theme.black}E0 30%, ${theme.black}E0 70%, ${theme.black}F0 100%)`,
+        }}
+      />
       {/* Gradient orbs */}
       <div
         className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full opacity-30 blur-3xl pointer-events-none"
@@ -320,13 +339,13 @@ function ValueHypothesisInput({ values, onChange, disabled, color }) {
 // Multiple choice wobble (redesigned)
 function WobbleChoice({ options, selected, onSelect, disabled }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {options.map((option, idx) => (
         <button
           key={idx}
           onClick={() => !disabled && onSelect(idx)}
           disabled={disabled}
-          className={`w-full p-5 rounded-xl text-left transition-all duration-300 border-2 ${
+          className={`w-full p-6 rounded-xl text-left transition-all duration-300 border-2 ${
             disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:translate-y-[-2px]"
           }`}
           style={{
@@ -337,15 +356,15 @@ function WobbleChoice({ options, selected, onSelect, disabled }) {
         >
           <div className="flex items-start gap-4">
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm transition-all duration-300"
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-base transition-all duration-300"
               style={{
                 backgroundColor: selected === idx ? "#F59E0B" : theme.darkMuted,
                 color: selected === idx ? theme.black : theme.muted,
               }}
             >
-              {selected === idx ? <Check className="w-4 h-4" /> : String.fromCharCode(65 + idx)}
+              {selected === idx ? <Check className="w-5 h-5" /> : String.fromCharCode(65 + idx)}
             </div>
-            <span className="text-sm leading-relaxed" style={{ color: theme.light }}>{option}</span>
+            <span className="text-base leading-relaxed pt-2" style={{ color: theme.light }}>{option}</span>
           </div>
         </button>
       ))}
@@ -389,7 +408,7 @@ function ScoreComparison({ initial, final, color }) {
 }
 
 // Header component
-function Header({ teamName, room, table, roundNumber, roundColor, submissions }) {
+function Header({ teamName, room, table, roundNumber, roundColor, submissions, onLeaderboardClick }) {
   const completedRounds = Object.keys(submissions).filter(id => submissions[id]?.finalScore);
   const totalScore = completedRounds.reduce((sum, id) => sum + (submissions[id]?.finalScore?.overall || 0), 0);
 
@@ -397,35 +416,48 @@ function Header({ teamName, room, table, roundNumber, roundColor, submissions })
     <header
       className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b"
       style={{
-        backgroundColor: `${theme.black}90`,
+        backgroundColor: `${theme.black}95`,
         borderColor: theme.darkMuted,
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo area */}
-        <div className="flex items-center gap-4">
-          <img src="/genesys-logo.png" alt="Genesys" className="h-6 object-contain" />
-          <div className="h-4 w-px" style={{ backgroundColor: theme.darkMuted }} />
+        <div className="flex items-center gap-5">
+          <img src="/genesys-logo.png" alt="Genesys" className="h-10 object-contain" />
+          <div className="h-8 w-px" style={{ backgroundColor: theme.darkMuted }} />
           <div
-            className="text-xs font-medium px-2 py-1 rounded"
-            style={{ backgroundColor: `${roundColor}20`, color: roundColor }}
+            className="text-sm font-bold px-4 py-2 rounded-lg"
+            style={{ backgroundColor: `${roundColor}25`, color: roundColor }}
           >
             Round {roundNumber}
           </div>
         </div>
 
-        {/* Score & Team */}
+        {/* Score, Leaderboard & Team */}
         <div className="flex items-center gap-6">
+          {/* Running Score */}
           {completedRounds.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4" style={{ color: theme.orange }} />
-              <span className="font-bold text-white">{totalScore}</span>
-              <span className="text-xs" style={{ color: theme.subtle }}>pts</span>
+            <div className="flex items-center gap-3 px-4 py-2 rounded-lg" style={{ backgroundColor: theme.darker }}>
+              <Flame className="w-5 h-5" style={{ color: theme.orange }} />
+              <span className="text-xl font-black text-white">{totalScore}</span>
+              <span className="text-sm" style={{ color: theme.subtle }}>pts</span>
             </div>
           )}
+
+          {/* Leaderboard Button */}
+          <button
+            onClick={onLeaderboardClick}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105"
+            style={{ backgroundColor: theme.darker }}
+          >
+            <Trophy className="w-5 h-5" style={{ color: "#FFD700" }} />
+            <span className="text-sm font-medium text-white">Leaderboard</span>
+          </button>
+
+          {/* Team Info */}
           <div className="text-right">
-            <div className="text-sm font-medium text-white">{teamName}</div>
-            <div className="text-xs" style={{ color: theme.subtle }}>R{room} • T{table}</div>
+            <div className="text-base font-bold text-white">{teamName}</div>
+            <div className="text-sm" style={{ color: theme.subtle }}>R{room} • T{table}</div>
           </div>
         </div>
       </div>
@@ -964,8 +996,8 @@ export default function GenesysSimulation() {
             </Card>
 
             {/* Footer */}
-            <div className="text-center mt-8">
-              <img src="/genesys-logo.png" alt="Genesys" className="h-6 mx-auto opacity-50" />
+            <div className="text-center mt-10">
+              <img src="/genesys-logo.png" alt="Genesys" className="h-10 mx-auto opacity-60" />
             </div>
           </div>
         </div>
@@ -981,8 +1013,16 @@ export default function GenesysSimulation() {
     const submission = submissions[currentRound.id];
     const RoundIcon = currentRound.icon;
 
+    // Industry background images by round
+    const industryImages = {
+      1: "/industries/financial.jpg",
+      2: "/industries/healthcare.jpg",
+      3: "/industries/retail.jpg",
+      4: "/industries/logistics.jpg",
+    };
+
     return (
-      <AnimatedBackground>
+      <AnimatedBackground industryImage={industryImages[currentRound.id]}>
         <Header
           teamName={teamName}
           room={roomNumber}
@@ -990,9 +1030,10 @@ export default function GenesysSimulation() {
           roundNumber={currentRound.id}
           roundColor={roundColor}
           submissions={submissions}
+          onLeaderboardClick={() => setShowLeaderboard(true)}
         />
 
-        <main className="pt-24 pb-12 px-6">
+        <main className="pt-28 pb-12 px-6">
           <div className="max-w-4xl mx-auto">
 
             {/* Phase Indicator */}
@@ -1010,53 +1051,53 @@ export default function GenesysSimulation() {
                 {/* Hero Section */}
                 <div className="text-center py-12">
                   <div
-                    className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6"
+                    className="inline-flex items-center justify-center w-24 h-24 rounded-2xl mb-6"
                     style={{
                       backgroundColor: `${roundColor}20`,
                       boxShadow: `0 0 40px ${roundColor}30`,
                     }}
                   >
-                    <RoundIcon className="w-10 h-10" style={{ color: roundColor }} />
+                    <RoundIcon className="w-12 h-12" style={{ color: roundColor }} />
                   </div>
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <span
-                      className="text-xs font-medium px-3 py-1 rounded-full"
+                      className="text-sm font-medium px-4 py-1.5 rounded-full"
                       style={{ backgroundColor: theme.darkMuted, color: theme.muted }}
                     >
                       {currentRound.motion}
                     </span>
                     <span
-                      className="text-xs font-medium px-3 py-1 rounded-full"
+                      className="text-sm font-medium px-4 py-1.5 rounded-full"
                       style={{ backgroundColor: theme.darkMuted, color: theme.muted }}
                     >
                       {currentRound.subtitle}
                     </span>
                   </div>
                   <h1
-                    className="text-4xl md:text-5xl font-black tracking-tight mb-4"
+                    className="text-5xl md:text-6xl font-black tracking-tight mb-4"
                     style={{ color: theme.white }}
                   >
                     {currentRound.title}
                   </h1>
-                  <p className="text-lg max-w-xl mx-auto" style={{ color: theme.muted }}>
+                  <p className="text-xl max-w-xl mx-auto" style={{ color: theme.muted }}>
                     {currentRound.description}
                   </p>
                 </div>
 
                 {/* Customer Card */}
-                <Card className="p-6">
-                  <div className="flex items-start gap-4 mb-6">
+                <Card className="p-8">
+                  <div className="flex items-start gap-5 mb-6">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                      className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${roundColor}15` }}
                     >
-                      <Building2 className="w-6 h-6" style={{ color: roundColor }} />
+                      <Building2 className="w-7 h-7" style={{ color: roundColor }} />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold" style={{ color: theme.white }}>
+                      <h2 className="text-2xl font-bold" style={{ color: theme.white }}>
                         {currentRound.customer.name}
                       </h2>
-                      <p className="text-sm" style={{ color: theme.muted }}>
+                      <p className="text-base" style={{ color: theme.muted }}>
                         {currentRound.customer.industry} • {currentRound.customer.revenue}
                       </p>
                     </div>
@@ -1069,20 +1110,20 @@ export default function GenesysSimulation() {
                       { label: "Revenue", value: currentRound.customer.revenue },
                       { label: "Current", value: currentRound.customer.currentSolution },
                     ].map((item, idx) => (
-                      <div key={idx} className="p-3 rounded-lg" style={{ backgroundColor: theme.dark }}>
-                        <div className="text-xs mb-1" style={{ color: theme.subtle }}>{item.label}</div>
-                        <div className="text-sm font-medium" style={{ color: theme.light }}>{item.value}</div>
+                      <div key={idx} className="p-4 rounded-lg" style={{ backgroundColor: theme.dark }}>
+                        <div className="text-sm mb-1" style={{ color: theme.subtle }}>{item.label}</div>
+                        <div className="text-base font-medium" style={{ color: theme.light }}>{item.value}</div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium" style={{ color: theme.muted }}>Situation Context</h3>
-                    <div className="grid md:grid-cols-2 gap-2">
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold" style={{ color: theme.muted }}>Situation Context</h3>
+                    <div className="grid md:grid-cols-2 gap-3">
                       {currentRound.context.map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-sm" style={{ color: theme.light }}>
+                        <div key={idx} className="flex items-start gap-3 text-base" style={{ color: theme.light }}>
                           <div
-                            className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+                            className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
                             style={{ backgroundColor: roundColor }}
                           />
                           {item}
@@ -1094,23 +1135,23 @@ export default function GenesysSimulation() {
 
                 {/* Challenge Card */}
                 <Card
-                  className="p-6"
+                  className="p-8"
                   glow
                   glowColor={roundColor}
                   style={{ borderColor: `${roundColor}30` }}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-5">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                      className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: roundColor }}
                     >
-                      <Flag className="w-5 h-5 text-white" />
+                      <Flag className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-bold mb-2" style={{ color: theme.white }}>Your Challenge</h3>
-                      <p className="text-sm mb-4" style={{ color: theme.light }}>{currentRound.challenge}</p>
+                      <h3 className="text-xl font-bold mb-3" style={{ color: theme.white }}>Your Challenge</h3>
+                      <p className="text-base mb-4" style={{ color: theme.light }}>{currentRound.challenge}</p>
                       <div
-                        className="text-xs px-3 py-2 rounded-lg inline-block"
+                        className="text-sm px-4 py-3 rounded-lg inline-block"
                         style={{ backgroundColor: theme.dark, color: theme.muted }}
                       >
                         <strong style={{ color: roundColor }}>Objective:</strong> {currentRound.objective}
@@ -1209,60 +1250,60 @@ export default function GenesysSimulation() {
               <div className="space-y-8 animate-fadeIn">
                 {/* Score Hero */}
                 <div className="text-center py-12">
-                  <div className="text-sm font-medium mb-4" style={{ color: theme.muted }}>Initial Score</div>
+                  <div className="text-base font-medium mb-4" style={{ color: theme.muted }}>Initial Score</div>
                   <AnimatedScore score={submission.initialScore.overall} size="xl" color={roundColor} />
                   <div
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full mt-6"
+                    className="inline-flex items-center gap-3 px-5 py-3 rounded-full mt-6"
                     style={{ backgroundColor: `${roundColor}20` }}
                   >
-                    <Award className="w-4 h-4" style={{ color: roundColor }} />
-                    <span className="text-sm font-medium" style={{ color: roundColor }}>
+                    <Award className="w-5 h-5" style={{ color: roundColor }} />
+                    <span className="text-base font-semibold" style={{ color: roundColor }}>
                       {submission.initialCoaching.scoreInterpretation}
                     </span>
                   </div>
                 </div>
 
                 {/* Coaching */}
-                <Card className="p-6">
-                  <div className="flex items-center gap-3 mb-5">
+                <Card className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      className="w-12 h-12 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: roundColor }}
                     >
-                      <Brain className="w-5 h-5 text-white" />
+                      <Brain className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <div className="font-bold" style={{ color: theme.white }}>AI Sales Coach</div>
-                      <div className="text-xs" style={{ color: theme.subtle }}>Initial Feedback</div>
+                      <div className="text-lg font-bold" style={{ color: theme.white }}>AI Sales Coach</div>
+                      <div className="text-sm" style={{ color: theme.subtle }}>Initial Feedback</div>
                     </div>
                   </div>
 
-                  <p className="mb-6" style={{ color: theme.light }}>{submission.initialCoaching.mainFeedback}</p>
+                  <p className="text-base mb-6 leading-relaxed" style={{ color: theme.light }}>{submission.initialCoaching.mainFeedback}</p>
 
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-8">
                     <div>
-                      <h4 className="text-sm font-medium flex items-center gap-2 mb-3 text-emerald-400">
-                        <ThumbsUp className="w-4 h-4" />
+                      <h4 className="text-base font-semibold flex items-center gap-2 mb-4 text-emerald-400">
+                        <ThumbsUp className="w-5 h-5" />
                         Strengths
                       </h4>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {submission.initialCoaching.strengths.map((s, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-sm" style={{ color: theme.light }}>
-                            <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                          <div key={idx} className="flex items-start gap-3 text-base" style={{ color: theme.light }}>
+                            <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
                             {s}
                           </div>
                         ))}
                       </div>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium flex items-center gap-2 mb-3" style={{ color: theme.orange }}>
-                        <TrendingUp className="w-4 h-4" />
-                        Improvements
+                      <h4 className="text-base font-semibold flex items-center gap-2 mb-4" style={{ color: theme.orange }}>
+                        <TrendingUp className="w-5 h-5" />
+                        Areas to Improve
                       </h4>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {submission.initialCoaching.improvements.map((i, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-sm" style={{ color: theme.light }}>
-                            <ArrowRight className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: theme.orange }} />
+                          <div key={idx} className="flex items-start gap-3 text-base" style={{ color: theme.light }}>
+                            <ArrowRight className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: theme.orange }} />
                             {i}
                           </div>
                         ))}
@@ -1284,31 +1325,31 @@ export default function GenesysSimulation() {
               <div className="space-y-8 animate-fadeIn">
                 {/* Wobble Alert */}
                 <div
-                  className="text-center py-10 px-6 rounded-2xl border-2"
+                  className="text-center py-12 px-8 rounded-2xl border-2"
                   style={{
                     backgroundColor: "rgba(245, 158, 11, 0.05)",
                     borderColor: "rgba(245, 158, 11, 0.3)",
                   }}
                 >
                   <div
-                    className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
                     style={{ backgroundColor: "rgba(245, 158, 11, 0.2)" }}
                   >
-                    <AlertTriangle className="w-8 h-8 text-amber-400" />
+                    <AlertTriangle className="w-10 h-10 text-amber-400" />
                   </div>
-                  <div className="text-xs font-bold tracking-wider mb-2 text-amber-400">NEW INTELLIGENCE</div>
-                  <h2 className="text-2xl font-black mb-3" style={{ color: theme.white }}>
+                  <div className="text-sm font-bold tracking-wider mb-3 text-amber-400">NEW INTELLIGENCE</div>
+                  <h2 className="text-3xl font-black mb-4" style={{ color: theme.white }}>
                     {currentRound.wobble.title}
                   </h2>
-                  <p className="max-w-xl mx-auto" style={{ color: theme.light }}>
+                  <p className="text-lg max-w-xl mx-auto leading-relaxed" style={{ color: theme.light }}>
                     {currentRound.wobble.description}
                   </p>
                 </div>
 
                 {/* Choice Card */}
-                <Card className="p-6">
-                  <h3 className="font-bold mb-2" style={{ color: theme.white }}>{currentRound.wobble.question}</h3>
-                  <p className="text-sm mb-6" style={{ color: theme.muted }}>Select the best path forward:</p>
+                <Card className="p-8">
+                  <h3 className="text-xl font-bold mb-3" style={{ color: theme.white }}>{currentRound.wobble.question}</h3>
+                  <p className="text-base mb-6" style={{ color: theme.muted }}>Select the best path forward:</p>
                   <WobbleChoice
                     options={wobbleOptions}
                     selected={wobbleChoice}
@@ -1356,8 +1397,8 @@ export default function GenesysSimulation() {
                 {/* Final Score Hero */}
                 <div className="text-center py-12">
                   <div className="flex items-center justify-center gap-2 mb-6">
-                    <Crown className="w-6 h-6 text-yellow-400" />
-                    <span className="text-sm font-medium" style={{ color: theme.muted }}>Final Score</span>
+                    <Crown className="w-7 h-7 text-yellow-400" />
+                    <span className="text-base font-medium" style={{ color: theme.muted }}>Final Score</span>
                   </div>
 
                   {submission.initialScore && (
@@ -1369,29 +1410,29 @@ export default function GenesysSimulation() {
                   )}
 
                   <div
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full mt-8"
+                    className="inline-flex items-center gap-3 px-5 py-3 rounded-full mt-8"
                     style={{ backgroundColor: `${roundColor}20` }}
                   >
-                    <Trophy className="w-4 h-4" style={{ color: roundColor }} />
-                    <span className="text-sm font-medium" style={{ color: roundColor }}>
+                    <Trophy className="w-5 h-5" style={{ color: roundColor }} />
+                    <span className="text-base font-semibold" style={{ color: roundColor }}>
                       {submission.finalCoaching.scoreInterpretation}
                     </span>
                   </div>
                 </div>
 
                 {/* Score Breakdown */}
-                <Card className="p-6">
-                  <h3 className="text-sm font-medium mb-4" style={{ color: theme.muted }}>Performance Breakdown</h3>
-                  <div className="space-y-4">
+                <Card className="p-8">
+                  <h3 className="text-base font-semibold mb-5" style={{ color: theme.muted }}>Performance Breakdown</h3>
+                  <div className="space-y-5">
                     {currentRound.scoringCriteria.map((criterion, idx) => (
                       <div key={idx}>
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm" style={{ color: theme.light }}>{criterion.name}</span>
-                          <span className="text-sm font-bold" style={{ color: roundColor }}>
+                          <span className="text-base" style={{ color: theme.light }}>{criterion.name}</span>
+                          <span className="text-base font-bold" style={{ color: roundColor }}>
                             {submission.finalScore.criteria[criterion.name]}
                           </span>
                         </div>
-                        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.darkMuted }}>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: theme.darkMuted }}>
                           <div
                             className="h-full rounded-full transition-all duration-1000"
                             style={{
@@ -1407,33 +1448,33 @@ export default function GenesysSimulation() {
                 </Card>
 
                 {/* Final Coaching */}
-                <Card className="p-6">
-                  <div className="flex items-center gap-3 mb-5">
+                <Card className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      className="w-12 h-12 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: roundColor }}
                     >
-                      <Brain className="w-5 h-5 text-white" />
+                      <Brain className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <div className="font-bold" style={{ color: theme.white }}>AI Sales Coach</div>
-                      <div className="text-xs" style={{ color: theme.subtle }}>Final Analysis</div>
+                      <div className="text-lg font-bold" style={{ color: theme.white }}>AI Sales Coach</div>
+                      <div className="text-sm" style={{ color: theme.subtle }}>Final Analysis</div>
                     </div>
                   </div>
 
-                  <p className="mb-6" style={{ color: theme.light }}>{submission.finalCoaching.mainFeedback}</p>
+                  <p className="text-base mb-6 leading-relaxed" style={{ color: theme.light }}>{submission.finalCoaching.mainFeedback}</p>
 
                   <div
-                    className="p-4 rounded-xl"
+                    className="p-5 rounded-xl"
                     style={{ backgroundColor: theme.dark }}
                   >
-                    <h4 className="text-sm font-medium flex items-center gap-2 mb-3" style={{ color: theme.muted }}>
-                      <Lightbulb className="w-4 h-4 text-amber-400" />
+                    <h4 className="text-base font-semibold flex items-center gap-2 mb-4" style={{ color: theme.muted }}>
+                      <Lightbulb className="w-5 h-5 text-amber-400" />
                       Key Takeaways
                     </h4>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {submission.finalCoaching.nextSteps.map((step, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-sm" style={{ color: theme.light }}>
+                        <div key={idx} className="flex items-start gap-3 text-base" style={{ color: theme.light }}>
                           <span className="font-bold" style={{ color: roundColor }}>{idx + 1}.</span>
                           {step}
                         </div>
@@ -1454,17 +1495,17 @@ export default function GenesysSimulation() {
               <div className="space-y-8 animate-fadeIn">
                 <div className="text-center py-12">
                   <div
-                    className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-5"
                     style={{ backgroundColor: `${roundColor}20` }}
                   >
-                    <Users className="w-8 h-8" style={{ color: roundColor }} />
+                    <Users className="w-10 h-10" style={{ color: roundColor }} />
                   </div>
-                  <h1 className="text-3xl font-black mb-2" style={{ color: theme.white }}>Team Discussion</h1>
-                  <p style={{ color: theme.muted }}>Role Alignment & Teaming</p>
+                  <h1 className="text-4xl font-black mb-3" style={{ color: theme.white }}>Team Discussion</h1>
+                  <p className="text-lg" style={{ color: theme.muted }}>Role Alignment & Teaming</p>
                 </div>
 
-                <Card className="p-6">
-                  <h3 className="font-bold mb-4" style={{ color: theme.white }}>Discussion Questions</h3>
+                <Card className="p-8">
+                  <h3 className="text-xl font-bold mb-5" style={{ color: theme.white }}>Discussion Questions</h3>
                   <div className="space-y-4">
                     {[
                       "As the AE 'Quarterback,' how would you coordinate with your CS, SE, and Partner resources?",
@@ -1473,26 +1514,26 @@ export default function GenesysSimulation() {
                     ].map((question, idx) => (
                       <div
                         key={idx}
-                        className="p-4 rounded-xl border-l-4"
+                        className="p-5 rounded-xl border-l-4"
                         style={{
                           backgroundColor: theme.dark,
                           borderLeftColor: roundColor,
                         }}
                       >
-                        <p className="text-sm" style={{ color: theme.light }}>{question}</p>
+                        <p className="text-base" style={{ color: theme.light }}>{question}</p>
                       </div>
                     ))}
                   </div>
                 </Card>
 
                 <div
-                  className="p-4 rounded-xl flex items-center gap-3"
+                  className="p-5 rounded-xl flex items-center gap-4"
                   style={{ backgroundColor: "rgba(245, 158, 11, 0.1)" }}
                 >
-                  <Clock className="w-5 h-5 text-amber-400" />
+                  <Clock className="w-6 h-6 text-amber-400" />
                   <div>
-                    <div className="text-sm font-medium text-amber-400">Discussion Time</div>
-                    <div className="text-xs" style={{ color: theme.muted }}>Take 5 minutes to discuss with your team</div>
+                    <div className="text-base font-semibold text-amber-400">Discussion Time</div>
+                    <div className="text-sm" style={{ color: theme.muted }}>Take 5 minutes to discuss with your team</div>
                   </div>
                 </div>
 
@@ -1516,25 +1557,25 @@ export default function GenesysSimulation() {
         {showLeaderboard && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center p-6"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.8)" }}
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.85)" }}
             onClick={() => setShowLeaderboard(false)}
           >
             <Card
-              className="w-full max-w-lg max-h-[80vh] overflow-hidden"
+              className="w-full max-w-xl max-h-[80vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6 border-b" style={{ borderColor: theme.darkMuted }}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Trophy className="w-6 h-6" style={{ color: theme.orange }} />
+                  <div className="flex items-center gap-4">
+                    <Trophy className="w-8 h-8" style={{ color: "#FFD700" }} />
                     <div>
-                      <h2 className="text-xl font-bold" style={{ color: theme.white }}>Leaderboard</h2>
-                      <p className="text-xs" style={{ color: theme.subtle }}>Room {roomNumber}</p>
+                      <h2 className="text-2xl font-bold" style={{ color: theme.white }}>Leaderboard</h2>
+                      <p className="text-sm" style={{ color: theme.subtle }}>Room {roomNumber}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowLeaderboard(false)}
-                    className="text-2xl leading-none hover:opacity-70"
+                    className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-2xl"
                     style={{ color: theme.muted }}
                   >
                     ×
@@ -1545,19 +1586,19 @@ export default function GenesysSimulation() {
               <div className="p-6 overflow-auto max-h-[60vh]">
                 {leaderboard.filter(t => t.room === roomNumber).length === 0 ? (
                   <div className="text-center py-12">
-                    <Trophy className="w-12 h-12 mx-auto mb-3 opacity-20" style={{ color: theme.muted }} />
-                    <p className="text-sm" style={{ color: theme.muted }}>No scores yet. Be the first!</p>
+                    <Trophy className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: theme.muted }} />
+                    <p className="text-base" style={{ color: theme.muted }}>No scores yet. Be the first!</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {leaderboard.filter(t => t.room === roomNumber).map((team, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center gap-4 p-4 rounded-xl"
+                        className="flex items-center gap-4 p-5 rounded-xl"
                         style={{ backgroundColor: idx < 3 ? `${theme.orange}10` : theme.dark }}
                       >
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
+                          className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
                           style={{
                             backgroundColor: idx === 0 ? "#FFD700" : idx === 1 ? "#C0C0C0" : idx === 2 ? "#CD7F32" : theme.darkMuted,
                             color: idx < 3 ? theme.black : theme.muted,
@@ -1566,12 +1607,12 @@ export default function GenesysSimulation() {
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-bold truncate" style={{ color: theme.white }}>{team.team}</div>
-                          <div className="text-xs" style={{ color: theme.subtle }}>Table {team.table}</div>
+                          <div className="text-lg font-bold truncate" style={{ color: theme.white }}>{team.team}</div>
+                          <div className="text-sm" style={{ color: theme.subtle }}>Table {team.table}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-black" style={{ color: theme.orange }}>{team.totalScore}</div>
-                          <div className="text-xs" style={{ color: theme.subtle }}>{Object.keys(team.rounds).length} rounds</div>
+                          <div className="text-3xl font-black" style={{ color: theme.orange }}>{team.totalScore}</div>
+                          <div className="text-sm" style={{ color: theme.subtle }}>{Object.keys(team.rounds).length} rounds</div>
                         </div>
                       </div>
                     ))}
