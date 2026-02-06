@@ -640,7 +640,6 @@ const simulationRounds = [
 
 const STORAGE_KEYS = {
   TEAM_INFO: "genesys_sim_team",
-  LEADERBOARD: "genesys_sim_leaderboard",
   PROGRESS: "genesys_sim_progress",
 };
 
@@ -666,22 +665,40 @@ export default function GenesysSimulation() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  // Load data on mount
+  // Load team info on mount
   useEffect(() => {
     const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-    const savedLeaderboard = localStorage.getItem(STORAGE_KEYS.LEADERBOARD);
-
     if (savedTeam) {
       const team = JSON.parse(savedTeam);
       setTeamName(team.name);
       setTableNumber(team.table);
       setRoomNumber(team.room);
     }
+  }, []);
 
-    if (savedLeaderboard) {
-      setLeaderboard(JSON.parse(savedLeaderboard));
+  // Fetch leaderboard from API when room changes or leaderboard is shown
+  const fetchLeaderboard = useCallback(async (room) => {
+    if (!room) return;
+    try {
+      const response = await fetch(`/api/leaderboard?room=${encodeURIComponent(room)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data.leaderboard || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch leaderboard:", err);
     }
   }, []);
+
+  // Fetch leaderboard when showing it or when room number is set
+  useEffect(() => {
+    if (roomNumber && showLeaderboard) {
+      fetchLeaderboard(roomNumber);
+      // Poll every 10 seconds while leaderboard is open
+      const interval = setInterval(() => fetchLeaderboard(roomNumber), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [roomNumber, showLeaderboard, fetchLeaderboard]);
 
   // Helpers
   const saveProgress = useCallback((newSubmissions, roundIdx, phase) => {
@@ -693,26 +710,20 @@ export default function GenesysSimulation() {
     localStorage.setItem(STORAGE_KEYS.TEAM_INFO, JSON.stringify({ name, table, room }));
   }, []);
 
-  const updateLeaderboard = useCallback((name, table, room, score, roundId) => {
-    setLeaderboard(prev => {
-      const teamKey = `${room}-${table}-${name}`;
-      const existing = prev.find(t => `${t.room}-${t.table}-${t.team}` === teamKey);
-      let updated;
-      if (existing) {
-        updated = prev.map(t => {
-          if (`${t.room}-${t.table}-${t.team}` === teamKey) {
-            const newRounds = { ...t.rounds, [roundId]: score };
-            return { ...t, rounds: newRounds, totalScore: Object.values(newRounds).reduce((a, b) => a + b, 0) };
-          }
-          return t;
-        });
-      } else {
-        updated = [...prev, { team: name, table, room, rounds: { [roundId]: score }, totalScore: score }];
+  const updateLeaderboard = useCallback(async (name, table, room, score, roundId) => {
+    try {
+      const response = await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamName: name, table, room, score, roundId })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data.leaderboard || []);
       }
-      updated.sort((a, b) => b.totalScore - a.totalScore);
-      localStorage.setItem(STORAGE_KEYS.LEADERBOARD, JSON.stringify(updated));
-      return updated;
-    });
+    } catch (err) {
+      console.error("Failed to update leaderboard:", err);
+    }
   }, []);
 
   // Handlers
@@ -1514,38 +1525,42 @@ export default function GenesysSimulation() {
               </div>
 
               <div className="p-6 overflow-auto max-h-[60vh]">
-                {leaderboard.filter(t => t.room === roomNumber).length === 0 ? (
+                {leaderboard.length === 0 ? (
                   <div className="text-center py-12">
                     <Trophy className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: theme.muted }} />
                     <p className="text-base" style={{ color: theme.muted }}>No scores yet. Be the first!</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {leaderboard.filter(t => t.room === roomNumber).map((team, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-4 p-5 rounded-xl"
-                        style={{ backgroundColor: idx < 3 ? `${theme.orange}10` : theme.dark }}
-                      >
+                    {leaderboard.map((team, idx) => {
+                      const totalScore = Object.values(team.scores || {}).reduce((a, b) => a + b, 0);
+                      const roundCount = Object.keys(team.scores || {}).length;
+                      return (
                         <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
-                          style={{
-                            backgroundColor: idx === 0 ? "#FFD700" : idx === 1 ? "#C0C0C0" : idx === 2 ? "#CD7F32" : theme.darkMuted,
-                            color: idx < 3 ? theme.black : theme.muted,
-                          }}
+                          key={team.teamKey || idx}
+                          className="flex items-center gap-4 p-5 rounded-xl"
+                          style={{ backgroundColor: idx < 3 ? `${theme.orange}10` : theme.dark }}
                         >
-                          {idx + 1}
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg"
+                            style={{
+                              backgroundColor: idx === 0 ? "#FFD700" : idx === 1 ? "#C0C0C0" : idx === 2 ? "#CD7F32" : theme.darkMuted,
+                              color: idx < 3 ? theme.black : theme.muted,
+                            }}
+                          >
+                            {idx + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-lg font-bold truncate" style={{ color: theme.white }}>{team.teamName}</div>
+                            <div className="text-sm" style={{ color: theme.subtle }}>Table {team.table}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-3xl font-black" style={{ color: theme.orange }}>{totalScore}</div>
+                            <div className="text-sm" style={{ color: theme.subtle }}>{roundCount} round{roundCount !== 1 ? 's' : ''}</div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-lg font-bold truncate" style={{ color: theme.white }}>{team.team}</div>
-                          <div className="text-sm" style={{ color: theme.subtle }}>Table {team.table}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-3xl font-black" style={{ color: theme.orange }}>{team.totalScore}</div>
-                          <div className="text-sm" style={{ color: theme.subtle }}>{Object.keys(team.rounds).length} rounds</div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
