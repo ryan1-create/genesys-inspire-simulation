@@ -203,7 +203,7 @@ function Header({ teamName, room, table, roundNumber, roundColor, submissions, o
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo & Round */}
         <div className="flex items-center gap-6">
-          <img src="/genesys-logo.png" alt="Genesys" className="h-10 w-auto" style={{ minWidth: '140px' }} />
+          <img src="/genesys-logo.png" alt="Genesys" className="h-14" />
           <div
             className="px-4 py-2 rounded-lg font-bold text-base"
             style={{ backgroundColor: roundColor, color: theme.white }}
@@ -1621,7 +1621,7 @@ export default function GenesysSimulation() {
                 {/* CHOICE TYPE */}
                 {currentRound.wobble.type === "choice" && (
                   <div className="space-y-3">
-                    {(currentRound.wobble.shuffleOptions ? shuffledWobbleOptions : currentRound.wobble.options).map((option) => (
+                    {(currentRound.wobble.shuffleOptions ? shuffledWobbleOptions : currentRound.wobble.options).map((option, idx) => (
                       <button
                         key={option.id}
                         onClick={() => setWobbleChoice(option.id)}
@@ -1635,13 +1635,17 @@ export default function GenesysSimulation() {
                       >
                         <div className="flex items-start gap-3">
                           <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold"
+                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                             style={{
                               backgroundColor: wobbleChoice === option.id ? roundColor : theme.darkMuted,
                               color: theme.white,
                             }}
                           >
-                            {option.id}
+                            {wobbleChoice === option.id ? (
+                              <Check className="w-5 h-5" />
+                            ) : (
+                              <CircleDot className="w-5 h-5" style={{ color: theme.subtle }} />
+                            )}
                           </div>
                           <div>
                             <p className="font-medium mb-1" style={{ color: theme.white }}>{option.text}</p>
