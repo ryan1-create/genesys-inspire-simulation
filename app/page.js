@@ -321,7 +321,7 @@ const simulationRounds = [
       { name: "Value Impact", weight: 25, description: "Clearly articulates measurable business impact for the VP", poor: "No clear business impact or personal relevance for the VP", champion: "Clearly articulates measurable business impact and positions VP as trusted leader who can modernize safely" },
     ],
     icon: Target,
-    industryImage: "/industries/healthcare.jpg",
+    industryImage: "/industries/healthcare.png",
   },
   {
     id: 2,
@@ -393,7 +393,7 @@ const simulationRounds = [
       { name: "Depth of Discovery Plan", weight: 20, description: "Demonstrates deliberate discovery path exposing architectural limitations", poor: "Discovery stays focused on current tools, processes, or isolated performance", champion: "Demonstrates deliberate discovery path that exposes how current architecture limits ability to test, scale, and govern AI-driven CX" },
     ],
     icon: Zap,
-    industryImage: "/industries/financial.jpg",
+    industryImage: "/industries/financial.png",
   },
   {
     id: 3,
@@ -475,7 +475,7 @@ const simulationRounds = [
       { name: "Actionability & Focus", weight: 15, description: "Actions directly reduce displacement risk and protect strategic position", poor: "Vague or generic next steps with no link to account risk", champion: "Actions directly reduce displacement risk, strengthen Accenture alignment, and protect strategic position" },
     ],
     icon: Shield,
-    industryImage: "/industries/retail.jpg",
+    industryImage: "/industries/retail.png",
   },
   {
     id: 4,
@@ -561,7 +561,7 @@ const simulationRounds = [
       { name: "Sequencing & Global Momentum", weight: 10, description: "Clear sequencing tied to executive milestones and global rollout governance", poor: "Actions are unordered or region-specific; no path to approval", champion: "Clear sequencing tied to executive milestones and global rollout governance" },
     ],
     icon: Rocket,
-    industryImage: "/industries/logistics.jpg",
+    industryImage: "/industries/logistics.png",
   },
 ];
 
@@ -880,10 +880,10 @@ export default function GenesysSimulation() {
 
   // Industry images for background
   const industryImages = {
-    1: "/industries/healthcare.jpg",
-    2: "/industries/financial.jpg",
-    3: "/industries/retail.jpg",
-    4: "/industries/logistics.jpg",
+    1: "/industries/healthcare.png",
+    2: "/industries/financial.png",
+    3: "/industries/retail.png",
+    4: "/industries/logistics.png",
   };
 
   // Check for saved session on home screen
