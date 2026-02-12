@@ -1227,14 +1227,13 @@ export default function GenesysSimulation() {
                                     placeholder="What specific actions should be taken to address this gap?"
                                     className="w-full px-4 py-3 rounded-lg text-sm resize-none"
                                     rows={3}
-                                      style={{
-                                        backgroundColor: theme.darker,
-                                        border: `1px solid ${theme.darkMuted}`,
-                                        color: theme.white,
-                                      }}
-                                    />
+                                    style={{
+                                      backgroundColor: theme.darker,
+                                      border: `1px solid ${theme.darkMuted}`,
+                                      color: theme.white,
+                                    }}
+                                  />
                                   </div>
-                                </div>
                               )}
                             </div>
                           );
