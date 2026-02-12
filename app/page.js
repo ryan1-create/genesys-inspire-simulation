@@ -274,9 +274,10 @@ const simulationRounds = [
     ],
     objective: "Build leadership attention around the negative impact of the current Contact Center on Patient Experience – and ultimately, operating margin.",
     challenge: "Develop a POV to share with the VP of Patient Experience to expand their thinking around the whole patient experience, including AI-powered Contact Center capabilities.",
-    // Input fields for this round
+    // Input fields for this round - Layout: single question top, then 2x2 grid
+    inputLayout: "singleTop-2x2",
     inputFields: [
-      { id: "businessPriority", label: "From Everwell's perspective, why does this matter now?", type: "textarea", placeholder: "Describe the business context and urgency..." },
+      { id: "businessPriority", label: "From Everwell's perspective, why does this matter now?", type: "textarea", placeholder: "Describe the business context and urgency...", fullWidth: true },
       { id: "knownChallenges", label: "What challenges related to Patient Experience or the Contact Center are they already aware of?", type: "textarea", placeholder: "List known challenges..." },
       { id: "valueGaps", label: "What challenges or potential unrealized value are limiting Everwell's ability to achieve their priorities?", type: "textarea", placeholder: "Identify hidden gaps and limitations..." },
       { id: "futureState", label: "What is an ideal future state in their terms – linking the Contact Center to the overall Patient Experience?", type: "textarea", placeholder: "Describe the vision..." },
@@ -357,34 +358,22 @@ const simulationRounds = [
     wobble: {
       title: "Past Failure Revealed",
       description: "Right before meeting with the VP of Customer Operations, one of the Regional Contact Center Directors gives you more insight: The LATAM region participated in a hybrid NiCE pilot last year. The pilot was highly disruptive to operations and agent workflows. Adoption was inconsistent and agent trust was eroded. Leadership ultimately pulled the program, and the failure influenced the decision to halt CX platform change globally.",
-      question: "How does this change your discovery approach, tone, and objectives for the conversation – knowing prior disruption has eroded trust?",
-      type: "choice",
-      options: [
+      question: "Given this new information about the failed pilot, respond to the following:",
+      type: "text-questions",
+      textQuestions: [
         {
-          id: "A",
-          text: "Reduce fear by narrowing scope and commitment",
-          detail: "Based on that experience, it may make sense to focus on small, low-risk experiments rather than anything that feels like platform change.",
-          points: -2,
+          id: "reframeInsight",
+          label: "What is one insight you would use to reframe why the pilot failed – in a way that helps the VP of Customer Operations see the root cause differently, without reinforcing fear or defensiveness?",
+          placeholder: "Describe your insight for reframing the failure..."
         },
         {
-          id: "B",
-          text: "Redirect attention from past disruption to future consequences of inaction",
-          detail: "Given that experience, I'm curious how you think about the risks of staying with the current model as customer expectations, AI adoption, and regulatory pressure increase.",
-          points: 2,
-        },
-        {
-          id: "C",
-          text: "Understand the root causes of past disruption to avoid repeating them",
-          detail: "Before we talk about what's next, I want to understand what made the pilot feel disruptive – where it broke down for agents, leaders, or operations – so we don't solve the wrong problem.",
-          points: 5,
-        },
-        {
-          id: "D",
-          text: "Reframe the prior pilot as a change and governance issue",
-          detail: "When initiatives like this fail, it's often less about the technology and more about how change was governed, operationalized, and measured. Before discussing what's next, I'd like to unpack what had to change operationally for that pilot to succeed – so we don't solve the wrong problem.",
-          points: 8,
-        },
+          id: "discoveryQuestion",
+          label: "What question would you ask to learn more about why the pilot failed?",
+          placeholder: "Write a discovery question..."
+        }
       ],
+      // Text questions are scored by the AI - base points awarded for thoughtful completion
+      basePoints: 5,
     },
     scoringCriteria: [
       { name: "Insightfulness of Risks Surfaced", weight: 30, description: "Reframes status quo as structural constraint limiting resilience, agility, and future CX transformation", poor: "Restates known facts without reframing them as business risk", champion: "Reframes status quo as structural constraint showing how regional autonomy limits resilience, agility, and transformation" },
@@ -421,8 +410,10 @@ const simulationRounds = [
     ],
     objective: "Preserve our position by attaching to the broader transformation and positioning Genesys as an innovator in AI-powered CX",
     challenge: "Prepare our competitive strategy – elevating our capabilities to CIO-level priorities.",
+    // Layout: strategy selection separated, then text fields below
+    inputLayout: "separateFirst",
     inputFields: [
-      { id: "strategySelection", label: "Which strategy is most effective in this scenario?", type: "strategy-select", options: ["Direct", "Reframe", "Expand", "Pinpoint"] },
+      { id: "strategySelection", label: "Which strategy is most effective in this scenario?", type: "strategy-select", options: ["Direct", "Reframe", "Expand", "Pinpoint"], separate: true },
       { id: "strategyRationale", label: "Given what's changing in the account, why is this the right strategy?", type: "textarea", placeholder: "Explain your strategic rationale..." },
       { id: "keyActions", label: "What 2-3 actions can we take in the next 30 days to drive this strategy?", type: "textarea", placeholder: "List specific, actionable steps..." },
       { id: "keyMessages", label: "What messages can we share to communicate our perspective on AI-powered CX?", type: "textarea", placeholder: "Draft key messaging points..." },
@@ -503,27 +494,93 @@ const simulationRounds = [
     challenge: "Using the Deal Review Framework, define actions to address executive decision risks in favor of our CX platform expansion initiative.",
     inputFields: [], // This round uses the deal review checklist instead
     useDealReviewChecklist: true,
+    // Pre-filled Deal Review Framework - users only provide Next Actions for "No" items
     dealReviewChecklist: [
       {
         section: "Value Alignment",
         items: [
-          { id: "transformationPartner", label: "Key leaders (across CX, contact center ops, digital, etc.) see us as a transformation partner, not just a tech vendor." },
-          { id: "technicalExcellence", label: "We have demonstrated technical excellence to meet the customer's requirements and have translated into business outcomes." },
+          {
+            id: "transformationVision",
+            label: "Business decision-makers have a defined transformation vision (including CX, AI, digital) that we can attach our solutions to.",
+            prefilled: "yes",
+            evidence: "CX leadership recommended standardization. CIO/CFO mandated the VP of Data Science and AI to evaluate global platform solutions."
+          },
+          {
+            id: "transformationPartner",
+            label: "Key leaders (across CX, contact center ops, digital, etc.) see us as a transformation partner, not just a tech vendor.",
+            prefilled: "no",
+            evidence: "Genesys viewed as successful EMEA solution; mostly referenced in CX forums. Limited direct exposure to CIO/CFO."
+          },
+          {
+            id: "keyKPIs",
+            label: "We have identified key business impact/KPIs (e.g., customer growth, cost to serve, speed to market) that we can attach to.",
+            prefilled: "yes",
+            evidence: "Quantified EMEA productivity gains can be leveraged globally – needs to be applied to a global or by-region business case."
+          },
+          {
+            id: "technicalExcellence",
+            label: "We have demonstrated technical excellence to meet the customer's requirements and have translated into business outcomes.",
+            prefilled: "no",
+            evidence: "GC3 stable in EMEA. Agent Force pilot in LATAM; exploring options in APAC; unclear in NA."
+          },
         ],
       },
       {
         section: "Value Discovery",
         items: [
-          { id: "broughtInsights", label: "We have brought insights based on our incumbency or market experience to help the customer see what they haven't." },
-          { id: "uncoveredGaps", label: "We have uncovered current-state gaps in CX strategy and service experience – beyond contact center metrics." },
+          {
+            id: "broughtInsights",
+            label: "We have brought insights based on our incumbency or market experience to help the customer see what they haven't.",
+            prefilled: "no",
+            evidence: "Initial conversations with VP of Data Science and AI have signaled shift to a global approach, but concerns about migration risks persist."
+          },
+          {
+            id: "uncoveredGaps",
+            label: "We have uncovered current-state gaps in CX strategy and service experience – beyond contact center metrics.",
+            prefilled: "no",
+            evidence: "Likely inconsistent employee and customer experience across regions. Have not explicitly identified gaps globally."
+          },
+          {
+            id: "partneringChampion",
+            label: "We are partnering with a champion to build stakeholder alignment around value opportunities, challenges, etc.",
+            prefilled: "yes",
+            evidence: "We have strong sponsors in EMEA leaders and in the global CX function. Must test for influence on global approach."
+          },
+          {
+            id: "validatedUrgency",
+            label: "We have validated the urgency for transformation across key business decision-makers.",
+            prefilled: "yes",
+            evidence: "CIO/CFO evaluation underway. Various regions are looking to optimize/improve current approach."
+          },
         ],
       },
       {
         section: "Value Story",
         items: [
-          { id: "businessCase", label: "Our co-created business case shows how Genesys can influence business outcomes (e.g., cost reduction, customer satisfaction)." },
-          { id: "pricingAlignment", label: "Our investment positioning and pricing strategy clearly aligns to decision-makers' views of value." },
-          { id: "milestones", label: "We are achieving the time-bound milestones of our joint success plan (including technical, procurement, legal approvals)." },
+          {
+            id: "businessCase",
+            label: "Our co-created business case shows how Genesys can influence business outcomes (e.g., cost reduction, customer satisfaction).",
+            prefilled: "no",
+            evidence: "EMEA success story exists, but has not been translated to enterprise cost/risk/impact model."
+          },
+          {
+            id: "pricingAlignment",
+            label: "Our investment positioning and pricing strategy clearly aligns to decision-makers' views of value.",
+            prefilled: "no",
+            evidence: "Must fully map global and regional decision-makers – influence and view of value."
+          },
+          {
+            id: "championArticulate",
+            label: "Our champion and decision-makers can confidently articulate our value in business terms — emphasizing 'why Genesys' and 'why now'.",
+            prefilled: "yes",
+            evidence: "EMEA and CX leaders are strong supporters of our platform and impact – need to activate with other stakeholders, particularly CIO and CFO."
+          },
+          {
+            id: "milestones",
+            label: "We are achieving the time-bound milestones of our joint success plan (including technical, procurement, legal, etc. approvals).",
+            prefilled: "no",
+            evidence: "No agreed global sequencing or decision gates yet; regions still operating independently."
+          },
         ],
       },
     ],
@@ -591,6 +648,7 @@ export default function GenesysSimulation() {
   const [wobbleChoice, setWobbleChoice] = useState(null);
   const [wobbleRanking, setWobbleRanking] = useState([]);
   const [wobbleMultiSelect, setWobbleMultiSelect] = useState([]);
+  const [wobbleTextAnswers, setWobbleTextAnswers] = useState({});
   const [dealReviewAnswers, setDealReviewAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -794,6 +852,12 @@ export default function GenesysSimulation() {
         const selectionKey = wobbleMultiSelect.sort().join(",");
         wobblePoints = currentRound.wobble.multiSelectScores[selectionKey] || 0;
         wobbleResponseText = `Selected: ${wobbleMultiSelect.join(", ")}`;
+      } else if (currentRound.wobble.type === "text-questions") {
+        // Text questions get base points for completion, AI evaluates quality
+        wobblePoints = currentRound.wobble.basePoints || 5;
+        wobbleResponseText = currentRound.wobble.textQuestions.map(q =>
+          `${q.label}\n${wobbleTextAnswers[q.id] || "(No response)"}`
+        ).join("\n\n");
       }
 
       // Get final score with AI evaluation
@@ -829,8 +893,9 @@ export default function GenesysSimulation() {
 
       const result = await response.json();
 
-      // Calculate final score: base score + wobble points, capped at 100
-      const baseScore = result.score.overall;
+      // Calculate final score: use INITIAL score (not re-scored) + wobble points, capped at 100
+      // The API call is for getting discussion summary and feedback, but we preserve the original score
+      const baseScore = currentSubmission.initialScore;
       const finalScore = Math.min(100, Math.max(0, baseScore + wobblePoints));
 
       // Update submission with final results
@@ -861,7 +926,7 @@ export default function GenesysSimulation() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentRound, wobbleChoice, wobbleRanking, wobbleMultiSelect, submissions, currentRoundIndex, saveProgress, goToPhase, teamName, tableNumber, roomNumber, updateLeaderboard]);
+  }, [currentRound, wobbleChoice, wobbleRanking, wobbleMultiSelect, wobbleTextAnswers, submissions, currentRoundIndex, saveProgress, goToPhase, teamName, tableNumber, roomNumber, updateLeaderboard]);
 
   // Move to next round
   const handleNextRound = useCallback(() => {
@@ -873,6 +938,7 @@ export default function GenesysSimulation() {
       setWobbleChoice(null);
       setWobbleRanking([]);
       setWobbleMultiSelect([]);
+      setWobbleTextAnswers({});
       setDealReviewAnswers({});
       saveProgress(submissions, nextIndex, "intro");
     }
@@ -1036,14 +1102,14 @@ export default function GenesysSimulation() {
 
               {/* Customer Info Card */}
               <Card className="p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  {/* Customer Logo - falls back to icon if no image */}
-                  <div className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden" style={{ backgroundColor: theme.dark }}>
+                <div className="flex items-start gap-5 mb-4">
+                  {/* Customer Logo - larger size, falls back to icon if no image */}
+                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0" style={{ backgroundColor: theme.dark }}>
                     {currentRound.customer.logo ? (
                       <img
                         src={currentRound.customer.logo}
                         alt={currentRound.customer.name}
-                        className="w-full h-full object-contain p-2"
+                        className="w-full h-full object-contain p-3"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
@@ -1051,12 +1117,13 @@ export default function GenesysSimulation() {
                       />
                     ) : null}
                     <div className={`w-full h-full items-center justify-center ${currentRound.customer.logo ? 'hidden' : 'flex'}`}>
-                      <Building2 className="w-8 h-8" style={{ color: roundColor }} />
+                      <Building2 className="w-12 h-12" style={{ color: roundColor }} />
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-xl font-bold" style={{ color: theme.white }}>{currentRound.customer.name}</h2>
-                    <p className="text-base" style={{ color: theme.muted }}>{currentRound.customer.industry} • {currentRound.customer.revenue}</p>
+                    <h2 className="text-2xl font-bold" style={{ color: theme.white }}>{currentRound.customer.name}</h2>
+                    <p className="text-lg" style={{ color: theme.muted }}>{currentRound.customer.industry}</p>
+                    <p className="text-base" style={{ color: theme.subtle }}>{currentRound.customer.revenue}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1111,83 +1178,55 @@ export default function GenesysSimulation() {
                 {/* Input Fields or Deal Review Checklist */}
                 {currentRound.useDealReviewChecklist ? (
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold" style={{ color: theme.white }}>Deal Review Framework</h3>
-                    <p className="text-sm" style={{ color: theme.muted }}>
-                      Review each criteria. For items marked "No", provide evidence and define next actions.
-                    </p>
+                    <div>
+                      <h3 className="text-lg font-bold mb-2" style={{ color: theme.white }}>Deal Review Framework</h3>
+                      <p className="text-sm" style={{ color: theme.muted }}>
+                        Review the assessment below. For items marked <span style={{ color: theme.orange }}>"No"</span>, define the <strong>Next Actions</strong> your team would take to address the gap.
+                      </p>
+                    </div>
                     {currentRound.dealReviewChecklist.map((section, sIdx) => (
-                      <div key={sIdx} className="space-y-4">
-                        <h4 className="text-base font-bold" style={{ color: roundColor }}>{section.section}</h4>
+                      <div key={sIdx} className="space-y-3">
+                        <h4 className="text-base font-bold px-2" style={{ color: roundColor }}>{section.section}</h4>
                         {section.items.map((item, iIdx) => {
+                          const isNo = item.prefilled === 'no';
                           const answer = dealReviewAnswers[item.id] || {};
                           return (
                             <div key={iIdx} className="p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
-                              <p className="text-sm font-medium mb-3" style={{ color: theme.white }}>{item.label}</p>
-                              <div className="flex gap-4 mb-3">
-                                <button
-                                  onClick={() => setDealReviewAnswers({
-                                    ...dealReviewAnswers,
-                                    [item.id]: { ...answer, value: 'yes' }
-                                  })}
-                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                                    answer.value === 'yes' ? 'ring-2' : ''
-                                  }`}
+                              {/* Criteria row with Yes/No badge */}
+                              <div className="flex items-start gap-3 mb-3">
+                                <div
+                                  className="flex-shrink-0 px-3 py-1 rounded-md text-xs font-bold"
                                   style={{
-                                    backgroundColor: answer.value === 'yes' ? `${roundColor}30` : theme.darker,
-                                    color: answer.value === 'yes' ? roundColor : theme.muted,
-                                    ringColor: roundColor,
+                                    backgroundColor: isNo ? `${theme.orange}25` : `${roundColor}25`,
+                                    color: isNo ? theme.orange : roundColor,
                                   }}
                                 >
-                                  <CheckSquare className="w-4 h-4" /> Yes
-                                </button>
-                                <button
-                                  onClick={() => setDealReviewAnswers({
-                                    ...dealReviewAnswers,
-                                    [item.id]: { ...answer, value: 'no' }
-                                  })}
-                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                                    answer.value === 'no' ? 'ring-2' : ''
-                                  }`}
-                                  style={{
-                                    backgroundColor: answer.value === 'no' ? `${theme.orange}30` : theme.darker,
-                                    color: answer.value === 'no' ? theme.orange : theme.muted,
-                                    ringColor: theme.orange,
-                                  }}
-                                >
-                                  <Square className="w-4 h-4" /> No
-                                </button>
+                                  {isNo ? 'No' : 'Yes'}
+                                </div>
+                                <p className="text-sm font-medium" style={{ color: theme.white }}>{item.label}</p>
                               </div>
-                              {answer.value === 'no' && (
-                                <div className="space-y-3 mt-4 pt-4 border-t" style={{ borderColor: theme.darkMuted }}>
-                                  <div>
-                                    <label className="text-xs font-medium mb-1 block" style={{ color: theme.muted }}>Evidence</label>
-                                    <textarea
-                                      value={answer.evidence || ''}
-                                      onChange={(e) => setDealReviewAnswers({
-                                        ...dealReviewAnswers,
-                                        [item.id]: { ...answer, evidence: e.target.value }
-                                      })}
-                                      placeholder="What evidence supports this assessment?"
-                                      className="w-full px-4 py-3 rounded-lg text-sm resize-none"
-                                      rows={2}
-                                      style={{
-                                        backgroundColor: theme.darker,
-                                        border: `1px solid ${theme.darkMuted}`,
-                                        color: theme.white,
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium mb-1 block" style={{ color: theme.muted }}>Next Actions</label>
-                                    <textarea
-                                      value={answer.nextActions || ''}
-                                      onChange={(e) => setDealReviewAnswers({
-                                        ...dealReviewAnswers,
-                                        [item.id]: { ...answer, nextActions: e.target.value }
-                                      })}
-                                      placeholder="What actions should be taken?"
-                                      className="w-full px-4 py-3 rounded-lg text-sm resize-none"
-                                      rows={2}
+
+                              {/* Pre-filled Evidence */}
+                              <div className="ml-12 mb-3">
+                                <p className="text-xs font-medium mb-1" style={{ color: theme.subtle }}>Evidence:</p>
+                                <p className="text-sm" style={{ color: theme.muted }}>{item.evidence}</p>
+                              </div>
+
+                              {/* Next Actions input - only for "No" items */}
+                              {isNo && (
+                                <div className="ml-12 pt-3 border-t" style={{ borderColor: theme.darkMuted }}>
+                                  <label className="text-xs font-bold mb-2 block" style={{ color: theme.orange }}>
+                                    Next Actions (Required)
+                                  </label>
+                                  <textarea
+                                    value={answer.nextActions || ''}
+                                    onChange={(e) => setDealReviewAnswers({
+                                      ...dealReviewAnswers,
+                                      [item.id]: { ...answer, nextActions: e.target.value }
+                                    })}
+                                    placeholder="What specific actions should be taken to address this gap?"
+                                    className="w-full px-4 py-3 rounded-lg text-sm resize-none"
+                                    rows={3}
                                       style={{
                                         backgroundColor: theme.darker,
                                         border: `1px solid ${theme.darkMuted}`,
@@ -1205,53 +1244,94 @@ export default function GenesysSimulation() {
                   </div>
                 ) : (
                   <div className="space-y-5">
-                    {currentRound.inputFields.map((field) => (
-                      <div key={field.id}>
-                        <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>
-                          {field.label}
-                        </label>
-                        {field.type === "strategy-select" ? (
-                          <div className="grid grid-cols-2 gap-3">
-                            {field.options.map((opt) => (
-                              <button
-                                key={opt}
-                                onClick={() => setFormData({ ...formData, [field.id]: opt })}
-                                className={`p-4 rounded-xl text-left transition-all ${
-                                  formData[field.id] === opt ? 'ring-2' : ''
-                                }`}
-                                style={{
-                                  backgroundColor: formData[field.id] === opt ? `${roundColor}20` : theme.dark,
-                                  color: formData[field.id] === opt ? roundColor : theme.white,
-                                  ringColor: roundColor,
-                                }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  {formData[field.id] === opt ? (
-                                    <CheckCircle className="w-5 h-5" />
-                                  ) : (
-                                    <CircleDot className="w-5 h-5" style={{ color: theme.muted }} />
-                                  )}
-                                  <span className="font-medium">{opt}</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <textarea
-                            value={formData[field.id] || ''}
-                            onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                            placeholder={field.placeholder}
-                            className="w-full px-4 py-3 rounded-xl text-base resize-none"
-                            rows={4}
-                            style={{
-                              backgroundColor: theme.dark,
-                              border: `1px solid ${theme.darkMuted}`,
-                              color: theme.white,
-                            }}
-                          />
-                        )}
-                      </div>
-                    ))}
+                    {/* Render input field */}
+                    {(() => {
+                      const renderField = (field) => (
+                        <div key={field.id}>
+                          <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>
+                            {field.label}
+                          </label>
+                          {field.type === "strategy-select" ? (
+                            <div className="grid grid-cols-4 gap-3">
+                              {field.options.map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => setFormData({ ...formData, [field.id]: opt })}
+                                  className={`p-4 rounded-xl text-center transition-all ${
+                                    formData[field.id] === opt ? 'ring-2' : ''
+                                  }`}
+                                  style={{
+                                    backgroundColor: formData[field.id] === opt ? `${roundColor}20` : theme.dark,
+                                    color: formData[field.id] === opt ? roundColor : theme.white,
+                                    ringColor: roundColor,
+                                  }}
+                                >
+                                  <div className="flex flex-col items-center gap-1">
+                                    {formData[field.id] === opt ? (
+                                      <CheckCircle className="w-6 h-6" />
+                                    ) : (
+                                      <CircleDot className="w-6 h-6" style={{ color: theme.muted }} />
+                                    )}
+                                    <span className="font-bold">{opt}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <textarea
+                              value={formData[field.id] || ''}
+                              onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                              placeholder={field.placeholder}
+                              className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                              rows={3}
+                              style={{
+                                backgroundColor: theme.dark,
+                                border: `1px solid ${theme.darkMuted}`,
+                                color: theme.white,
+                              }}
+                            />
+                          )}
+                        </div>
+                      );
+
+                      // Layout: Single question at top, then 2x2 grid
+                      if (currentRound.inputLayout === "singleTop-2x2") {
+                        const [firstField, ...restFields] = currentRound.inputFields;
+                        return (
+                          <>
+                            {/* Single question at top */}
+                            <div className="mb-6">
+                              {renderField(firstField)}
+                            </div>
+                            {/* 2x2 grid for remaining questions */}
+                            <div className="grid md:grid-cols-2 gap-4">
+                              {restFields.map(renderField)}
+                            </div>
+                          </>
+                        );
+                      }
+
+                      // Layout: Strategy selection separated, then text fields
+                      if (currentRound.inputLayout === "separateFirst") {
+                        const separateFields = currentRound.inputFields.filter(f => f.separate);
+                        const otherFields = currentRound.inputFields.filter(f => !f.separate);
+                        return (
+                          <>
+                            {/* Strategy selection at top */}
+                            {separateFields.map(renderField)}
+                            {/* Divider */}
+                            <div className="my-6 border-t" style={{ borderColor: theme.darkMuted }} />
+                            {/* Remaining text fields in 2x2 grid */}
+                            <div className="grid md:grid-cols-2 gap-4">
+                              {otherFields.map(renderField)}
+                            </div>
+                          </>
+                        );
+                      }
+
+                      // Default layout: stacked
+                      return currentRound.inputFields.map(renderField);
+                    })()}
                   </div>
                 )}
               </Card>
@@ -1399,7 +1479,7 @@ export default function GenesysSimulation() {
                 {currentRound.wobble.type === "ranking" && (
                   <div className="space-y-3">
                     <p className="text-sm mb-4" style={{ color: theme.muted }}>
-                      Drag to rank from most effective (top) to least effective (bottom), or click items in order.
+                      Click the options below in order from most effective (1st) to least effective (4th).
                     </p>
                     {wobbleRanking.length < 4 && (
                       <div className="space-y-2 mb-4">
@@ -1499,6 +1579,34 @@ export default function GenesysSimulation() {
                     })}
                   </div>
                 )}
+
+                {/* TEXT QUESTIONS TYPE */}
+                {currentRound.wobble.type === "text-questions" && (
+                  <div className="space-y-5">
+                    {currentRound.wobble.textQuestions.map((question) => (
+                      <div key={question.id}>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>
+                          {question.label}
+                        </label>
+                        <textarea
+                          value={wobbleTextAnswers[question.id] || ''}
+                          onChange={(e) => setWobbleTextAnswers({
+                            ...wobbleTextAnswers,
+                            [question.id]: e.target.value
+                          })}
+                          placeholder={question.placeholder}
+                          className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                          rows={4}
+                          style={{
+                            backgroundColor: theme.dark,
+                            border: `1px solid ${theme.darkMuted}`,
+                            color: theme.white,
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Card>
 
               {error && (
@@ -1513,7 +1621,8 @@ export default function GenesysSimulation() {
                   isSubmitting ||
                   (currentRound.wobble.type === "choice" && !wobbleChoice) ||
                   (currentRound.wobble.type === "ranking" && wobbleRanking.length !== 4) ||
-                  (currentRound.wobble.type === "multi-select" && wobbleMultiSelect.length !== currentRound.wobble.maxSelections)
+                  (currentRound.wobble.type === "multi-select" && wobbleMultiSelect.length !== currentRound.wobble.maxSelections) ||
+                  (currentRound.wobble.type === "text-questions" && !currentRound.wobble.textQuestions.every(q => wobbleTextAnswers[q.id]?.trim()))
                 }
                 color={roundColor}
                 className="w-full"
