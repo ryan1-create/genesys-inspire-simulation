@@ -410,11 +410,11 @@ const simulationRounds = [
     ],
     objective: "Preserve our position by attaching to the broader transformation and positioning Genesys as an innovator in AI-powered CX",
     challenge: "Prepare our competitive strategy – elevating our capabilities to CIO-level priorities.",
-    // Layout: strategy selection separated, then text fields below
-    inputLayout: "separateFirst",
+    // Layout: strategy selection + rationale paired, then remaining fields in 2x2
+    inputLayout: "strategyPaired",
     inputFields: [
-      { id: "strategySelection", label: "Which strategy is most effective in this scenario?", type: "strategy-select", options: ["Direct", "Reframe", "Expand", "Pinpoint"], separate: true },
-      { id: "strategyRationale", label: "Given what's changing in the account, why is this the right strategy?", type: "textarea", placeholder: "Explain your strategic rationale..." },
+      { id: "strategySelection", label: "Which strategy is most effective in this scenario?", type: "strategy-select", options: ["Direct", "Reframe", "Expand", "Pinpoint"], group: "strategy" },
+      { id: "strategyRationale", label: "Given what's changing in the account, why is this the right strategy?", type: "textarea", placeholder: "Explain your strategic rationale...", group: "strategy" },
       { id: "keyActions", label: "What 2-3 actions can we take in the next 30 days to drive this strategy?", type: "textarea", placeholder: "List specific, actionable steps..." },
       { id: "keyMessages", label: "What messages can we share to communicate our perspective on AI-powered CX?", type: "textarea", placeholder: "Draft key messaging points..." },
       { id: "mustBeTrue", label: "What must be true for Genesys to remain a strategic choice as decisions progress?", type: "textarea", placeholder: "Identify critical success factors..." },
@@ -1138,15 +1138,20 @@ export default function GenesysSimulation() {
                 </div>
               </Card>
 
-              {/* Challenge Card */}
+              {/* Customer Context Card */}
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <Flag className="w-6 h-6" style={{ color: roundColor }} />
-                  <h3 className="text-lg font-bold" style={{ color: theme.white }}>Your Challenge</h3>
+                  <MessageSquare className="w-6 h-6" style={{ color: roundColor }} />
+                  <h3 className="text-lg font-bold" style={{ color: theme.white }}>Customer Context</h3>
                 </div>
-                <p className="text-base leading-relaxed" style={{ color: theme.light }}>
-                  {currentRound.challenge}
-                </p>
+                <ul className="space-y-3">
+                  {currentRound.context.map((ctx, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: theme.light }}>
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: roundColor }} />
+                      {ctx}
+                    </li>
+                  ))}
+                </ul>
               </Card>
 
               <GlowButton onClick={() => goToPhase("work")} color={roundColor} className="w-full">
@@ -1158,88 +1163,131 @@ export default function GenesysSimulation() {
           {/* WORK PHASE */}
           {roundPhase === "work" && (
             <div className="space-y-6">
+              {/* Selling Objective Header */}
               <Card className="p-6">
-                <h2 className="text-2xl font-bold mb-2" style={{ color: theme.white }}>Team Challenge</h2>
-                <p className="text-base mb-6" style={{ color: theme.muted }}>{currentRound.challenge}</p>
-
-                {/* Customer Context */}
-                <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
-                  <h3 className="text-sm font-bold mb-3" style={{ color: theme.muted }}>CUSTOMER CONTEXT</h3>
-                  <ul className="space-y-2">
-                    {currentRound.context.slice(0, 4).map((ctx, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm" style={{ color: theme.light }}>
-                        <span style={{ color: roundColor }}>•</span>
-                        {ctx}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="flex items-center gap-3 mb-3">
+                  <Target className="w-6 h-6" style={{ color: roundColor }} />
+                  <h2 className="text-xl font-bold" style={{ color: theme.white }}>Selling Objective</h2>
                 </div>
+                <p className="text-base mb-4 pb-4 border-b" style={{ color: theme.light, borderColor: theme.darkMuted }}>
+                  {currentRound.objective}
+                </p>
+                <div>
+                  <h3 className="text-sm font-bold mb-2" style={{ color: theme.muted }}>YOUR TASK</h3>
+                  <p className="text-base" style={{ color: theme.white }}>{currentRound.challenge}</p>
+                </div>
+              </Card>
+
+              {/* Input Card */}
+              <Card className="p-6">
 
                 {/* Input Fields or Deal Review Checklist */}
                 {currentRound.useDealReviewChecklist ? (
-                  <div className="space-y-6">
-                    <div>
+                  <div className="space-y-4">
+                    <div className="mb-4">
                       <h3 className="text-lg font-bold mb-2" style={{ color: theme.white }}>Deal Review Framework</h3>
                       <p className="text-sm" style={{ color: theme.muted }}>
                         Review the assessment below. For items marked <span style={{ color: theme.orange }}>"No"</span>, define the <strong>Next Actions</strong> your team would take to address the gap.
                       </p>
                     </div>
-                    {currentRound.dealReviewChecklist.map((section, sIdx) => (
-                      <div key={sIdx} className="space-y-3">
-                        <h4 className="text-base font-bold px-2" style={{ color: roundColor }}>{section.section}</h4>
-                        {section.items.map((item, iIdx) => {
-                          const isNo = item.prefilled === 'no';
-                          const answer = dealReviewAnswers[item.id] || {};
-                          return (
-                            <div key={iIdx} className="p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
-                              {/* Criteria row with Yes/No badge */}
-                              <div className="flex items-start gap-3 mb-3">
-                                <div
-                                  className="flex-shrink-0 px-3 py-1 rounded-md text-xs font-bold"
-                                  style={{
-                                    backgroundColor: isNo ? `${theme.orange}25` : `${roundColor}25`,
-                                    color: isNo ? theme.orange : roundColor,
-                                  }}
-                                >
-                                  {isNo ? 'No' : 'Yes'}
-                                </div>
-                                <p className="text-sm font-medium" style={{ color: theme.white }}>{item.label}</p>
-                              </div>
 
-                              {/* Pre-filled Evidence */}
-                              <div className="ml-12 mb-3">
-                                <p className="text-xs font-medium mb-1" style={{ color: theme.subtle }}>Evidence:</p>
-                                <p className="text-sm" style={{ color: theme.muted }}>{item.evidence}</p>
-                              </div>
-
-                              {/* Next Actions input - only for "No" items */}
-                              {isNo && (
-                                <div className="ml-12 pt-3 border-t" style={{ borderColor: theme.darkMuted }}>
-                                  <label className="text-xs font-bold mb-2 block" style={{ color: theme.orange }}>
-                                    Next Actions (Required)
-                                  </label>
-                                  <textarea
-                                    value={answer.nextActions || ''}
-                                    onChange={(e) => setDealReviewAnswers({
-                                      ...dealReviewAnswers,
-                                      [item.id]: { ...answer, nextActions: e.target.value }
-                                    })}
-                                    placeholder="What specific actions should be taken to address this gap?"
-                                    className="w-full px-4 py-3 rounded-lg text-sm resize-none"
-                                    rows={3}
-                                    style={{
-                                      backgroundColor: theme.darker,
-                                      border: `1px solid ${theme.darkMuted}`,
-                                      color: theme.white,
-                                    }}
-                                  />
-                                  </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                    {/* Table-style Deal Review */}
+                    <div className="rounded-xl overflow-hidden border" style={{ borderColor: theme.darkMuted }}>
+                      {/* Table Header */}
+                      <div className="grid grid-cols-12 gap-0 text-xs font-bold" style={{ backgroundColor: theme.darker }}>
+                        <div className="col-span-5 px-4 py-3 border-r" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                          CRITERIA
+                        </div>
+                        <div className="col-span-1 px-2 py-3 text-center border-r" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                          Y/N
+                        </div>
+                        <div className="col-span-3 px-4 py-3 border-r" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                          EVIDENCE
+                        </div>
+                        <div className="col-span-3 px-4 py-3" style={{ color: theme.orange }}>
+                          NEXT ACTIONS
+                        </div>
                       </div>
-                    ))}
+
+                      {/* Table Body by Section */}
+                      {currentRound.dealReviewChecklist.map((section, sIdx) => (
+                        <div key={sIdx}>
+                          {/* Section Header Row */}
+                          <div
+                            className="px-4 py-2 text-sm font-bold border-t"
+                            style={{
+                              backgroundColor: `${roundColor}15`,
+                              borderColor: theme.darkMuted,
+                              color: roundColor
+                            }}
+                          >
+                            {section.section}
+                          </div>
+
+                          {/* Section Items */}
+                          {section.items.map((item, iIdx) => {
+                            const isNo = item.prefilled === 'no';
+                            const answer = dealReviewAnswers[item.id] || {};
+                            return (
+                              <div
+                                key={iIdx}
+                                className="grid grid-cols-12 gap-0 border-t"
+                                style={{
+                                  backgroundColor: isNo ? `${theme.orange}08` : theme.dark,
+                                  borderColor: theme.darkMuted
+                                }}
+                              >
+                                {/* Criteria Column */}
+                                <div className="col-span-5 px-4 py-3 border-r text-sm" style={{ borderColor: theme.darkMuted, color: theme.light }}>
+                                  {item.label}
+                                </div>
+
+                                {/* Yes/No Column */}
+                                <div className="col-span-1 px-2 py-3 flex items-center justify-center border-r" style={{ borderColor: theme.darkMuted }}>
+                                  <div
+                                    className="px-2 py-1 rounded text-xs font-bold"
+                                    style={{
+                                      backgroundColor: isNo ? `${theme.orange}25` : `${roundColor}25`,
+                                      color: isNo ? theme.orange : roundColor,
+                                    }}
+                                  >
+                                    {isNo ? 'N' : 'Y'}
+                                  </div>
+                                </div>
+
+                                {/* Evidence Column */}
+                                <div className="col-span-3 px-4 py-3 border-r text-xs" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                                  {item.evidence}
+                                </div>
+
+                                {/* Next Actions Column */}
+                                <div className="col-span-3 px-3 py-2">
+                                  {isNo ? (
+                                    <textarea
+                                      value={answer.nextActions || ''}
+                                      onChange={(e) => setDealReviewAnswers({
+                                        ...dealReviewAnswers,
+                                        [item.id]: { ...answer, nextActions: e.target.value }
+                                      })}
+                                      placeholder="Define actions to address this gap..."
+                                      className="w-full px-3 py-2 rounded text-xs resize-none"
+                                      rows={3}
+                                      style={{
+                                        backgroundColor: theme.darker,
+                                        border: `1px solid ${theme.orange}40`,
+                                        color: theme.white,
+                                      }}
+                                    />
+                                  ) : (
+                                    <span className="text-xs italic" style={{ color: theme.subtle }}>—</span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-5">
@@ -1310,19 +1358,73 @@ export default function GenesysSimulation() {
                         );
                       }
 
-                      // Layout: Strategy selection separated, then text fields
-                      if (currentRound.inputLayout === "separateFirst") {
-                        const separateFields = currentRound.inputFields.filter(f => f.separate);
-                        const otherFields = currentRound.inputFields.filter(f => !f.separate);
+                      // Layout: Strategy selection paired with rationale, then remaining fields
+                      if (currentRound.inputLayout === "strategyPaired") {
+                        const strategyFields = currentRound.inputFields.filter(f => f.group === "strategy");
+                        const otherFields = currentRound.inputFields.filter(f => f.group !== "strategy");
+                        const strategySelect = strategyFields.find(f => f.type === "strategy-select");
+                        const strategyRationale = strategyFields.find(f => f.type === "textarea");
+
                         return (
                           <>
-                            {/* Strategy selection at top */}
-                            {separateFields.map(renderField)}
-                            {/* Divider */}
-                            <div className="my-6 border-t" style={{ borderColor: theme.darkMuted }} />
-                            {/* Remaining text fields in 2x2 grid */}
-                            <div className="grid md:grid-cols-2 gap-4">
-                              {otherFields.map(renderField)}
+                            {/* Strategy Selection + Rationale in connected group */}
+                            <div className="p-5 rounded-xl mb-6" style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}` }}>
+                              {/* Strategy Selection */}
+                              <label className="text-sm font-medium mb-3 block" style={{ color: theme.white }}>
+                                {strategySelect.label}
+                              </label>
+                              <div className="grid grid-cols-4 gap-3 mb-5">
+                                {strategySelect.options.map((opt) => (
+                                  <button
+                                    key={opt}
+                                    onClick={() => setFormData({ ...formData, [strategySelect.id]: opt })}
+                                    className={`p-4 rounded-xl text-center transition-all ${
+                                      formData[strategySelect.id] === opt ? 'ring-2' : ''
+                                    }`}
+                                    style={{
+                                      backgroundColor: formData[strategySelect.id] === opt ? `${roundColor}20` : theme.darker,
+                                      color: formData[strategySelect.id] === opt ? roundColor : theme.white,
+                                      ringColor: roundColor,
+                                    }}
+                                  >
+                                    <div className="flex flex-col items-center gap-1">
+                                      {formData[strategySelect.id] === opt ? (
+                                        <CheckCircle className="w-6 h-6" />
+                                      ) : (
+                                        <CircleDot className="w-6 h-6" style={{ color: theme.muted }} />
+                                      )}
+                                      <span className="font-bold">{opt}</span>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Rationale directly below */}
+                              <div className="pt-4 border-t" style={{ borderColor: theme.darkMuted }}>
+                                <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>
+                                  {strategyRationale.label}
+                                </label>
+                                <textarea
+                                  value={formData[strategyRationale.id] || ''}
+                                  onChange={(e) => setFormData({ ...formData, [strategyRationale.id]: e.target.value })}
+                                  placeholder={strategyRationale.placeholder}
+                                  className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                                  rows={3}
+                                  style={{
+                                    backgroundColor: theme.darker,
+                                    border: `1px solid ${theme.darkMuted}`,
+                                    color: theme.white,
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Remaining fields - 2 on top, 1 full width below */}
+                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                              {otherFields.slice(0, 2).map(renderField)}
+                            </div>
+                            <div>
+                              {otherFields.slice(2).map(renderField)}
                             </div>
                           </>
                         );
