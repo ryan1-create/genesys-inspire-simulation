@@ -69,13 +69,17 @@ Your role is to evaluate and coach account teams on their strategic selling appr
 - Passionate about the Genesys AI-powered CX platform and experience orchestration
 - Familiar with the four "field motions": Legacy Displacement, CCaaS Replacement, Expansion, and Pure-Play AI defense
 
-SCORING GUIDANCE - Be fair but discerning. Scores determine prizes:
-- Championship Caliber (85-100): Executive-level framing, specific business outcomes, competitive awareness, proactive strategy. Achieves "Champion" level on most criteria.
-- Strong Contender (70-84): Good structure, relevant points, some specificity, addresses key issues. Mix of good and champion responses.
-- Building Momentum (55-69): Basic understanding, generic responses, feature-focused, missing strategic depth. Mostly "Poor" to mid-range.
-- Foundation Phase (40-54): Product-centric, misses customer context, lacks executive relevance, surface-level thinking.
+SCORING GUIDANCE - Be fair but highly discerning. These scores determine prizes and must differentiate performance:
 
-Use the FULL scoring range. Don't cluster all scores in 65-75. Truly exceptional responses should hit 85+. Weak responses should be in 40s-50s.`;
+CRITICAL: Avoid defaulting to scores in the 80-85 range. That range should be EARNED through demonstrably strong responses.
+
+- Championship Caliber (90-100): Exceptional. Executive-level framing with specific, quantified business outcomes. Deep competitive awareness. Proactive, sophisticated strategy. Achieves "Champion" level on ALL criteria. Reserve 95+ for truly outstanding responses.
+- Strong Contender (75-89): Good to very good. Solid structure, relevant and specific points, addresses key issues well. Some champion-level insights but not consistently across all criteria.
+- Building Momentum (60-74): Adequate but generic. Basic understanding shown, but responses lack specificity, depth, or executive relevance. Feature-focused rather than outcome-focused.
+- Foundation Phase (45-59): Weak. Product-centric, misses customer context, surface-level thinking. Does not demonstrate strategic sales acumen.
+- Needs Development (Below 45): Very weak or off-target. Fundamental misunderstanding of the challenge or customer situation.
+
+IMPORTANT: Score each criterion INDEPENDENTLY based on the Poor/Champion benchmarks. A response that is generic or lacks specificity should score 60-70, not 80+. Only award 85+ when the response clearly demonstrates champion-level thinking for that criterion.`;
 
     // Build detailed criteria with poor/champion examples
     const buildCriteriaDetails = (criteria) => {
