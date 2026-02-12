@@ -1062,7 +1062,7 @@ export default function GenesysSimulation() {
           onLeaderboardClick={() => setShowLeaderboard(true)}
         />
 
-        <main className="max-w-4xl mx-auto px-4 py-8">
+        <main className="max-w-6xl mx-auto px-4 py-8">
           <ProgressDots total={phases.length} current={phaseIndex} roundColor={roundColor} />
 
           {/* INTRO PHASE */}
