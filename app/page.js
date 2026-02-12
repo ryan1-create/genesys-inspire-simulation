@@ -55,11 +55,11 @@ const theme = {
   dark: "#18181B",
   darkMuted: "#27272A",
 
-  // Light palette
+  // Light palette - improved legibility
   white: "#FFFFFF",
-  light: "#FAFAFA",
-  muted: "#A1A1AA",
-  subtle: "#71717A",
+  light: "#F4F4F5",
+  muted: "#D4D4D8",
+  subtle: "#A1A1AA",
 
   // Accent colors for rounds
   rounds: {
@@ -202,8 +202,8 @@ function Header({ teamName, room, table, roundNumber, roundColor, submissions, o
     >
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo & Round */}
-        <div className="flex items-center gap-4">
-          <img src="/genesys-logo.png" alt="Genesys" className="h-12" />
+        <div className="flex items-center gap-6">
+          <img src="/genesys-logo.png" alt="Genesys" className="h-10 w-auto" style={{ minWidth: '140px' }} />
           <div
             className="px-4 py-2 rounded-lg font-bold text-base"
             style={{ backgroundColor: roundColor, color: theme.white }}
@@ -287,7 +287,8 @@ const simulationRounds = [
       title: "Enterprise Platform Influence",
       description: "While meeting with the VP of Patient Experience, you learn that ServiceNow is already engaged: Supporting a broader digital and data transformation initiative, focused on improving how work, requests, and issues flow across the organization. Not formally leading Patient Experience initiatives, but actively shaping enterprise platform standards, modernization principles, and investment criteria. Operating with direct access to the C-suite, including the CIO and COO.",
       question: "How should we evolve our POV and executive framing with the VP of Patient Experience?",
-      type: "choice", // choice, ranking, multi-select
+      type: "choice",
+      shuffleOptions: true,
       options: [
         {
           id: "A",
@@ -351,9 +352,25 @@ const simulationRounds = [
     ],
     objective: "Break down the perception that the current CX environment is 'good enough' by exposing the risks and limitations of the status quo — creating openness to change without positioning a solution",
     challenge: "Prepare for a discovery conversation with the Global VP of Customer Operations to expose reasons behind resistance to change and surface unrecognized value.",
+    // Layout: Two columns side by side with headers
+    inputLayout: "twoColumnHeaders",
     inputFields: [
-      { id: "insightsToShare", label: "Insights to Share: How can we bring attention to the risks of the current approach – even if performance appears 'good enough'?", type: "textarea", placeholder: "Include data points, customer examples, etc. that point to hidden operational risk, limited agility, non-optimal customer outcomes, and/or constrained future options..." },
-      { id: "questionsToAsk", label: "Questions to Ask: What can we ask to help leaders recognize these risks and reflect on the tradeoffs of status quo?", type: "textarea", placeholder: "What additional areas would you explore to understand where the current model may limit future outcomes?" },
+      {
+        id: "insightsToShare",
+        header: "Insights to Share",
+        label: "How can we bring attention to the risks of the current approach – even if performance appears 'good enough'?",
+        type: "textarea",
+        placeholder: "Include data points, customer examples, etc. that point to hidden operational risk, limited agility, non-optimal customer outcomes, and/or constrained future options...",
+        column: "left"
+      },
+      {
+        id: "questionsToAsk",
+        header: "Questions to Ask",
+        label: "What can we ask to help leaders recognize these risks and reflect on the tradeoffs of status quo?",
+        type: "textarea",
+        placeholder: "What additional areas would you explore to understand where the current model may limit future outcomes?",
+        column: "right"
+      },
     ],
     wobble: {
       title: "Past Failure Revealed",
@@ -416,7 +433,7 @@ const simulationRounds = [
       { id: "strategySelection", label: "Which strategy is most effective in this scenario?", type: "strategy-select", options: ["Direct", "Reframe", "Expand", "Pinpoint"], group: "strategy" },
       { id: "strategyRationale", label: "Given what's changing in the account, why is this the right strategy?", type: "textarea", placeholder: "Explain your strategic rationale...", group: "strategy" },
       { id: "keyActions", label: "What 2-3 actions can we take in the next 30 days to drive this strategy?", type: "textarea", placeholder: "List specific, actionable steps..." },
-      { id: "keyMessages", label: "What messages can we share to communicate our perspective on AI-powered CX?", type: "textarea", placeholder: "Draft key messaging points..." },
+      { id: "keyMessages", label: "What messages communicate our POV on AI-powered CX?", type: "textarea", placeholder: "Draft key messaging points..." },
       { id: "mustBeTrue", label: "What must be true for Genesys to remain a strategic choice as decisions progress?", type: "textarea", placeholder: "Identify critical success factors..." },
     ],
     wobble: {
@@ -424,6 +441,7 @@ const simulationRounds = [
       description: "The VP of Customer Experience informs you that the AI Committee is recommending a pilot of an AI pure-play – changing how CX value is being evaluated: AI competitors are reframing CX primarily as a cost takeout lever. CX decisions are shifting toward enterprise AI and data economics. Genesys is increasingly viewed through a seat-based lens, rather than as an AI innovator. Influence is moving toward the CIO, AI Committee, and Accenture.",
       question: "Rank the following strategy adjustments from most effective to least effective.",
       type: "ranking",
+      shuffleOptions: true,
       options: [
         { id: "Reframe", text: "Reframe", detail: "Reposition Genesys as the AI-powered CX execution layer within the broader enterprise transformation, aligning closely with Accenture and the CIO agenda." },
         { id: "Expand", text: "Expand", detail: "Expand the decision beyond contact center efficiency to include journey orchestration, data activation, and enterprise-wide CX outcomes." },
@@ -650,6 +668,7 @@ export default function GenesysSimulation() {
   const [wobbleMultiSelect, setWobbleMultiSelect] = useState([]);
   const [wobbleTextAnswers, setWobbleTextAnswers] = useState({});
   const [dealReviewAnswers, setDealReviewAnswers] = useState({});
+  const [shuffledWobbleOptions, setShuffledWobbleOptions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -748,10 +767,24 @@ export default function GenesysSimulation() {
   const phases = ["intro", "work", "feedback1", "wobble", "feedback2", "discussion"];
   const phaseIndex = phases.indexOf(roundPhase);
 
+  // Fisher-Yates shuffle
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const goToPhase = useCallback((phase) => {
+    // Shuffle wobble options when entering wobble phase
+    if (phase === "wobble" && currentRound?.wobble?.shuffleOptions && currentRound.wobble.options) {
+      setShuffledWobbleOptions(shuffleArray(currentRound.wobble.options));
+    }
     setRoundPhase(phase);
     saveProgress(submissions, currentRoundIndex, phase);
-  }, [submissions, currentRoundIndex, saveProgress]);
+  }, [submissions, currentRoundIndex, saveProgress, currentRound]);
 
   // Submit initial response
   const handleInitialSubmit = useCallback(async () => {
@@ -1138,14 +1171,14 @@ export default function GenesysSimulation() {
                 </div>
               </Card>
 
-              {/* Customer Context Card */}
+              {/* Customer Context Card - Show first 5 items */}
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <MessageSquare className="w-6 h-6" style={{ color: roundColor }} />
                   <h3 className="text-lg font-bold" style={{ color: theme.white }}>Customer Context</h3>
                 </div>
-                <ul className="space-y-3">
-                  {currentRound.context.map((ctx, i) => (
+                <ul className="space-y-2.5">
+                  {currentRound.context.slice(0, 5).map((ctx, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm" style={{ color: theme.light }}>
                       <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: roundColor }} />
                       {ctx}
@@ -1191,17 +1224,17 @@ export default function GenesysSimulation() {
                       </p>
                     </div>
 
-                    {/* Table-style Deal Review */}
-                    <div className="rounded-xl overflow-hidden border" style={{ borderColor: theme.darkMuted }}>
+                    {/* Table-style Deal Review - Light theme for contrast */}
+                    <div className="rounded-xl overflow-hidden border-2" style={{ borderColor: '#E5E7EB', backgroundColor: '#FFFFFF' }}>
                       {/* Table Header */}
-                      <div className="grid grid-cols-12 gap-0 text-xs font-bold" style={{ backgroundColor: theme.darker }}>
-                        <div className="col-span-5 px-4 py-3 border-r" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                      <div className="grid grid-cols-12 gap-0 text-xs font-bold" style={{ backgroundColor: '#1F2937' }}>
+                        <div className="col-span-5 px-4 py-3 border-r" style={{ borderColor: '#374151', color: '#D1D5DB' }}>
                           CRITERIA
                         </div>
-                        <div className="col-span-1 px-2 py-3 text-center border-r" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                        <div className="col-span-1 px-2 py-3 text-center border-r" style={{ borderColor: '#374151', color: '#D1D5DB' }}>
                           Y/N
                         </div>
-                        <div className="col-span-3 px-4 py-3 border-r" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                        <div className="col-span-3 px-4 py-3 border-r" style={{ borderColor: '#374151', color: '#D1D5DB' }}>
                           EVIDENCE
                         </div>
                         <div className="col-span-3 px-4 py-3" style={{ color: theme.orange }}>
@@ -1216,8 +1249,8 @@ export default function GenesysSimulation() {
                           <div
                             className="px-4 py-2 text-sm font-bold border-t"
                             style={{
-                              backgroundColor: `${roundColor}15`,
-                              borderColor: theme.darkMuted,
+                              backgroundColor: `${roundColor}20`,
+                              borderColor: '#E5E7EB',
                               color: roundColor
                             }}
                           >
@@ -1233,22 +1266,22 @@ export default function GenesysSimulation() {
                                 key={iIdx}
                                 className="grid grid-cols-12 gap-0 border-t"
                                 style={{
-                                  backgroundColor: isNo ? `${theme.orange}08` : theme.dark,
-                                  borderColor: theme.darkMuted
+                                  backgroundColor: isNo ? '#FEF3F2' : '#FFFFFF',
+                                  borderColor: '#E5E7EB'
                                 }}
                               >
                                 {/* Criteria Column */}
-                                <div className="col-span-5 px-4 py-3 border-r text-sm" style={{ borderColor: theme.darkMuted, color: theme.light }}>
+                                <div className="col-span-5 px-4 py-3 border-r text-sm" style={{ borderColor: '#E5E7EB', color: '#374151' }}>
                                   {item.label}
                                 </div>
 
                                 {/* Yes/No Column */}
-                                <div className="col-span-1 px-2 py-3 flex items-center justify-center border-r" style={{ borderColor: theme.darkMuted }}>
+                                <div className="col-span-1 px-2 py-3 flex items-center justify-center border-r" style={{ borderColor: '#E5E7EB' }}>
                                   <div
                                     className="px-2 py-1 rounded text-xs font-bold"
                                     style={{
-                                      backgroundColor: isNo ? `${theme.orange}25` : `${roundColor}25`,
-                                      color: isNo ? theme.orange : roundColor,
+                                      backgroundColor: isNo ? '#FEE2E2' : '#D1FAE5',
+                                      color: isNo ? '#DC2626' : '#059669',
                                     }}
                                   >
                                     {isNo ? 'N' : 'Y'}
@@ -1256,12 +1289,12 @@ export default function GenesysSimulation() {
                                 </div>
 
                                 {/* Evidence Column */}
-                                <div className="col-span-3 px-4 py-3 border-r text-xs" style={{ borderColor: theme.darkMuted, color: theme.muted }}>
+                                <div className="col-span-3 px-4 py-3 border-r text-xs" style={{ borderColor: '#E5E7EB', color: '#6B7280' }}>
                                   {item.evidence}
                                 </div>
 
                                 {/* Next Actions Column */}
-                                <div className="col-span-3 px-3 py-2">
+                                <div className="col-span-3 px-3 py-2" style={{ backgroundColor: isNo ? '#FEF3F2' : '#F9FAFB' }}>
                                   {isNo ? (
                                     <textarea
                                       value={answer.nextActions || ''}
@@ -1273,13 +1306,13 @@ export default function GenesysSimulation() {
                                       className="w-full px-3 py-2 rounded text-xs resize-none"
                                       rows={3}
                                       style={{
-                                        backgroundColor: theme.darker,
-                                        border: `1px solid ${theme.orange}40`,
-                                        color: theme.white,
+                                        backgroundColor: '#FFFFFF',
+                                        border: '2px solid #F97316',
+                                        color: '#1F2937',
                                       }}
                                     />
                                   ) : (
-                                    <span className="text-xs italic" style={{ color: theme.subtle }}>—</span>
+                                    <span className="text-xs italic" style={{ color: '#9CA3AF' }}>—</span>
                                   )}
                                 </div>
                               </div>
@@ -1355,6 +1388,50 @@ export default function GenesysSimulation() {
                               {restFields.map(renderField)}
                             </div>
                           </>
+                        );
+                      }
+
+                      // Layout: Two columns side by side with headers (Round 2)
+                      if (currentRound.inputLayout === "twoColumnHeaders") {
+                        const leftField = currentRound.inputFields.find(f => f.column === "left");
+                        const rightField = currentRound.inputFields.find(f => f.column === "right");
+                        return (
+                          <div className="grid md:grid-cols-2 gap-6">
+                            {/* Left Column */}
+                            <div>
+                              <h3 className="text-xl font-bold mb-3" style={{ color: roundColor }}>{leftField.header}</h3>
+                              <p className="text-sm mb-3" style={{ color: theme.muted }}>{leftField.label}</p>
+                              <textarea
+                                value={formData[leftField.id] || ''}
+                                onChange={(e) => setFormData({ ...formData, [leftField.id]: e.target.value })}
+                                placeholder={leftField.placeholder}
+                                className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                                rows={10}
+                                style={{
+                                  backgroundColor: theme.dark,
+                                  border: `1px solid ${theme.darkMuted}`,
+                                  color: theme.white,
+                                }}
+                              />
+                            </div>
+                            {/* Right Column */}
+                            <div>
+                              <h3 className="text-xl font-bold mb-3" style={{ color: roundColor }}>{rightField.header}</h3>
+                              <p className="text-sm mb-3" style={{ color: theme.muted }}>{rightField.label}</p>
+                              <textarea
+                                value={formData[rightField.id] || ''}
+                                onChange={(e) => setFormData({ ...formData, [rightField.id]: e.target.value })}
+                                placeholder={rightField.placeholder}
+                                className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                                rows={10}
+                                style={{
+                                  backgroundColor: theme.dark,
+                                  border: `1px solid ${theme.darkMuted}`,
+                                  color: theme.white,
+                                }}
+                              />
+                            </div>
+                          </div>
                         );
                       }
 
@@ -1544,7 +1621,7 @@ export default function GenesysSimulation() {
                 {/* CHOICE TYPE */}
                 {currentRound.wobble.type === "choice" && (
                   <div className="space-y-3">
-                    {currentRound.wobble.options.map((option) => (
+                    {(currentRound.wobble.shuffleOptions ? shuffledWobbleOptions : currentRound.wobble.options).map((option) => (
                       <button
                         key={option.id}
                         onClick={() => setWobbleChoice(option.id)}
@@ -1585,7 +1662,7 @@ export default function GenesysSimulation() {
                     {wobbleRanking.length < 4 && (
                       <div className="space-y-2 mb-4">
                         <p className="text-xs font-medium" style={{ color: theme.subtle }}>Click to add to ranking:</p>
-                        {currentRound.wobble.options
+                        {(currentRound.wobble.shuffleOptions ? shuffledWobbleOptions : currentRound.wobble.options)
                           .filter(o => !wobbleRanking.includes(o.id))
                           .map((option) => (
                             <button
@@ -1888,22 +1965,150 @@ export default function GenesysSimulation() {
                   Continue to Round {currentRound.id + 1} <ChevronRight className="inline-block ml-2 w-5 h-5" />
                 </GlowButton>
               ) : (
-                <div className="space-y-4">
-                  <Card className="p-6 text-center">
-                    <Crown className="w-16 h-16 mx-auto mb-4" style={{ color: "#FFD700" }} />
-                    <h2 className="text-3xl font-black mb-2" style={{ color: theme.white }}>Simulation Complete!</h2>
-                    <p className="text-lg mb-4" style={{ color: theme.muted }}>
-                      Total Score: <span className="font-bold" style={{ color: theme.orange }}>
-                        {Object.values(submissions).reduce((sum, s) => sum + (s.finalScore || 0), 0)}
-                      </span>
-                    </p>
-                  </Card>
-                  <GlowButton onClick={() => setShowLeaderboard(true)} color={theme.orange} className="w-full">
-                    <Trophy className="inline-block mr-2 w-5 h-5" />
-                    View Final Leaderboard
-                  </GlowButton>
-                </div>
+                <GlowButton onClick={() => setRoundPhase("final")} color={theme.orange} className="w-full">
+                  <Trophy className="inline-block mr-2 w-5 h-5" />
+                  Complete Simulation
+                </GlowButton>
               )}
+            </div>
+          )}
+
+          {/* FINAL CELEBRATION PHASE */}
+          {roundPhase === "final" && (
+            <div className="space-y-6">
+              {/* Celebration Header */}
+              <Card className="p-8 text-center" glow color={theme.orange}>
+                <div className="relative">
+                  <Crown className="w-20 h-20 mx-auto mb-4" style={{ color: "#FFD700" }} />
+                  <h1 className="text-4xl md:text-5xl font-black mb-3" style={{ color: theme.white }}>
+                    Simulation Complete!
+                  </h1>
+                  <p className="text-xl mb-6" style={{ color: theme.muted }}>
+                    Congratulations, {teamName}!
+                  </p>
+                  <div className="inline-flex items-center gap-4 px-8 py-4 rounded-2xl" style={{ backgroundColor: theme.dark }}>
+                    <Flame className="w-10 h-10" style={{ color: theme.orange }} />
+                    <div className="text-left">
+                      <div className="text-sm font-medium" style={{ color: theme.muted }}>Total Score</div>
+                      <div className="text-5xl font-black" style={{ color: theme.orange }}>
+                        {Object.values(submissions).reduce((sum, s) => sum + (s.finalScore || 0), 0)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Round-by-Round Scores */}
+              <Card className="p-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ color: theme.white }}>
+                  <BarChart3 className="w-6 h-6" style={{ color: theme.orange }} />
+                  Round-by-Round Performance
+                </h2>
+                <div className="space-y-3">
+                  {simulationRounds.map((round) => {
+                    const submission = submissions[round.id];
+                    const roundTheme = theme.rounds[round.id];
+                    return (
+                      <div
+                        key={round.id}
+                        className="flex items-center gap-4 p-4 rounded-xl"
+                        style={{ backgroundColor: theme.dark }}
+                      >
+                        <div
+                          className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg"
+                          style={{ backgroundColor: roundTheme.color, color: theme.white }}
+                        >
+                          {round.id}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-bold" style={{ color: theme.white }}>{round.title}</div>
+                          <div className="text-sm" style={{ color: theme.muted }}>{round.motion}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-3xl font-black" style={{ color: roundTheme.color }}>
+                            {submission?.finalScore || 0}
+                          </div>
+                          {submission?.wobblePoints !== undefined && (
+                            <div className="text-xs" style={{ color: theme.subtle }}>
+                              Base: {submission.initialScore} | Wobble: {submission.wobblePoints > 0 ? '+' : ''}{submission.wobblePoints}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* Leaderboard Preview */}
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold flex items-center gap-3" style={{ color: theme.white }}>
+                    <Trophy className="w-6 h-6" style={{ color: "#FFD700" }} />
+                    Room Leaderboard
+                  </h2>
+                  <button
+                    onClick={() => fetchLeaderboard(roomNumber)}
+                    className="text-sm px-3 py-1 rounded-lg transition-colors hover:bg-white/10"
+                    style={{ color: theme.muted }}
+                  >
+                    <RefreshCw className="w-4 h-4 inline-block mr-1" /> Refresh
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {leaderboard.slice(0, 10).map((team, idx) => {
+                    const isCurrentTeam = team.teamName === teamName && team.table === tableNumber;
+                    const totalScore = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0);
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center gap-4 p-3 rounded-xl transition-all ${isCurrentTeam ? 'ring-2' : ''}`}
+                        style={{
+                          backgroundColor: isCurrentTeam ? `${theme.orange}20` : theme.dark,
+                          ringColor: theme.orange,
+                        }}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
+                          style={{
+                            backgroundColor: idx === 0 ? "#FFD700" : idx === 1 ? "#C0C0C0" : idx === 2 ? "#CD7F32" : theme.darkMuted,
+                            color: idx < 3 ? theme.black : theme.muted,
+                          }}
+                        >
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold truncate" style={{ color: theme.white }}>
+                            {team.teamName} {isCurrentTeam && <span style={{ color: theme.orange }}>(You)</span>}
+                          </div>
+                          <div className="text-xs" style={{ color: theme.subtle }}>Table {team.table}</div>
+                        </div>
+                        <div className="text-2xl font-black" style={{ color: isCurrentTeam ? theme.orange : theme.white }}>
+                          {totalScore}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-4">
+                <GlowButton onClick={() => setShowLeaderboard(true)} color={theme.orange} className="w-full">
+                  <Trophy className="inline-block mr-2 w-5 h-5" />
+                  Full Leaderboard
+                </GlowButton>
+                <GlowButton onClick={() => {
+                  localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+                  localStorage.removeItem(STORAGE_KEYS.TEAM_INFO);
+                  setCurrentView("home");
+                  setSubmissions({});
+                  setCurrentRoundIndex(0);
+                  setRoundPhase("intro");
+                }} color={theme.darkMuted} className="w-full">
+                  Start New Session
+                </GlowButton>
+              </div>
             </div>
           )}
         </main>
