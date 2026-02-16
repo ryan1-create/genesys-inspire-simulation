@@ -656,9 +656,11 @@ const STORAGE_KEYS = {
 export default function GenesysSimulation() {
   // State
   const [currentView, setCurrentView] = useState("home");
+  const [registrationStep, setRegistrationStep] = useState("signin"); // "signin" | "teamname" | "ready"
   const [teamName, setTeamName] = useState("");
   const [tableNumber, setTableNumber] = useState("");
   const [roomNumber, setRoomNumber] = useState("");
+  const [isTeamRegistered, setIsTeamRegistered] = useState(false);
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [roundPhase, setRoundPhase] = useState("intro");
   const [submissions, setSubmissions] = useState({});
@@ -761,9 +763,23 @@ export default function GenesysSimulation() {
   }, []);
 
   // Handlers
-  const handleTeamSubmit = useCallback(async () => {
+  // Step 1: Sign in with room and table
+  const handleSignIn = useCallback(() => {
+    if (tableNumber.trim() && roomNumber.trim()) {
+      // Save room/table but not team name yet
+      localStorage.setItem(STORAGE_KEYS.TEAM_INFO, JSON.stringify({
+        room: roomNumber,
+        table: tableNumber,
+        name: ""
+      }));
+      setRegistrationStep("teamname");
+    }
+  }, [tableNumber, roomNumber]);
+
+  // Step 2: Register team name
+  const handleTeamNameSubmit = useCallback(async () => {
     if (teamName.trim() && tableNumber.trim() && roomNumber.trim()) {
-      saveTeamInfo(teamName, tableNumber, roomNumber);
+      setIsSubmitting(true);
 
       // Register team with leaderboard API (for presenter word cloud)
       try {
@@ -777,23 +793,33 @@ export default function GenesysSimulation() {
             teamName: teamName,
           })
         });
+        setIsTeamRegistered(true);
       } catch (err) {
         console.error("Failed to register team:", err);
-        // Don't block - continue anyway
+        // Still continue
+        setIsTeamRegistered(true);
       }
 
-      setSubmissions({});
-      setCurrentRoundIndex(0);
-      setRoundPhase("intro");
-      setFormData({});
-      setWobbleChoice(null);
-      setWobbleRanking([]);
-      setWobbleMultiSelect([]);
-      setDealReviewAnswers({});
-      localStorage.removeItem(STORAGE_KEYS.PROGRESS);
-      setCurrentView("simulation");
+      // Save complete team info
+      saveTeamInfo(teamName, tableNumber, roomNumber);
+      setIsSubmitting(false);
+      setRegistrationStep("ready");
     }
   }, [teamName, tableNumber, roomNumber, saveTeamInfo]);
+
+  // Step 3: Start simulation
+  const handleStartSimulation = useCallback(() => {
+    setSubmissions({});
+    setCurrentRoundIndex(0);
+    setRoundPhase("intro");
+    setFormData({});
+    setWobbleChoice(null);
+    setWobbleRanking([]);
+    setWobbleMultiSelect([]);
+    setDealReviewAnswers({});
+    localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+    setCurrentView("simulation");
+  }, []);
 
   const handleResumeSession = useCallback(() => {
     const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
@@ -1047,7 +1073,7 @@ export default function GenesysSimulation() {
   const hasSavedSession = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.PROGRESS);
 
   // ============================================================================
-  // RENDER: HOME SCREEN
+  // RENDER: HOME SCREEN (Multi-step registration)
   // ============================================================================
 
   if (currentView === "home") {
@@ -1055,81 +1081,199 @@ export default function GenesysSimulation() {
       <AnimatedBackground>
         <div className="min-h-screen flex items-center justify-center p-4">
           <Card className="w-full max-w-md p-8">
-            {/* Logo and Title */}
-            <div className="text-center mb-10">
-              <img src="/genesys-logo.png" alt="Genesys" className="h-16 mx-auto mb-8" />
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3" style={{ color: theme.white }}>
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <img src="/genesys-logo.png" alt="Genesys" className="h-16 mx-auto mb-6" />
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2" style={{ color: theme.white }}>
                 Sales Simulation
               </h1>
-              <p className="text-lg" style={{ color: theme.muted }}>
-                Register your team to begin
-              </p>
             </div>
 
-            {/* Registration Form */}
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Team Name"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                className="w-full px-5 py-4 rounded-xl text-lg font-medium outline-none transition-all"
-                style={{
-                  background: theme.dark,
-                  border: `2px solid ${theme.darkMuted}`,
-                  color: theme.white,
-                }}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Room #"
-                  value={roomNumber}
-                  onChange={(e) => setRoomNumber(e.target.value)}
-                  className="w-full px-5 py-4 rounded-xl text-lg font-medium outline-none transition-all"
-                  style={{
-                    background: theme.dark,
-                    border: `2px solid ${theme.darkMuted}`,
-                    color: theme.white,
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Table #"
-                  value={tableNumber}
-                  onChange={(e) => setTableNumber(e.target.value)}
-                  className="w-full px-5 py-4 rounded-xl text-lg font-medium outline-none transition-all"
-                  style={{
-                    background: theme.dark,
-                    border: `2px solid ${theme.darkMuted}`,
-                    color: theme.white,
-                  }}
-                />
+            {/* STEP 1: Sign In with Room & Table */}
+            {registrationStep === "signin" && (
+              <div className="space-y-6">
+                <p className="text-lg text-center" style={{ color: theme.muted }}>
+                  Sign in to get started
+                </p>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: theme.muted }}>
+                        Room Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., 1"
+                        value={roomNumber}
+                        onChange={(e) => setRoomNumber(e.target.value)}
+                        className="w-full px-5 py-4 rounded-xl text-xl font-bold text-center outline-none transition-all"
+                        style={{
+                          background: theme.dark,
+                          border: `2px solid ${theme.darkMuted}`,
+                          color: theme.white,
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: theme.muted }}>
+                        Table Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., 5"
+                        value={tableNumber}
+                        onChange={(e) => setTableNumber(e.target.value)}
+                        className="w-full px-5 py-4 rounded-xl text-xl font-bold text-center outline-none transition-all"
+                        style={{
+                          background: theme.dark,
+                          border: `2px solid ${theme.darkMuted}`,
+                          color: theme.white,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <GlowButton
+                    onClick={handleSignIn}
+                    disabled={!tableNumber.trim() || !roomNumber.trim()}
+                    className="w-full mt-4"
+                  >
+                    Continue <ChevronRight className="inline-block ml-2 w-5 h-5" />
+                  </GlowButton>
+
+                  {hasSavedSession && (
+                    <button
+                      onClick={handleResumeSession}
+                      className="w-full py-4 rounded-xl text-lg font-medium transition-all hover:bg-opacity-80"
+                      style={{
+                        background: theme.dark,
+                        border: `2px solid ${theme.darkMuted}`,
+                        color: theme.white,
+                      }}
+                    >
+                      Resume Previous Session
+                    </button>
+                  )}
+                </div>
               </div>
+            )}
 
-              <GlowButton
-                onClick={handleTeamSubmit}
-                disabled={!teamName.trim() || !tableNumber.trim() || !roomNumber.trim()}
-                className="w-full mt-6"
-              >
-                {hasSavedSession ? "Start New Session" : "Begin Simulation"}
-                <ChevronRight className="inline-block ml-2 w-5 h-5" />
-              </GlowButton>
+            {/* STEP 2: Team Name Registration */}
+            {registrationStep === "teamname" && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div
+                    className="inline-block px-4 py-2 rounded-lg text-sm font-bold mb-4"
+                    style={{ backgroundColor: theme.dark, color: theme.muted }}
+                  >
+                    Room {roomNumber} • Table {tableNumber}
+                  </div>
+                  <p className="text-lg" style={{ color: theme.muted }}>
+                    Discuss with your table and choose a team name!
+                  </p>
+                </div>
 
-              {hasSavedSession && (
-                <button
-                  onClick={handleResumeSession}
-                  className="w-full py-4 rounded-xl text-lg font-medium transition-all hover:bg-opacity-80"
-                  style={{
-                    background: theme.dark,
-                    border: `2px solid ${theme.darkMuted}`,
-                    color: theme.white,
-                  }}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: theme.muted }}>
+                      Team Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your team name"
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && teamName.trim() && handleTeamNameSubmit()}
+                      className="w-full px-5 py-4 rounded-xl text-xl font-bold text-center outline-none transition-all"
+                      style={{
+                        background: theme.dark,
+                        border: `2px solid ${theme.orange}`,
+                        color: theme.white,
+                      }}
+                      autoFocus
+                    />
+                  </div>
+
+                  <GlowButton
+                    onClick={handleTeamNameSubmit}
+                    disabled={!teamName.trim() || isSubmitting}
+                    className="w-full"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw className="inline-block mr-2 w-5 h-5 animate-spin" />
+                        Registering...
+                      </>
+                    ) : (
+                      <>
+                        Register Team Name <Sparkles className="inline-block ml-2 w-5 h-5" />
+                      </>
+                    )}
+                  </GlowButton>
+
+                  <button
+                    onClick={() => setRegistrationStep("signin")}
+                    className="w-full py-3 text-sm font-medium transition-all hover:bg-white/5 rounded-lg"
+                    style={{ color: theme.muted }}
+                  >
+                    <ChevronLeft className="inline-block mr-1 w-4 h-4" />
+                    Back to sign in
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Ready to Begin */}
+            {registrationStep === "ready" && (
+              <div className="space-y-6">
+                <div className="text-center py-6">
+                  <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+                    style={{ backgroundColor: `${theme.orange}20` }}
+                  >
+                    <CheckCircle className="w-10 h-10" style={{ color: theme.orange }} />
+                  </div>
+                  <h2 className="text-3xl font-black mb-2" style={{ color: theme.white }}>
+                    You're Registered!
+                  </h2>
+                  <p className="text-xl font-bold mb-1" style={{ color: theme.orange }}>
+                    {teamName}
+                  </p>
+                  <p className="text-sm" style={{ color: theme.muted }}>
+                    Room {roomNumber} • Table {tableNumber}
+                  </p>
+                </div>
+
+                <div
+                  className="p-4 rounded-xl text-center"
+                  style={{ backgroundColor: theme.dark }}
                 >
-                  Resume Previous Session
+                  <p className="text-sm" style={{ color: theme.muted }}>
+                    Look for your team name on the big screen!<br />
+                    Wait for the facilitator to begin the simulation.
+                  </p>
+                </div>
+
+                <GlowButton
+                  onClick={handleStartSimulation}
+                  className="w-full"
+                >
+                  Ready to Begin <Rocket className="inline-block ml-2 w-5 h-5" />
+                </GlowButton>
+
+                <button
+                  onClick={() => {
+                    setRegistrationStep("teamname");
+                    setIsTeamRegistered(false);
+                  }}
+                  className="w-full py-3 text-sm font-medium transition-all hover:bg-white/5 rounded-lg"
+                  style={{ color: theme.muted }}
+                >
+                  Change team name
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </Card>
         </div>
       </AnimatedBackground>
