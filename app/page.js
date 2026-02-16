@@ -734,10 +734,54 @@ export default function GenesysSimulation() {
     }
   }, []);
 
+  // Fetch with retry for API calls (client-side rate limit handling)
+  const fetchWithRetry = useCallback(async (url, options, maxRetries = 3) => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, options);
+
+        // If rate limited, wait and retry
+        if (response.status === 429 && attempt < maxRetries) {
+          const delay = Math.pow(2, attempt + 1) * 1000 + Math.random() * 1000;
+          setError(`High demand - retrying in ${Math.round(delay/1000)} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+
+        return response;
+      } catch (err) {
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt + 1) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          throw err;
+        }
+      }
+    }
+  }, []);
+
   // Handlers
-  const handleTeamSubmit = useCallback(() => {
+  const handleTeamSubmit = useCallback(async () => {
     if (teamName.trim() && tableNumber.trim() && roomNumber.trim()) {
       saveTeamInfo(teamName, tableNumber, roomNumber);
+
+      // Register team with leaderboard API (for presenter word cloud)
+      try {
+        await fetch('/api/leaderboard', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'register',
+            room: roomNumber,
+            table: tableNumber,
+            teamName: teamName,
+          })
+        });
+      } catch (err) {
+        console.error("Failed to register team:", err);
+        // Don't block - continue anyway
+      }
+
       setSubmissions({});
       setCurrentRoundIndex(0);
       setRoundPhase("intro");
@@ -816,7 +860,10 @@ export default function GenesysSimulation() {
         });
       }
 
-      const response = await fetch("/api/score", {
+      // Add small random delay (0-2s) to spread out concurrent requests
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+
+      const response = await fetchWithRetry("/api/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -837,10 +884,16 @@ export default function GenesysSimulation() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get score");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to get score. Please try again.");
       }
 
       const result = await response.json();
+
+      // Check if fallback was used
+      if (result.isFallback) {
+        console.log("Received fallback score due to high demand");
+      }
 
       // Store submission with results
       const newSubmissions = {
@@ -895,7 +948,11 @@ export default function GenesysSimulation() {
 
       // Get final score with AI evaluation
       const currentSubmission = submissions[currentRound.id];
-      const response = await fetch("/api/score", {
+
+      // Add small random delay to spread out concurrent requests
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+
+      const response = await fetchWithRetry("/api/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -921,7 +978,8 @@ export default function GenesysSimulation() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get final score");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to get final score. Please try again.");
       }
 
       const result = await response.json();
