@@ -45,9 +45,54 @@ export default async function handler(req, res) {
       return res.status(200).json({ leaderboard: sorted });
 
     } else if (req.method === 'POST') {
-      // Submit or update a team's score
-      const { room, table, teamName, roundId, score } = req.body;
+      // Submit or update a team's score, or register a new team
+      const { room, table, teamName, roundId, score, action } = req.body;
 
+      // Registration action - just adds team with no scores
+      if (action === 'register') {
+        if (!room || !table || !teamName) {
+          return res.status(400).json({
+            error: 'Missing required fields for registration',
+            required: ['room', 'table', 'teamName']
+          });
+        }
+
+        const key = `leaderboard:room:${room}`;
+        let leaderboard = await redis.get(key) || [];
+
+        if (!Array.isArray(leaderboard)) {
+          leaderboard = [];
+        }
+
+        const teamKey = `${room}-${table}`;
+        const existingIdx = leaderboard.findIndex(t => t.teamKey === teamKey);
+
+        if (existingIdx < 0) {
+          // Add new team with empty scores
+          leaderboard.push({
+            teamKey,
+            teamName,
+            room,
+            table,
+            scores: {},
+            registeredAt: Date.now(),
+            lastUpdated: Date.now()
+          });
+          await redis.set(key, leaderboard);
+        } else {
+          // Update team name if already registered
+          leaderboard[existingIdx].teamName = teamName;
+          leaderboard[existingIdx].lastUpdated = Date.now();
+          await redis.set(key, leaderboard);
+        }
+
+        return res.status(200).json({
+          success: true,
+          leaderboard: leaderboard
+        });
+      }
+
+      // Score submission action
       if (!room || !table || !teamName || !roundId || score === undefined) {
         return res.status(400).json({
           error: 'Missing required fields',
