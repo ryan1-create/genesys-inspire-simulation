@@ -50,20 +50,20 @@ function WordCloud({ teams, roomColor }) {
     // Use team name to generate pseudo-random values
     const seed = team.teamName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
-    // Random position within bounds (10-90% to avoid edges)
-    const left = 10 + (seed * 7 % 80);
-    const top = 10 + ((seed * 13 + index * 17) % 70);
+    // Random position within bounds (15-85% to avoid edges)
+    const left = 15 + (seed * 7 % 70);
+    const top = 15 + ((seed * 13 + index * 17) % 60);
 
-    // Random size variation
-    const sizes = ['text-3xl', 'text-4xl', 'text-5xl', 'text-4xl', 'text-3xl'];
+    // Much larger sizes for max 15 teams on a projector
+    const sizes = ['text-5xl', 'text-6xl', 'text-7xl', 'text-6xl', 'text-5xl'];
     const size = sizes[seed % sizes.length];
 
     // Cycle through round colors for variety
     const colors = [theme.rounds[1].color, theme.rounds[2].color, theme.rounds[3].color, theme.rounds[4].color];
     const color = colors[seed % colors.length];
 
-    // Random rotation (-15 to 15 degrees)
-    const rotation = ((seed * 3) % 30) - 15;
+    // Random rotation (-12 to 12 degrees)
+    const rotation = ((seed * 3) % 24) - 12;
 
     return {
       position: 'absolute',
@@ -71,8 +71,7 @@ function WordCloud({ teams, roomColor }) {
       top: `${top}%`,
       transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
       color: color,
-      fontSize: size,
-      textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+      textShadow: '3px 3px 6px rgba(0,0,0,0.6)',
       animation: 'fadeInScale 0.5s ease-out',
     };
   };
@@ -91,15 +90,20 @@ function WordCloud({ teams, roomColor }) {
           }
         }
       `}</style>
-      {teams.map((team, index) => (
-        <div
-          key={team.teamName}
-          className="font-black whitespace-nowrap transition-all duration-300"
-          style={getTeamStyle(team, index)}
-        >
-          {team.teamName}
-        </div>
-      ))}
+      {teams.map((team, index) => {
+        const seed = team.teamName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const sizes = ['text-5xl', 'text-6xl', 'text-7xl', 'text-6xl', 'text-5xl'];
+        const sizeClass = sizes[seed % sizes.length];
+        return (
+          <div
+            key={team.teamName}
+            className={`font-black whitespace-nowrap transition-all duration-300 ${sizeClass}`}
+            style={getTeamStyle(team, index)}
+          >
+            {team.teamName}
+          </div>
+        );
+      })}
       {teams.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-4xl font-medium" style={{ color: theme.muted }}>
@@ -432,16 +436,19 @@ export default function PresenterView() {
         className="px-8 py-4 border-t flex items-center justify-between"
         style={{ borderColor: theme.dark }}
       >
-        {/* Previous */}
-        <button
-          onClick={() => goToRound(currentRound - 1)}
-          disabled={currentRound === 0}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl text-xl font-bold transition-all disabled:opacity-30"
-          style={{ backgroundColor: theme.dark, color: theme.white }}
-        >
-          <ChevronLeft className="w-6 h-6" />
-          {currentRound === 1 ? 'Registration' : `Round ${currentRound - 1}`}
-        </button>
+        {/* Previous - hidden on Round 0 */}
+        {currentRound > 0 ? (
+          <button
+            onClick={() => goToRound(currentRound - 1)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xl font-bold transition-all"
+            style={{ backgroundColor: theme.dark, color: theme.white }}
+          >
+            <ChevronLeft className="w-6 h-6" />
+            {currentRound === 1 ? 'Registration' : `Round ${currentRound - 1}`}
+          </button>
+        ) : (
+          <div style={{ width: '180px' }} /> // Placeholder for alignment
+        )}
 
         {/* Last Updated */}
         <div className="flex items-center gap-2" style={{ color: theme.muted }}>
