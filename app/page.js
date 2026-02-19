@@ -865,19 +865,33 @@ export default function GenesysSimulation() {
       // Build submission text from form data
       let submissionText = "";
       if (currentRound.useDealReviewChecklist) {
-        // Format deal review checklist
+        // Format deal review checklist - clearly separate prefilled vs team-authored content
         submissionText = "Deal Review Assessment:\n\n";
+        submissionText += "=== CONTEXT (Pre-filled, NOT authored by the team) ===\n\n";
         currentRound.dealReviewChecklist.forEach(section => {
           submissionText += `${section.section}:\n`;
           section.items.forEach(item => {
             const answer = dealReviewAnswers[item.id] || {};
             submissionText += `- ${item.label}\n`;
-            submissionText += `  Answer: ${answer.value === 'yes' ? 'Yes' : 'No'}\n`;
-            if (answer.evidence) submissionText += `  Evidence: ${answer.evidence}\n`;
-            if (answer.nextActions) submissionText += `  Next Actions: ${answer.nextActions}\n`;
+            submissionText += `  Status: ${answer.value === 'yes' ? 'Yes' : 'No'} (pre-filled)\n`;
+            submissionText += `  Evidence: ${item.evidence} (pre-filled)\n`;
           });
           submissionText += "\n";
         });
+        submissionText += "\n=== TEAM'S AUTHORED RESPONSES (Score based on THIS content only) ===\n\n";
+        let hasTeamContent = false;
+        currentRound.dealReviewChecklist.forEach(section => {
+          section.items.forEach(item => {
+            const answer = dealReviewAnswers[item.id] || {};
+            if (answer.nextActions && answer.nextActions.trim()) {
+              hasTeamContent = true;
+              submissionText += `Next Actions for "${item.label.substring(0, 60)}...":\n${answer.nextActions}\n\n`;
+            }
+          });
+        });
+        if (!hasTeamContent) {
+          submissionText += "(No next actions provided by the team)\n";
+        }
       } else {
         currentRound.inputFields.forEach(field => {
           if (formData[field.id]) {
