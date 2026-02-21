@@ -259,6 +259,7 @@ const simulationRounds = [
       industry: "Healthcare Services",
       size: "~4,800 employees",
       revenue: "$1.6B USD",
+      region: "Regional",
       currentSolution: "Unknown",
       contactCenters: "2 primary contact centers, 1 overflow/outsourced partner, ~220 agents",
       logo: "/customers/everwell.png",
@@ -772,12 +773,12 @@ export default function GenesysSimulation() {
     localStorage.setItem(STORAGE_KEYS.TEAM_INFO, JSON.stringify({ name, table, room }));
   }, []);
 
-  const updateLeaderboard = useCallback(async (name, table, room, score, roundId) => {
+  const updateLeaderboard = useCallback(async (name, table, room, score, roundId, phase = "final") => {
     try {
       const response = await fetch('/api/leaderboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamName: name, table, room, score, roundId })
+        body: JSON.stringify({ teamName: name, table, room, score, roundId, phase })
       });
       if (response.ok) {
         const data = await response.json();
@@ -1022,13 +1023,17 @@ export default function GenesysSimulation() {
       };
       setSubmissions(newSubmissions);
       saveProgress(newSubmissions, currentRoundIndex, "feedback1");
+
+      // Post initial score to leaderboard immediately (so it shows on presenter screen)
+      await updateLeaderboard(teamName, tableNumber, roomNumber, result.score.overall, currentRound.id, "initial");
+
       goToPhase("feedback1");
     } catch (err) {
       setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentRound, formData, dealReviewAnswers, submissions, currentRoundIndex, saveProgress, goToPhase]);
+  }, [currentRound, formData, dealReviewAnswers, submissions, currentRoundIndex, saveProgress, goToPhase, teamName, tableNumber, roomNumber, updateLeaderboard]);
 
   // Submit wobble response
   const handleWobbleSubmit = useCallback(async () => {
@@ -1124,8 +1129,8 @@ export default function GenesysSimulation() {
       setSubmissions(newSubmissions);
       saveProgress(newSubmissions, currentRoundIndex, "feedback2");
 
-      // Update leaderboard
-      await updateLeaderboard(teamName, tableNumber, roomNumber, finalScore, currentRound.id);
+      // Update leaderboard with final score (replaces initial score)
+      await updateLeaderboard(teamName, tableNumber, roomNumber, finalScore, currentRound.id, "final");
 
       goToPhase("feedback2");
     } catch (err) {
@@ -1451,15 +1456,29 @@ export default function GenesysSimulation() {
                     <p className="text-base" style={{ color: theme.subtle }}>{currentRound.customer.revenue}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" style={{ color: theme.subtle }} />
                     <span style={{ color: theme.muted }}>{currentRound.customer.size}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4" style={{ color: theme.subtle }} />
-                    <span style={{ color: theme.muted }}>{currentRound.customer.currentSolution}</span>
-                  </div>
+                  {currentRound.customer.contactCenters && (
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4" style={{ color: theme.subtle }} />
+                      <span style={{ color: theme.muted }}>{currentRound.customer.contactCenters}</span>
+                    </div>
+                  )}
+                  {currentRound.customer.currentSolution && currentRound.customer.currentSolution !== "Unknown" && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" style={{ color: theme.subtle }} />
+                      <span style={{ color: theme.muted }}>Current: {currentRound.customer.currentSolution}</span>
+                    </div>
+                  )}
+                  {currentRound.customer.region && (
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4" style={{ color: theme.subtle }} />
+                      <span style={{ color: theme.muted }}>{currentRound.customer.region}</span>
+                    </div>
+                  )}
                 </div>
               </Card>
 
@@ -1470,7 +1489,7 @@ export default function GenesysSimulation() {
                   <h3 className="text-lg font-bold" style={{ color: theme.white }}>Customer Context</h3>
                 </div>
                 <ul className="space-y-2.5">
-                  {currentRound.context.slice(0, 5).map((ctx, i) => (
+                  {currentRound.context.map((ctx, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm" style={{ color: theme.light }}>
                       <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: roundColor }} />
                       {ctx}
@@ -2213,13 +2232,19 @@ export default function GenesysSimulation() {
                   {/* Role-based reflection */}
                   <div className="p-4 rounded-xl mb-4" style={{ backgroundColor: theme.dark }}>
                     <p className="text-sm font-bold mb-3" style={{ color: theme.white }}>
-                      From your role's perspective, what is one specific thing you would do to increase our chances of winning in similar situations?
+                      Each person: from your role's perspective, what is one specific thing you would do differently to increase our chances of winning in similar situations?
                     </p>
                     <div className="grid grid-cols-5 gap-2">
-                      {["AE", "SC", "BDR", "CS", "Leader"].map((role) => (
+                      {[
+                        { role: "AE", prompt: "Deal strategy & ownership" },
+                        { role: "SC", prompt: "Technical alignment" },
+                        { role: "BDR", prompt: "Access & engagement" },
+                        { role: "CS", prompt: "Customer outcomes" },
+                        { role: "Leader", prompt: "Coaching & orchestration" },
+                      ].map(({ role, prompt }) => (
                         <div key={role} className="text-center p-2 rounded-lg" style={{ backgroundColor: theme.darker }}>
                           <div className="text-xs font-bold mb-1" style={{ color: roundColor }}>{role}</div>
-                          <div className="text-xs" style={{ color: theme.muted }}>Go around the table</div>
+                          <div className="text-xs" style={{ color: theme.muted }}>{prompt}</div>
                         </div>
                       ))}
                     </div>
@@ -2335,7 +2360,7 @@ export default function GenesysSimulation() {
                 <div className="space-y-2">
                   {leaderboard.slice(0, 10).map((team, idx) => {
                     const isCurrentTeam = team.teamName === teamName && team.table === tableNumber;
-                    const totalScore = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0);
+                    const totalScore = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0) + (team.bonusPoints || 0);
                     return (
                       <div
                         key={idx}
@@ -2422,7 +2447,7 @@ export default function GenesysSimulation() {
                 ) : (
                   <div className="space-y-3">
                     {leaderboard.map((team, idx) => {
-                      const totalScore = Object.values(team.scores || {}).reduce((a, b) => a + b, 0);
+                      const totalScore = Object.values(team.scores || {}).reduce((a, b) => a + b, 0) + (team.bonusPoints || 0);
                       const roundCount = Object.keys(team.scores || {}).length;
                       return (
                         <div
