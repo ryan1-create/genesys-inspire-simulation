@@ -406,6 +406,32 @@ Write your feedback the way a real coach would talk to a team:
       }).join("\n\n");
     };
 
+    // Build optional sections
+    const buildPenaltiesSection = (penalties) => {
+      if (!penalties || penalties.length === 0) return "";
+      return `\n### SCORING PENALTIES (Up to 5-point reduction each)\nApply these penalties to the overall score if the submission exhibits any of these:\n${penalties.map(p => `- ${p}`).join("\n")}\n`;
+    };
+
+    const buildAccountPlanSection = (accountPlan) => {
+      if (!accountPlan) return "";
+      let section = "\n### ACCOUNT PLAN SNAPSHOT (Reference material available to the team)\n";
+      section += "The team has access to printed materials with the following account intelligence. Their response should reflect awareness of this context:\n\n";
+      section += "**Relationship Strategy:**\n";
+      accountPlan.relationshipStrategy.forEach(r => {
+        section += `- ${r.department} | ${r.title} | ${r.buyingRole} | Relationship: ${r.relationship} | Risk: ${r.riskSignal} | Focus: ${r.strategyFocus}\n`;
+      });
+      section += "\n**Account Assessment:**\n";
+      accountPlan.accountAssessment.forEach(a => {
+        section += `- ${a.category}: ${a.rating} – ${a.interpretation} (${a.riskIndicator})\n`;
+      });
+      return section;
+    };
+
+    const buildWobbleScoringGuidance = (wobble) => {
+      if (!wobble?.scoringGuidance) return "";
+      return `\n### WOBBLE SCORING GUIDANCE\n${wobble.scoringGuidance}\n`;
+    };
+
     // Build the scoring prompt based on phase
     let scoringPrompt;
 
@@ -415,6 +441,7 @@ Write your feedback the way a real coach would talk to a team:
 **Customer:** ${round.customer.name} (${round.customer.industry})
 **Size:** ${round.customer.size || "N/A"} | **Revenue:** ${round.customer.revenue}
 **Current Solution:** ${round.customer.currentSolution}
+${round.customer.contactCenters ? `**Contact Centers:** ${round.customer.contactCenters}` : ""}
 
 ### Selling Objective
 ${round.objective}
@@ -424,11 +451,11 @@ ${round.challenge}
 
 ### Customer Context
 ${round.context.map(c => `- ${c}`).join("\n")}
-
+${buildAccountPlanSection(round.accountPlanSnapshot)}
 ### SCORING RUBRIC
 
 ${buildCriteriaDetails(round.scoringCriteria)}
-
+${buildPenaltiesSection(round.penalties)}
 ---
 
 ## TEAM'S SUBMISSION
@@ -449,9 +476,11 @@ Read the team's submission carefully. Then:
    - Executive-level insight with specificity? 80+.
    - Championship caliber across the board? 90+ (this is rare).
 
-3. **Ensure differentiation:** Your scores must have at least 12 points of spread. If the team is strong in one area and weak in another, your scores should reflect that.
+3. **Check for penalties:** If any of the listed penalties apply, note them and reduce the overall score accordingly (up to 5 points per penalty).
 
-4. **Write feedback like a real coach** — reference specific things they said (or didn't say). No generic platitudes.
+4. **Ensure differentiation:** Your scores must have at least 12 points of spread. If the team is strong in one area and weak in another, your scores should reflect that.
+
+5. **Write feedback like a real coach** — reference specific things they said (or didn't say). No generic platitudes.
 
 The team will next face a wobble: "${round.wobble.title}"
 
@@ -460,6 +489,7 @@ Respond in this EXACT JSON format (no other text before or after):
   "scores": {
     ${round.scoringCriteria.map((c) => `"${c.name}": [score 10-100]`).join(",\n    ")}
   },
+  "penaltiesApplied": ["[List any penalties triggered, or empty array if none]"],
   "overallAssessment": "[2-3 sentences. Reference specific things they wrote. Be direct about what's strong and what's missing.]",
   "strengths": ["[Cite something specific they did well]", "[Another specific strength]"],
   "improvements": ["[Specific, actionable — reference what they wrote and what would make it better]", "[Another specific improvement]", "[Third improvement]"],
@@ -473,6 +503,7 @@ Respond in this EXACT JSON format (no other text before or after):
 **Customer:** ${round.customer.name} (${round.customer.industry})
 **Size:** ${round.customer.size || "N/A"} | **Revenue:** ${round.customer.revenue}
 **Current Solution:** ${round.customer.currentSolution}
+${round.customer.contactCenters ? `**Contact Centers:** ${round.customer.contactCenters}` : ""}
 
 ### Selling Objective
 ${round.objective}
@@ -482,11 +513,11 @@ ${round.challenge}
 
 ### Customer Context
 ${round.context.map(c => `- ${c}`).join("\n")}
-
+${buildAccountPlanSection(round.accountPlanSnapshot)}
 ### SCORING RUBRIC
 
 ${buildCriteriaDetails(round.scoringCriteria)}
-
+${buildPenaltiesSection(round.penalties)}
 ---
 
 ## TEAM'S INITIAL STRATEGY
@@ -500,7 +531,7 @@ ${submission}
 ${round.wobble.description}
 
 **Question posed:** ${round.wobble.question}
-
+${buildWobbleScoringGuidance(round.wobble)}
 ### Team's Wobble Response:
 ${wobbleResponse}
 
@@ -513,31 +544,21 @@ Evaluate the team's COMPLETE approach — initial strategy plus how they adapted
 1. **Initial strategy quality** (same calibration standards as above)
 2. **Wobble adaptation** — Did they genuinely engage with the new information? Did they adapt, or just repeat their original approach? A strong wobble response shows real-time strategic thinking.
 3. **Coherence** — Does their overall approach hold together as a strategy an actual account team could execute?
-4. **Differentiation** — Ensure at least 12 points of spread between your highest and lowest criterion scores.
+4. **Check for penalties:** If any of the listed penalties apply, note them and reduce accordingly.
+5. **Differentiation** — Ensure at least 12 points of spread between your highest and lowest criterion scores.
 
 Write feedback like a real coach wrapping up a coaching session. Reference specific things they said.
-
-Also prepare a DISCUSSION SUMMARY the team can use for their debrief conversation.
 
 Respond in this EXACT JSON format (no other text before or after):
 {
   "scores": {
     ${round.scoringCriteria.map((c) => `"${c.name}": [score 10-100]`).join(",\n    ")}
   },
+  "penaltiesApplied": ["[List any penalties triggered, or empty array if none]"],
   "overallAssessment": "[2-3 sentences. Be specific and direct. Reference what they wrote.]",
   "strengths": ["[Specific strength 1]", "[Specific strength 2]", "[Specific strength 3]"],
   "improvements": ["[Specific, actionable improvement 1]", "[Specific improvement 2]"],
-  "coachChallenge": "[Final coaching insight — make it count. Tie it to their specific gaps.]",
-  "discussionSummary": {
-    "keyInsight": "[One sentence: The single most important takeaway from this round]",
-    "whatWorked": "[2-3 sentences about what this specific team did well — reference their actual responses]",
-    "growthArea": "[2-3 sentences about their primary growth area and why it matters in real customer conversations]",
-    "discussionQuestions": [
-      "[Question tied to this team's specific performance]",
-      "[Question about applying what they learned]",
-      "[Forward-looking question for their next real customer conversation]"
-    ]
-  }
+  "coachChallenge": "[Final coaching insight — make it count. Tie it to their specific gaps.]"
 }`;
     }
 
@@ -585,7 +606,15 @@ Respond in this EXACT JSON format (no other text before or after):
       totalScore += score * criterion.weight;
       totalWeight += criterion.weight;
     });
-    const overallScore = Math.round(totalScore / totalWeight);
+    let overallScore = Math.round(totalScore / totalWeight);
+
+    // Apply penalty deductions (up to 5 points each)
+    const penaltiesApplied = aiResult.penaltiesApplied?.filter(p => p && p !== "None" && !p.startsWith("[")) || [];
+    if (penaltiesApplied.length > 0) {
+      const penaltyDeduction = Math.min(penaltiesApplied.length * 5, 20); // Cap at 20 total
+      overallScore = Math.max(10, overallScore - penaltyDeduction);
+      console.log(`Penalties applied (${penaltiesApplied.length}): -${penaltyDeduction} points`);
+    }
 
     // Determine score interpretation
     let scoreInterpretation;
@@ -630,13 +659,9 @@ Respond in this EXACT JSON format (no other text before or after):
             : "Apply these lessons to your next customer conversation",
         ],
         scoreInterpretation,
+        penaltiesApplied: penaltiesApplied.length > 0 ? penaltiesApplied : undefined,
       },
     };
-
-    // Include discussion summary for wobble phase
-    if (phase === "wobble" && aiResult.discussionSummary) {
-      result.discussionSummary = aiResult.discussionSummary;
-    }
 
     return res.status(200).json(result);
   } catch (error) {
