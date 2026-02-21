@@ -300,7 +300,7 @@ export default function PresenterView() {
             className="text-4xl font-black mb-2"
             style={{ color: theme.white }}
           >
-            Sales Simulation
+            The Game
           </h1>
           <p
             className="text-xl mb-10"
