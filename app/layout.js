@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Genesys INSPIRE - The Game",
-  description: "FY27 INSPIRE Sales Simulation - AI-Powered Team Challenge",
+  description: "FY27 INSPIRE - The Game - AI-Powered Team Challenge",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
