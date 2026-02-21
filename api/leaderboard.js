@@ -35,10 +35,10 @@ export default async function handler(req, res) {
       const key = `leaderboard:room:${room}`;
       const leaderboard = await redis.get(key) || [];
 
-      // Sort by total score descending
+      // Sort by total score (including bonus points) descending
       const sorted = Array.isArray(leaderboard) ? leaderboard.sort((a, b) => {
-        const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0);
-        const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0);
+        const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
+        const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
         return bTotal - aTotal;
       }) : [];
 
@@ -92,6 +92,36 @@ export default async function handler(req, res) {
         });
       }
 
+      // Bonus points action - admin/presenter can add bonus points
+      if (action === 'bonus') {
+        const { points, reason } = req.body;
+        if (!room || !table || points === undefined) {
+          return res.status(400).json({
+            error: 'Missing required fields for bonus',
+            required: ['room', 'table', 'points']
+          });
+        }
+
+        const key = `leaderboard:room:${room}`;
+        let leaderboard = await redis.get(key) || [];
+        if (!Array.isArray(leaderboard)) leaderboard = [];
+
+        const teamKey = `${room}-${table}`;
+        const existingIdx = leaderboard.findIndex(t => t.teamKey === teamKey);
+
+        if (existingIdx >= 0) {
+          const currentBonus = leaderboard[existingIdx].bonusPoints || 0;
+          leaderboard[existingIdx].bonusPoints = currentBonus + points;
+          leaderboard[existingIdx].lastUpdated = Date.now();
+          if (!leaderboard[existingIdx].bonusLog) leaderboard[existingIdx].bonusLog = [];
+          leaderboard[existingIdx].bonusLog.push({ points, reason: reason || '', time: Date.now() });
+          await redis.set(key, leaderboard);
+          return res.status(200).json({ success: true, leaderboard });
+        } else {
+          return res.status(404).json({ error: 'Team not found' });
+        }
+      }
+
       // Score submission action
       if (!room || !table || !teamName || !roundId || score === undefined) {
         return res.status(400).json({
@@ -99,6 +129,9 @@ export default async function handler(req, res) {
           required: ['room', 'table', 'teamName', 'roundId', 'score']
         });
       }
+
+      // phase indicates whether this is an initial or final (wobble) score
+      const { phase } = req.body;
 
       const key = `leaderboard:room:${room}`;
       let leaderboard = await redis.get(key) || [];
@@ -117,6 +150,9 @@ export default async function handler(req, res) {
         leaderboard[existingIdx].scores[roundId] = score;
         leaderboard[existingIdx].teamName = teamName;
         leaderboard[existingIdx].lastUpdated = Date.now();
+        // Track phase for display purposes
+        if (!leaderboard[existingIdx].phases) leaderboard[existingIdx].phases = {};
+        leaderboard[existingIdx].phases[roundId] = phase || 'final';
       } else {
         // Add new team
         leaderboard.push({
@@ -125,6 +161,7 @@ export default async function handler(req, res) {
           room,
           table,
           scores: { [roundId]: score },
+          phases: { [roundId]: phase || 'final' },
           lastUpdated: Date.now()
         });
       }
@@ -134,8 +171,8 @@ export default async function handler(req, res) {
 
       // Return updated leaderboard sorted by score
       const sorted = leaderboard.sort((a, b) => {
-        const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0);
-        const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0);
+        const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
+        const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
         return bTotal - aTotal;
       });
 
