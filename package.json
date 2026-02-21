@@ -1,7 +1,7 @@
 {
   "name": "genesys-inspire-simulation",
   "version": "1.0.0",
-  "description": "FY27 INSPIRE Sales Simulation - AI-Powered Team Challenge",
+  "description": "FY27 INSPIRE The Game - AI-Powered Team Challenge",
   "private": true,
   "scripts": {
     "dev": "next dev",
