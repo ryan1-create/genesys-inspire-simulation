@@ -253,74 +253,80 @@ const simulationRounds = [
     title: "Shape the Vision",
     subtitle: "New Logo Opportunity",
     motion: "Legacy Displacement",
-    description: "Large account logo acquisition with immature CX perspective",
+    description: "Regional healthcare system with immature CX perspective",
     customer: {
       name: "Everwell Health Services",
       industry: "Healthcare Services",
       size: "~4,800 employees",
       revenue: "$1.6B USD",
-      currentSolution: "Unknown cloud contact center platform",
+      currentSolution: "Unknown",
+      contactCenters: "2 primary contact centers, 1 overflow/outsourced partner, ~220 agents",
       logo: "/customers/everwell.png",
     },
     context: [
-      "Leadership has set a mandate to improve operating margins through modernizing patient experience and driving cost efficiencies",
-      "VP of Patient Experience has prioritized initiatives to improve in-facility experiences for clinics, hospitals, and specialized service locations",
-      "Contact Center Director has been in-seat for ~12 years and strongly defends the current system",
-      "No active CCaaS evaluation underway",
-      "VP of Patient Experience has not yet considered CCaaS as a core element of Patient Experience",
-      "Patient Experience challenges are treated as executive priorities",
-      "Leadership team has concerns about the unknown impact of AI on Patient Experience",
-      "Decision-making is tightly controlled and risk-averse in this highly-regulated healthcare environment",
+      "Executive priorities: Revenue growth, patient loyalty, and competitive differentiation",
+      "Over the past 12 months, the VP of Patient Experience has prioritized initiatives to improve in-facility experiences for clinics, hospitals, and specialized service locations",
+      "The Contact Center Director has been in-seat since dedicated contact center agents were added (~12 years)",
+      "Decision-making is tightly controlled and risk-averse, particularly in the highly-regulated healthcare environment",
+      "When asked, the Contact Center Director strongly defends the current system and process – there is no active CCaaS evaluation underway",
+      "The VP of Patient Experience has not yet considered CCaaS as a core element of the Patient Experience",
     ],
-    objective: "Build leadership attention around the negative impact of the current Contact Center on Patient Experience – and ultimately, operating margin.",
-    challenge: "Develop a POV to share with the VP of Patient Experience to expand their thinking around the whole patient experience, including AI-powered Contact Center capabilities.",
-    // Input fields for this round - Layout: single question top, then 2x2 grid
-    inputLayout: "singleTop-2x2",
+    objective: "Our BDR has secured a meeting with the VP of Patient Experience. In this conversation, our objective is to share a point of view that expands the VP's thinking about how an AI-powered Contact Center solution can elevate a modern, seamless Patient Experience.",
+    challenge: "Use the questions below to prepare a POV for the VP of Patient Experience.",
+    // Layout: 3 columns top row, 1 full-width bottom
+    inputLayout: "threeColumnPlusOne",
     inputFields: [
-      { id: "businessPriority", label: "From Everwell's perspective, why does this matter now?", type: "textarea", placeholder: "Describe the business context and urgency...", fullWidth: true },
-      { id: "knownChallenges", label: "What challenges related to Patient Experience or the Contact Center are they already aware of?", type: "textarea", placeholder: "List known challenges..." },
-      { id: "valueGaps", label: "What challenges or potential unrealized value are limiting Everwell's ability to achieve their priorities?", type: "textarea", placeholder: "Identify hidden gaps and limitations..." },
-      { id: "futureState", label: "What is an ideal future state in their terms – linking the Contact Center to the overall Patient Experience?", type: "textarea", placeholder: "Describe the vision..." },
-      { id: "businessImpact", label: "Through the lens of the VP of Patient Experience, what measurable business impact does this unlock?", type: "textarea", placeholder: "Quantify the value..." },
+      { id: "valueGaps", label: "Value Gaps", sublabel: "How could the current Contact Center model be creating risk or friction in the Patient Experience?", type: "textarea", placeholder: "Identify risks, friction points, and hidden constraints...", column: "left" },
+      { id: "artOfPossible", label: "Art of the Possible", sublabel: "How could we improve the Patient Experience through AI-powered orchestration capabilities?", type: "textarea", placeholder: "Describe the AI-powered future state...", column: "center" },
+      { id: "impact", label: "Impact", sublabel: "What might be the impact of our solution on Patient Experience and overall business metrics?", type: "textarea", placeholder: "Quantify the business value...", column: "right" },
+      { id: "customerStory", label: "Customer Example or Story", sublabel: "What is a customer example or story to illustrate this POV?", type: "textarea", placeholder: "Share a compelling customer story that mirrors Everwell's situation...", fullWidth: true },
     ],
     wobble: {
       title: "Enterprise Platform Influence",
-      description: "While meeting with the VP of Patient Experience, you learn that ServiceNow is already engaged: Supporting a broader digital and data transformation initiative, focused on improving how work, requests, and issues flow across the organization. Not formally leading Patient Experience initiatives, but actively shaping enterprise platform standards, modernization principles, and investment criteria. Operating with direct access to the C-suite, including the CIO and COO.",
-      question: "How should we evolve our POV and executive framing with the VP of Patient Experience?",
+      description: "While meeting with the VP of Patient Experience, you learn that ServiceNow is already engaged: Supporting a broader digital and data transformation initiative. Focused on improving how work, requests, and issues flow across the organization. Not formally leading Patient Experience initiatives, but actively shaping enterprise platform standards, modernization principles, and investment criteria for future initiatives. Operating with direct access to the C-suite, including the CIO and COO.",
+      question: "How should we adapt our approach to capitalize on the ServiceNow transformation initiative?",
       type: "choice",
       shuffleOptions: true,
       options: [
         {
           id: "A",
-          text: "Ensure Patient Experience isn't overlooked in enterprise workflow design",
-          detail: "If ServiceNow is defining how patient-related work flows across the organization, we should ensure Patient Experience inputs are represented – so patient requests, issues, and demand are visible within enterprise workflows.",
+          text: "Engage Everwell's Contact Center team directly to discuss how Patient Experience inputs should be embedded in workflow standards",
+          detail: "\"If ServiceNow is defining workflows across the organization, the entire Patient Experience is going to be critical – not just the in-facility experience. It's important that PX inputs are considered in the Contact Center system (i.e., patient requests, issues, and demand).\"",
           points: -2,
         },
         {
           id: "B",
-          text: "Position the contact center as the execution layer for enterprise workflows",
-          detail: "ServiceNow may define how work is managed, but Patient Experience is where that work is delivered. We should position the contact center as the execution layer that reliably delivers predefined enterprise workflows with consistent patient interactions.",
+          text: "Continue working with the VP of Patient Experience – showing how the Contact Center must be improved to enhance the Patient Experience",
+          detail: "\"With ServiceNow working to modernize workflows, this is a great time for you to tackle the end-to-end Patient Experience. The Contact Center is a critical component of building trust and maintaining continuity of care.\"",
           points: 2,
         },
         {
           id: "C",
-          text: "Use Patient Experience outcomes to define whether transformation is working",
-          detail: "If modernization principles and investment criteria are being set now, Patient Experience should be the standard for success - and the signal that dynamically guides how work is orchestrated across channels and moments. If access, trust, and continuity don't improve for patients, then the transformation hasn't delivered value.",
+          text: "Engage the ServiceNow partner to showcase how the Contact Center should be considered in enterprise workflows",
+          detail: "\"The transformation roadmap must take the end-to-end Patient Experience into consideration. The Contact Center is the execution layer that delivers enterprise workflows consistently and enables personalized, continuous patient experience.\"",
           points: 5,
         },
         {
           id: "D",
-          text: "Position Patient Experience as the unifying force across platforms and decisions",
-          detail: "Workflows, data, and platforms only matter if they come together – dynamically - in the moments that define patient trust and access. We should position Patient Experience as the connective tissue that governs orchestration across systems, with the contact center activating how enterprise decisions show up for patients in real time.",
+          text: "Collaborate with the VP of Patient Experience on a plan to engage executive decision-makers around the role of the Patient Experience in the broader transformation",
+          detail: "\"Let's discuss what's required to build alignment with the CIO and COO around necessary Patient Experience updates – focusing on the potential for the Contact Center to equip us with better patient data and deliver greater continuity of care.\"",
           points: 8,
         },
       ],
     },
     scoringCriteria: [
-      { name: "Business Priority Framing", weight: 25, description: "Frames Patient Experience as strategic lever for margin, access, and trust", poor: "Frames problem as CX/contact center issue with no link to enterprise priorities", champion: "Frames Patient Experience as strategic lever for protecting margin, improving access, and sustaining patient trust" },
-      { name: "Insight into Value Gaps", weight: 35, description: "Surfaces unseen constraints Everwell may not be fully considering", poor: "Focuses only on surface-level or known challenges", champion: "Reframes problem by exposing unseen constraint (e.g., Patient Experience limited by how work is governed and orchestrated)" },
-      { name: "Ideal Future State", weight: 15, description: "Presents AI-powered experience orchestration vision", poor: "Feature- or platform-centric description of the future", champion: "Presents future where AI-powered experience orchestration improves patient access, reduces operational burden, scales safely" },
-      { name: "Value Impact", weight: 25, description: "Clearly articulates measurable business impact for the VP", poor: "No clear business impact or personal relevance for the VP", champion: "Clearly articulates measurable business impact and positions VP as trusted leader who can modernize safely" },
+      { name: "Business Priority Framing", weight: 15, description: "Connects POV to Everwell's executive priorities", poor: "Focuses on contact center operations only (service levels, staffing, cost). No clear tie to executive agenda.", champion: "Frames the entire POV around growth and differentiation. Positions Patient Experience as a strategic revenue lever and competitive moat – not an operational function." },
+      { name: "Depth of Value Gaps Identified", weight: 30, description: "Surfaces unseen enterprise risk beyond the contact center", poor: "Identifies surface-level pain (wait times, inefficiency). Reactive and tactical.", champion: "Surfaces unseen enterprise risk: lost referrals, care leakage, brand erosion, inability to scale personalized care, fragmented data preventing proactive engagement. Expands the problem beyond the contact center." },
+      { name: "Art of the Possible", weight: 15, description: "Paints a compelling AI-powered future state", poor: "Describes incremental improvements or features (automation, bots, routing upgrades). Product-heavy language.", champion: "Reframes the contact center as the orchestration engine of the entire patient journey. Describes proactive, personalized, seamless care experiences tied directly to strategic growth and loyalty. Is motivating to senior executives." },
+      { name: "Value Impact", weight: 20, description: "Connects to enterprise metrics and personal value for the VP", poor: "Mentions operational metrics only (AHT, cost per contact).", champion: "Connects to enterprise growth metrics and articulates personal value for the VP (strategic visibility, transformation leadership, executive credibility). Makes the stakes feel high." },
+      { name: "Customer Story/Example", weight: 20, description: "Provides a compelling, relevant customer example", poor: "Generic case study. Tactical. Feels like a product pitch.", champion: "Tight, emotionally resonant story that mirrors Everwell's situation. Creates urgency, credibility, and belief. Feels like a board-level narrative – not a vendor presentation." },
+    ],
+    // Penalties the AI should enforce (up to 5-point reduction each)
+    penalties: [
+      "Leads with product capabilities or operational upgrades instead of framing in the context of Patient Experience as a strategic business priority",
+      "Uses vague language/buzz words without clearly explaining the specific business relevance or impact for Everwell",
+      "Restates known challenges without surfacing new risks, blind spots, or strategic reframes",
+      "Is tailored to technical decision-makers vs an executive-level target audience",
     ],
     icon: Target,
     industryImage: "/industries/healthcare.png",
@@ -330,73 +336,96 @@ const simulationRounds = [
     title: "Disrupt Status Quo",
     subtitle: "New Logo Opportunity",
     motion: "CCaaS Replacement",
-    description: "New large account opportunity with embedded legacy player",
+    description: "Multinational financial services with embedded legacy Avaya",
     customer: {
       name: "Aureon Financial Holdings",
-      industry: "Financial Services: Banking and Payments",
+      industry: "Financial Services: Banking & Payments",
       size: "~42,000 employees",
       revenue: "$28.5B USD",
-      currentSolution: "Legacy Avaya (on-prem)",
+      currentSolution: "Legacy on-prem Avaya instances – de-centralized, regional approach",
+      contactCenters: "11 regional contact centers, 4 specialized global service hubs, 3,800 agents",
       logo: "/customers/aureon.png",
     },
     context: [
-      "Global VP of Customer Operations maintains a regional operating model empowering Regional Contact Center Directors to optimize locally",
-      "Each contact center is operating on stable, region-specific Avaya on-prem systems",
-      "Performance is viewed as 'good enough' – Average Handle Time (AHT) and Customer Satisfaction (CSAT)",
-      "Limited ability to create consistent process for predicting and responding to customer issues globally",
-      "VP of Cybersecurity is hyper-risk averse – preferring regional data separation and minimal architectural change",
-      "CEO has initiated global modernization discussion to future-proof business and improve operational resilience",
-      "No immediate CCaaS crisis – leading to a 'why now?' mindset",
-      "AI-for-CX has been introduced at executive level, but leaders lack clarity on enterprise-ready use cases",
-      "Avaya is actively defending with hybrid-cloud and regional upgrade strategies",
+      "New CEO has initiated a global modernization discussion to future-proof the business and improve operational resilience",
+      "VP of Customer Service Operations maintains a regional operating model – empowering Regional Contact Center Directors to optimize locally rather than standardize globally",
+      "Performance is viewed as 'good enough' (i.e., Average Handle Time, Abandon Rates, etc.)",
+      "Corporate culture emphasizes risk mitigation, regulatory compliance, and phased transformation",
+      "IT team prefers data separation/minimal architectural change, and the regional model limits ability to test/scale CX and AI capabilities",
+      "Avaya is actively engaged in the account and continuously recommending hybrid-cloud and regional upgrade opportunities – reinforcing decentralization",
     ],
-    objective: "Break down the perception that the current CX environment is 'good enough' by exposing the risks and limitations of the status quo — creating openness to change without positioning a solution",
-    challenge: "Prepare for a discovery conversation with the Global VP of Customer Operations to expose reasons behind resistance to change and surface unrecognized value.",
-    // Layout: Two columns side by side with headers
-    inputLayout: "twoColumnHeaders",
+    objective: "Our BDR has secured an initial meeting with the VP of Customer Service Operations. Our objective is to break down the status quo bias by exposing the operational and strategic risks of the current environment.",
+    challenge: "For each likely status quo bias, identify the hidden risk of the current solution and determine how you will make that risk visible to the VP.",
+    // Layout: Table-style with status quo biases as rows
+    inputLayout: "statusQuoBiases",
     inputFields: [
       {
-        id: "insightsToShare",
-        header: "Insights to Share",
-        label: "How can we bring attention to the risks of the current approach – even if performance appears 'good enough'?",
-        type: "textarea",
-        placeholder: "Include data points, customer examples, etc. that point to hidden operational risk, limited agility, non-optimal customer outcomes, and/or constrained future options...",
-        column: "left"
+        id: "biasMigration",
+        biasLabel: "\"A global platform migration is too disruptive.\"",
+        biasContext: "(People, process, regional operations, etc.)",
+        riskLabel: "What are the unconsidered risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        type: "dual-textarea",
       },
       {
-        id: "questionsToAsk",
-        header: "Questions to Ask",
-        label: "What can we ask to help leaders recognize these risks and reflect on the tradeoffs of status quo?",
-        type: "textarea",
-        placeholder: "What additional areas would you explore to understand where the current model may limit future outcomes?",
-        column: "right"
+        id: "biasBudget",
+        biasLabel: "\"Every new platform deployment runs over budget – it's going to be too expensive.\"",
+        riskLabel: "What are the unconsidered risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        type: "dual-textarea",
+      },
+      {
+        id: "biasAlignment",
+        biasLabel: "\"It will be too hard to get everyone aligned – executive team, IT, regional leaders, etc.\"",
+        riskLabel: "What are the unconsidered risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        type: "dual-textarea",
+      },
+      {
+        id: "biasAvaya",
+        biasLabel: "\"Avaya is working and they're continuously bringing new ideas. Why stop working with them?\"",
+        riskLabel: "What are the unconsidered risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        type: "dual-textarea",
+      },
+      {
+        id: "biasOther",
+        biasLabel: "Other:",
+        riskLabel: "What are the unconsidered risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        type: "dual-textarea",
       },
     ],
     wobble: {
       title: "Past Failure Revealed",
-      description: "Right before meeting with the VP of Customer Operations, one of the Regional Contact Center Directors gives you more insight: The LATAM region participated in a hybrid NiCE pilot last year. The pilot was highly disruptive to operations and agent workflows. Adoption was inconsistent and agent trust was eroded. Leadership ultimately pulled the program, and the failure influenced the decision to halt CX platform change globally.",
-      question: "Given this new information about the failed pilot, respond to the following:",
+      description: "Right before meeting with the VP of Customer Service Operations, we learn: The LATAM region participated in a hybrid NiCE pilot last year. The pilot was highly disruptive to operations and agent workflows. Adoption was inconsistent and agent trust was eroded. Leadership ultimately pulled the program.",
+      question: "What is the most effective way to discuss the pilot's failure so the conversation minimizes defensiveness and uncovers systemic lessons?",
       type: "text-questions",
       textQuestions: [
         {
-          id: "reframeInsight",
-          label: "What is one insight you would use to reframe why the pilot failed – in a way that helps the VP of Customer Operations see the root cause differently, without reinforcing fear or defensiveness?",
-          placeholder: "Describe your insight for reframing the failure..."
+          id: "reframeFailure",
+          label: "What is the most effective way to discuss the pilot's failure so the conversation minimizes defensiveness and uncovers systemic lessons?",
+          placeholder: "Describe how you would reframe the failure as a structural/operating model issue rather than a vendor or AI problem..."
         },
-        {
-          id: "discoveryQuestion",
-          label: "What question would you ask to learn more about why the pilot failed?",
-          placeholder: "Write a discovery question..."
-        }
       ],
-      // Text questions are scored by the AI - base points awarded for thoughtful completion
-      basePoints: 5,
+      // Scoring guidance for the AI evaluator:
+      // +6: Reframes the failure as an operating model and architectural alignment issue
+      // +4: Identifies fragmentation or weak enterprise governance as contributing factors
+      // +2: Shifts focus to future risk or change management but remains abstract
+      // -2: Blames NiCE as inferior vendor or recommends smaller/slower pilots
+      basePoints: 0, // AI evaluates quality and assigns 0-6 points
+      scoringGuidance: "Award up to +6 if they reframe the failure as an operating model and architectural alignment issue – showing how decentralized governance, inconsistent standards, and lack of orchestration made enterprise scale difficult. Award +4 if they identify fragmentation or weak governance as contributing factors but don't fully elevate to operating model design. Award +2 if they shift focus to future risk or change management but remain abstract. Award -2 if they blame NiCE as an inferior vendor, focus on missing features, or recommend smaller/slower pilots – reinforcing disruption fear.",
     },
     scoringCriteria: [
-      { name: "Insightfulness of Risks Surfaced", weight: 30, description: "Reframes status quo as structural constraint limiting resilience, agility, and future CX transformation", poor: "Restates known facts without reframing them as business risk", champion: "Reframes status quo as structural constraint showing how regional autonomy limits resilience, agility, and transformation" },
-      { name: "Use of Evidence", weight: 20, description: "Grounds insights in realistic financial services examples", poor: "Makes abstract claims with no supporting evidence", champion: "Grounds insights in realistic financial services examples showing how 'stable' environments struggle to adapt" },
-      { name: "Questions to Test Status Quo", weight: 30, description: "Questions help leaders recognize systemic risk masked by local metrics", poor: "Questions push for change directly or imply current approach is wrong", champion: "Questions help leaders recognize that optimizing AHT/CSAT locally masks systemic risk and constrains enterprise outcomes" },
-      { name: "Depth of Discovery Plan", weight: 20, description: "Demonstrates deliberate discovery path exposing architectural limitations", poor: "Discovery stays focused on current tools, processes, or isolated performance", champion: "Demonstrates deliberate discovery path that exposes how current architecture limits ability to test, scale, and govern AI-driven CX" },
+      { name: "Insightfulness of Risks Surfaced", weight: 35, description: "Reframes status quo as structural ceiling constraining the enterprise", poor: "Restates known facts (regional Avaya, risk aversion, compliance) without elevating them into enterprise or strategic risk.", champion: "Reframes the status quo as a structural ceiling – clearly demonstrating how decentralization, on-prem architecture, and regional autonomy constrain enterprise scalability, AI readiness, resilience, and long-term competitiveness. Articulates the personal risk for the executive." },
+      { name: "Use of Evidence/Credibility", weight: 35, description: "Grounds disruption in credible, defensible evidence", poor: "Makes abstract claims without data, comparisons, or relevant examples.", champion: "Grounds disruption in credible financial services examples and/or clear diagnostic logic that makes the risk tangible, defensible, and difficult to dismiss." },
+      { name: "Executive-Level Framing", weight: 30, description: "Links risks to CEO modernization and VP's personal risk", poor: "Frames risks at the operational or tool level without linking to executive priorities.", champion: "Positions the current operating model as misaligned with enterprise strategy — connecting operational constraints to CEO-level priorities (resilience, AI scalability, governance, long-term competitiveness). Explicitly connects to the VP's personal risks." },
+    ],
+    penalties: [
+      "References specific Genesys solutions and features, instead of focusing on business outcomes/risks in the customer's language",
+      "Attacks the current vendor (Avaya) directly instead of focusing on the customer business implications",
+      "Frames discussion only on cost savings without references to scalability, governance, resilience, or AI-readiness",
+      "Shifts into selling the future state benefits of Genesys instead of exposing current-state risk",
     ],
     icon: Zap,
     industryImage: "/industries/financial.png",
@@ -406,82 +435,85 @@ const simulationRounds = [
     title: "Hold the High Ground",
     subtitle: "Account Defense",
     motion: "Expansion",
-    description: "Secure and strengthen current account against AI pure-play intrusion",
+    description: "Defend incumbent position against AI pure-play insurgent",
     customer: {
       name: "Summit Ridge Retail Group",
       industry: "Retail: Omnichannel Consumer Goods",
       size: "~36,000 employees",
       revenue: "$18.9B USD",
-      currentSolution: "GC2 for past 6 years, added tokens 6 months ago",
+      currentSolution: "GC2 for past 6 years – added tokens 6 months ago",
+      contactCenters: "10 regional contact centers, 3 digital engagement hubs, 2,600 agents",
       logo: "/customers/summit.png",
     },
     context: [
-      "Genesys is viewed as a trusted and reliable CCaaS platform",
-      "Current CCaaS performance is solid; there is no active service crisis",
-      "Relationship strength sits primarily with the VP of Customer Experience",
-      "Renewal date is 12 months away",
-      "A new CIO has joined with a mandate to drive enterprise-wide digital transformation",
-      "CIO has engaged Accenture to shape the transformation roadmap, working with the AI Committee",
-      "Accenture is likely to recommend a hyperscaler platform solution (AWS Connect or Azure)",
-      "Executive focus shifting toward platform consolidation, data and AI strategy, long-term scalability",
+      "New CIO has mandate to modernize and reduce vendor complexity",
+      "Genesys is viewed as a trusted and reliable CCaaS platform – current performance is solid, and there is no active service crisis",
+      "CIO is leading a broader AI transformation initiative",
+      "Our relationship sits primarily with the VP of Customer Experience – the renewal date is 12 months away, and they've expressed some confusion around the AI token pricing model",
+      "AI Committee has cross-functional influence (IT, Digital, Data Science)",
+      "CIO is in talks with Sierra to explore agentic automation and LLM-powered customer engagement",
+      "Sierra is positioning itself as an AI layer that could sit above existing platforms and potentially reduce reliance on traditional CCaaS",
     ],
-    objective: "Preserve our position by attaching to the broader transformation and positioning Genesys as an innovator in AI-powered CX",
-    challenge: "Prepare our competitive strategy – elevating our capabilities to CIO-level priorities.",
-    // Layout: strategy selection + rationale paired, then remaining fields in 2x2
-    inputLayout: "strategyPaired",
+    objective: "Develop a competitive strategy focused on preserving our position. Our objective is to secure CIO-level alignment and defend against the AI Pure Play insurgent.",
+    challenge: "Define a strategy that protects our strategic position with the account.",
+    inputLayout: "stackedQuestions",
     inputFields: [
-      { id: "strategySelection", label: "Which strategy is most effective in this scenario?", type: "strategy-select", options: ["Direct", "Reframe", "Expand", "Pinpoint"], group: "strategy" },
-      { id: "strategyRationale", label: "Given what's changing in the account, why is this the right strategy?", type: "textarea", placeholder: "Explain your strategic rationale...", group: "strategy" },
-      { id: "keyActions", label: "What 2-3 actions can we take in the next 30 days to drive this strategy?", type: "textarea", placeholder: "List specific, actionable steps..." },
-      { id: "keyMessages", label: "What messages communicate our POV on AI-powered CX?", type: "textarea", placeholder: "Draft key messaging points..." },
-      { id: "mustBeTrue", label: "What must be true for Genesys to remain a strategic choice as decisions progress?", type: "textarea", placeholder: "Identify critical success factors..." },
+      { id: "keyMessages", label: "What messages reinforce and differentiate our position?", type: "textarea", placeholder: "Draft key messaging points that elevate our AI-powered CX positioning..." },
+      { id: "sierraCounterplay", label: "In what ways may Sierra position us as the risk? How can we proactively address these?", type: "textarea", placeholder: "Anticipate Sierra's narrative and prepare counterpoints..." },
+      { id: "keyActions", label: "What 2-3 actions can we take in the next 30 days to drive this strategy?", type: "textarea", placeholder: "List specific, actionable steps with clear ownership..." },
+      { id: "infoNeeded", label: "What other information do we need to understand to determine the right strategy?", type: "textarea", placeholder: "Identify gaps in our knowledge and how to fill them..." },
     ],
+    // Account Plan Snapshot and Selected Customer Data (printed materials, referenced by AI for evaluation)
+    accountPlanSnapshot: {
+      relationshipStrategy: [
+        { department: "Customer Experience", title: "VP, Customer Experience", buyingRole: "Champion", relationship: "Strong; 6-year relationship", riskSignal: "Influence declining in enterprise decisions", strategyFocus: "Leverage credibility; expand influence upward" },
+        { department: "IT", title: "CIO (New Hire)", buyingRole: "Economic Buyer", relationship: "No established relationship", riskSignal: "Driving enterprise transformation", strategyFocus: "Establish executive alignment quickly" },
+        { department: "AI Committee", title: "Cross-Functional (Data + IT)", buyingRole: "Influencer Collective", relationship: "Unknown visibility", riskSignal: "Shaping evaluation criteria", strategyFocus: "Gain access; influence scoring logic" },
+        { department: "Finance", title: "CFO", buyingRole: "Influencer", relationship: "Indirect", riskSignal: "Focused on consolidation savings", strategyFocus: "Tie AI impact to cost discipline" },
+        { department: "External Advisor", title: "Accenture", buyingRole: "Strategic Advisor", relationship: "High influence with CIO", riskSignal: "May favor hyperscaler alignment", strategyFocus: "Neutralize; position as platform partner" },
+      ],
+      accountAssessment: [
+        { category: "Executive Sponsorship", rating: "3/5", interpretation: "Strong in CX; weak at CIO level", riskIndicator: "Enterprise influence gap" },
+        { category: "Value Position", rating: "3/5", interpretation: "Operationally strong; not yet positioned as transformation partner", riskIndicator: "Platform perception risk" },
+        { category: "Competitive Position", rating: "3/5", interpretation: "Stable incumbent; AI pure play pressure emerging", riskIndicator: "Defensive strategy required" },
+        { category: "Displacement Risk", rating: "Medium-High", interpretation: "CIO-led evaluation underway", riskIndicator: "Evaluation criteria shifting" },
+        { category: "Adoption Depth", rating: "4/5", interpretation: "Mature deployment across 2,600 agents", riskIndicator: "Strong operational proof" },
+        { category: "Growth Potential", rating: "4/5", interpretation: "AI expansion opportunity", riskIndicator: "Must align to enterprise agenda" },
+      ],
+    },
     wobble: {
-      title: "AI Pure-Play Threat",
-      description: "The VP of Customer Experience informs you that the AI Committee is recommending a pilot of an AI pure-play – changing how CX value is being evaluated: AI competitors are reframing CX primarily as a cost takeout lever. CX decisions are shifting toward enterprise AI and data economics. Genesys is increasingly viewed through a seat-based lens, rather than as an AI innovator. Influence is moving toward the CIO, AI Committee, and Accenture.",
-      question: "Rank the following strategy adjustments from most effective to least effective.",
+      title: "AI Pure-Play Threat Escalation",
+      description: "The VP of Customer Experience shares new information: The CIO is accelerating a cloud consolidation strategy centered on AWS. The AI Committee is close to approving a pilot of Sierra – positioned as an AI-native CX layer running on AWS infrastructure. The framing is shifting from 'customer experience platform' to 'AI-driven automation and cost efficiency aligned to AWS'.",
+      question: "Rank the following strategic adjustments from most effective to least effective.",
       type: "ranking",
       shuffleOptions: true,
       options: [
-        { id: "Reframe", text: "Reframe", detail: "Reposition Genesys as the AI-powered CX execution layer within the broader enterprise transformation, aligning closely with Accenture and the CIO agenda." },
-        { id: "Expand", text: "Expand", detail: "Expand the decision beyond contact center efficiency to include journey orchestration, data activation, and enterprise-wide CX outcomes." },
-        { id: "Pinpoint", text: "Pinpoint", detail: "Defend and deepen a high-value CX domain where Genesys is uniquely strong, creating a protected foothold while broader decisions unfold." },
-        { id: "Direct", text: "Direct", detail: "Directly counter the AI pure-play by defending Genesys on cost efficiency, feature parity, and near-term ROI." },
+        { id: "A", text: "Broaden the executive conversation", detail: "Broaden the executive conversation from an AI agent pilot to enterprise CX orchestration – positioning Genesys as the layer that connects AI, humans, journeys, and systems across channels and regions (regardless of cloud provider)." },
+        { id: "B", text: "Discourage the Sierra pilot", detail: "Discourage the Sierra pilot by emphasizing that Genesys already delivers comparable AI capabilities – positioning Sierra as redundant and introducing unnecessary complexity into the stack." },
+        { id: "C", text: "Partner with AWS leadership", detail: "Actively partner with AWS leadership to reinforce alignment with the CIO's cloud consolidation strategy – positioning Genesys as the preferred CX orchestration partner within AWS and discouraging the need for an external AI Pure Play." },
+        { id: "D", text: "Allow the Sierra pilot to proceed", detail: "Allow the Sierra pilot to proceed, but reposition Genesys as the enterprise orchestration and governance layer that integrates and operationalizes AI agents – ensuring scale, workforce integration, and measurable business outcomes." },
       ],
-      // Scoring table for rankings
       rankingScores: {
-        "Reframe,Expand,Pinpoint,Direct": 10,
-        "Expand,Reframe,Pinpoint,Direct": 8,
-        "Reframe,Expand,Direct,Pinpoint": 8,
-        "Reframe,Pinpoint,Expand,Direct": 8,
-        "Expand,Pinpoint,Reframe,Direct": 6,
-        "Expand,Reframe,Direct,Pinpoint": 6,
-        "Pinpoint,Reframe,Expand,Direct": 6,
-        "Reframe,Direct,Expand,Pinpoint": 6,
-        "Reframe,Pinpoint,Direct,Expand": 6,
-        "Direct,Reframe,Expand,Pinpoint": 3,
-        "Expand,Direct,Reframe,Pinpoint": 3,
-        "Expand,Pinpoint,Direct,Reframe": 3,
-        "Pinpoint,Expand,Reframe,Direct": 3,
-        "Pinpoint,Reframe,Direct,Expand": 3,
-        "Reframe,Direct,Pinpoint,Expand": 3,
-        "Direct,Expand,Reframe,Pinpoint": 0,
-        "Direct,Reframe,Pinpoint,Expand": 0,
-        "Expand,Direct,Pinpoint,Reframe": 0,
-        "Pinpoint,Direct,Reframe,Expand": 0,
-        "Pinpoint,Expand,Direct,Reframe": 0,
-        "Direct,Expand,Pinpoint,Reframe": -2,
-        "Direct,Pinpoint,Reframe,Expand": -2,
-        "Pinpoint,Direct,Expand,Reframe": -2,
-        "Direct,Pinpoint,Expand,Reframe": -5,
+        "C,A,B,D": 10, "C,A,D,B": 8, "C,B,A,D": 8, "C,B,D,A": 6,
+        "C,D,A,B": 6, "C,D,B,A": 4, "A,C,B,D": 4, "A,C,D,B": 4,
+        "A,B,C,D": 2, "A,B,D,C": -2, "A,D,C,B": 2, "A,D,B,C": -3,
+        "B,C,A,D": 0, "B,C,D,A": 0, "B,A,C,D": 0, "B,A,D,C": 0,
+        "B,D,C,A": -5, "B,D,A,C": -2, "D,C,A,B": -5, "D,C,B,A": -5,
+        "D,A,C,B": -5, "D,A,B,C": -5, "D,B,C,A": -5, "D,B,A,C": -5,
       },
     },
     scoringCriteria: [
-      { name: "Competitive Strategy Selection", weight: 25, description: "Selects Reframe to reposition Genesys as AI-powered CX innovation layer", poor: "Selects Direct without acknowledging Accenture, hyperscalers, or CIO-led transformation", champion: "Selects Reframe to reposition Genesys as AI-powered CX innovation layer within Accenture-led ecosystem" },
-      { name: "Competitive & Partner Awareness", weight: 20, description: "Demonstrates ecosystem fluency positioning Genesys as complementary to Accenture", poor: "Focuses primarily on Contact Center Director or Genesys-only relationships", champion: "Demonstrates ecosystem fluency by positioning Genesys as complementary to Accenture and differentiated from hyperscalers" },
-      { name: "AI Positioning & Differentiation", weight: 20, description: "Positions AI-powered CX as execution layer converting enterprise AI strategy into outcomes", poor: "Generic AI claims with no differentiation", champion: "Positions AI-powered CX as execution layer that converts enterprise AI strategy into measurable business outcomes" },
-      { name: "Strategic Messaging Quality", weight: 20, description: "Delivers executive-level narrative elevating CX as critical to transformation success", poor: "Product- or CCaaS-centric messaging", champion: "Delivers clear, executive-level narrative that elevates CX as critical to enterprise AI and digital transformation success" },
-      { name: "Actionability & Focus", weight: 15, description: "Actions directly reduce displacement risk and protect strategic position", poor: "Vague or generic next steps with no link to account risk", champion: "Actions directly reduce displacement risk, strengthen Accenture alignment, and protect strategic position" },
+      { name: "Strategic Positioning", weight: 30, description: "Repositions Genesys as AI-powered CX execution layer that enables enterprise AI", poor: "Reacts defensively to the AI pure play or focuses on feature comparisons (bots, roadmap, pricing). No clear strategic posture.", champion: "Repositions Genesys as the AI-powered CX execution layer that enables enterprise AI to scale safely and measurably – explicitly neutralizing the AI pure play's narrative advantage and elevating discussion to architectural strategy." },
+      { name: "Ecosystem Awareness", weight: 20, description: "Demonstrates ecosystem fluency across decision makers and governance bodies", poor: "Focuses primarily on existing VP relationship or treats the AI pure play as a competitor to beat.", champion: "Demonstrates ecosystem fluency – positions Genesys within the broader enterprise AI narrative, adapts to decision makers and governance bodies, and accounts for renewal timing and political risk." },
+      { name: "AI Differentiation & Enterprise Framing", weight: 20, description: "Positions AI-powered CX as execution engine converting AI strategy into governed impact", poor: "Makes generic AI claims (automation, bots, efficiency) with no CIO-level relevance or differentiation.", champion: "Positions AI-powered CX as the execution engine that converts enterprise AI strategy into governed, scalable business impact – clearly differentiated from AI point solutions focused on experimentation." },
+      { name: "Strategic Messaging Quality", weight: 15, description: "Delivers compelling executive narrative elevating CX as critical to enterprise AI success", poor: "Product- or CCaaS-centric language focused on features or performance metrics.", champion: "Delivers a compelling executive narrative that elevates CX as critical to enterprise AI success and positions Genesys as a strategic architectural choice – not a replaceable application." },
+      { name: "Actionability & Risk Mitigation", weight: 15, description: "Proposes targeted actions that reduce AI pure play displacement risk", poor: "Vague or generic next steps with no link to displacement risk.", champion: "Proposes targeted actions that reduce AI pure play displacement risk, strengthen CIO/AI Committee alignment, clarify AI value narrative, and protect Genesys' architectural role ahead of renewal decisions." },
+    ],
+    penalties: [
+      "References specific Genesys technical features instead of operational differentiation and business outcomes",
+      "Attacks the AI Pure Play directly rather than focusing on the enterprise strategic opportunity",
+      "Frames the discussion as speed and comfort vs future benefits",
+      "Fails to elevate the conversation beyond technical stakeholders",
     ],
     icon: Shield,
     industryImage: "/industries/retail.png",
@@ -491,28 +523,29 @@ const simulationRounds = [
     title: "Capture More Share",
     subtitle: "Account Expansion",
     motion: "Pure-Play AI",
-    description: "Expand current account footprint and business impact",
+    description: "Expand global CX platform footprint and build executive confidence",
     customer: {
       name: "Orion Global Logistics",
       industry: "Logistics & Supply Chain Services",
       size: "~52,000 employees",
       revenue: "$21.4B USD",
       currentSolution: "GC3 in EMEA; mix of legacy on-prem and cloud in other regions",
+      contactCenters: "14 regional contact centers, 5 global operations hubs, 3,400 agents",
       logo: "/customers/orion.png",
     },
     context: [
-      "EMEA deployment viewed as successful and stable with improved customer data visibility and agent productivity",
-      "Outside EMEA, CX is fragmented, costly, and difficult to manage consistently",
-      "CX leadership is advocating for global platform expansion to standardize experience and enable AI-driven efficiency",
-      "Expansion requires executive committee approval",
-      "CIO and CFO are jointly evaluating investment size, timing, and migration risk across regions",
-      "Company is under margin pressure and cost discipline is high",
+      "CX leadership is advocating for global platform expansion to standardize experience and reduce tech sprawl",
+      "The EMEA deployment is successful and stable, with improved customer data visibility and agent productivity; however, CX remains fragmented across other regions",
+      "There is no enterprise framework for IT/data governance, and regional deployments use automation differently – limiting the ability to scale globally",
+      "CIO and CFO are jointly evaluating investment size, timing, migration risk, operational alignment, and long-term economics",
+      "Global platform decisions of this scale require executive committee approval – the CFO is asking for predictability and clear ROI models",
+      "Company is under margin pressure; cost discipline and ROI clarity are non-negotiable",
+      "We have strong advocates on the global Customer Experience team and within EMEA leadership; they have committed to connecting us with executive and regional leaders",
     ],
-    objective: "Shore up executive confidence in Genesys as a global, AI-powered CX platform and our proposed roadmap",
+    objective: "Our objective is to build up executive confidence in Genesys as a global, AI-powered CX platform. Using the Deal Review Framework, collaborate on actions to improve our win probability and minimize deal risk.",
     challenge: "Using the Deal Review Framework, define actions to address executive decision risks in favor of our CX platform expansion initiative.",
-    inputFields: [], // This round uses the deal review checklist instead
+    inputFields: [],
     useDealReviewChecklist: true,
-    // Pre-filled Deal Review Framework - users only provide Next Actions for "No" items
     dealReviewChecklist: [
       {
         section: "Value Alignment",
@@ -521,7 +554,7 @@ const simulationRounds = [
             id: "transformationVision",
             label: "Business decision-makers have a defined transformation vision (including CX, AI, digital) that we can attach our solutions to.",
             prefilled: "yes",
-            evidence: "CX leadership recommended standardization. CIO/CFO mandated the VP of Data Science and AI to evaluate global platform solutions."
+            evidence: "CX leadership formally proposed global standardization initiative. CIO/CFO mandated enterprise evaluation of global CX platforms tied to AI and data strategy. AI viewed as strategic, not isolated automation."
           },
           {
             id: "transformationPartner",
@@ -550,7 +583,7 @@ const simulationRounds = [
             id: "broughtInsights",
             label: "We have brought insights based on our incumbency or market experience to help the customer see what they haven't.",
             prefilled: "no",
-            evidence: "Initial conversations with VP of Data Science and AI have signaled shift to a global approach, but concerns about migration risks persist."
+            evidence: "Initial conversation with VP of Data Science and AI have signaled shift to a global approach, but concerns about migration risks persist."
           },
           {
             id: "uncoveredGaps",
@@ -562,7 +595,7 @@ const simulationRounds = [
             id: "partneringChampion",
             label: "We are partnering with a champion to build stakeholder alignment around value opportunities, challenges, etc.",
             prefilled: "yes",
-            evidence: "We have strong sponsors in EMEA leaders and in the global CX function. Must test for influence on global approach."
+            evidence: "We have strong sponsors in EMEA leaders and in the global CX function. Must activate influence on global approach."
           },
           {
             id: "validatedUrgency",
@@ -577,7 +610,7 @@ const simulationRounds = [
         items: [
           {
             id: "businessCase",
-            label: "Our co-created business case shows how Genesys can influence business outcomes (e.g., cost reduction, customer satisfaction).",
+            label: "Our co-created business case shows how Genesys can influence business outcomes (e.g., cost reduction, customer satisfaction, etc.).",
             prefilled: "no",
             evidence: "EMEA success story exists, but has not been translated to enterprise cost/risk/impact model."
           },
@@ -590,8 +623,8 @@ const simulationRounds = [
           {
             id: "championArticulate",
             label: "Our champion and decision-makers can confidently articulate our value in business terms — emphasizing 'why Genesys' and 'why now'.",
-            prefilled: "yes",
-            evidence: "EMEA and CX leaders are strong supporters of our platform and impact – need to activate with other stakeholders, particularly CIO and CFO."
+            prefilled: "no",
+            evidence: "EMEA and CX leaders are strong supporters of our platform and impact, but need to engage other stakeholders, particularly CIO and CFO."
           },
           {
             id: "milestones",
@@ -602,38 +635,57 @@ const simulationRounds = [
         ],
       },
     ],
+    // Account Plan Snapshot (printed materials, referenced by AI for evaluation)
+    accountPlanSnapshot: {
+      relationshipStrategy: [
+        { department: "Customer Experience", title: "VP, Global CX", buyingRole: "Champion", relationship: "Strong (EMEA only)", riskSignal: "Influence limited at enterprise level", strategyFocus: "Elevate regional success to enterprise narrative" },
+        { department: "IT", title: "CIO", buyingRole: "Economic Buyer", relationship: "Limited", riskSignal: "Only 1 executive touchpoint in 12 months", strategyFocus: "Establish executive cadence; align to global standardization priorities" },
+        { department: "Finance", title: "CFO", buyingRole: "Economic Buyer", relationship: "None", riskSignal: "No direct engagement; controls >$5M investments", strategyFocus: "Build CFO-ready ROI model; align to payback expectations" },
+        { department: "Executive Committee", title: "CIO, CFO, COO", buyingRole: "Final Approval", relationship: "None", riskSignal: "No presentation delivered; required for expansion approval", strategyFocus: "Secure executive forum; present structured trade-off options" },
+        { department: "Regional Ops – EMEA", title: "Director, CC Ops", buyingRole: "Influencer", relationship: "Strong", riskSignal: "Regional proof only", strategyFocus: "Use measurable impact as enterprise case study" },
+        { department: "Regional Ops – NA/APAC/LATAM", title: "Regional Ops Leaders", buyingRole: "Influencer", relationship: "Mixed", riskSignal: "Migration resistance risk", strategyFocus: "Clarify phased sequencing and risk mitigation" },
+        { department: "External Advisor", title: "Transformation Partner", buyingRole: "Influencer", relationship: "Neutral-to-Competitive", riskSignal: "Shapes CIO evaluation criteria", strategyFocus: "Position platform as aligned to enterprise architecture" },
+      ],
+      accountAssessment: [
+        { category: "Executive Sponsorship", rating: "2/5", interpretation: "Limited CIO engagement; no CFO access", riskIndicator: "High executive alignment risk" },
+        { category: "Value Position", rating: "3/5", interpretation: "Strong EMEA proof; enterprise case incomplete", riskIndicator: "ROI translation gap" },
+        { category: "Competitive Position", rating: "3/5", interpretation: "Strong regional incumbents; exposed in consolidation review", riskIndicator: "Hyperscaler pressure" },
+        { category: "Growth Potential", rating: "5/5", interpretation: "$8–12M expansion opportunity", riskIndicator: "High upside under scrutiny" },
+        { category: "Renewal Risk", rating: "Medium", interpretation: "Modernization required; timing pressure", riskIndicator: "Migration risk exposure" },
+        { category: "Adoption Depth", rating: "3/5", interpretation: "Mature in EMEA; uneven globally", riskIndicator: "Expansion execution risk" },
+      ],
+    },
     wobble: {
       title: "Budget Cut Directive",
-      description: "Following a weak earnings call, the CFO mandates a 30% reduction in investment, while still expecting delivery against the target outcomes. The CFO is explicitly asking for trade-offs and bottom-line impact, not optimism. Reducing investment might not mean reducing scope, but instead a phased approach.",
+      description: "After a weak earnings call, the CFO is calling for significant cost reduction across the enterprise. The mandate is to reduce tech spend by 20-30% over the next 12 months.",
       question: "Given this update, which TWO actions best maintain executive confidence and decision momentum? Select top two.",
       type: "multi-select",
       maxSelections: 2,
       options: [
-        { id: "A", text: "Reframe investment as phased, outcome-locked roadmap", detail: "Position a reduced Year 1 investment tied to hard cost and efficiency outcomes, with explicit expansion gates based on CFO-approved metrics." },
-        { id: "B", text: "Narrow scope to highest-cost regions to accelerate payback", detail: "Focus initial expansion only on regions with highest cost-to-serve and operational inefficiency, deferring lower-impact geos." },
+        { id: "A", text: "Reframe the investment as a phased, outcome-based roadmap", detail: "Position a reduced Year 1 investment tied to hard cost and efficiency outcomes, with explicit expansion gates based on CFO-approved metrics." },
+        { id: "B", text: "Narrow scope to the highest-cost regions to accelerate payback", detail: "Focus initial expansion only on regions with the highest cost-to-serve and operational inefficiency, deferring lower-impact geos." },
         { id: "C", text: "Present explicit trade-offs and consequences of each option", detail: "Lay out 2-3 investment scenarios (full, phased, reduced), clearly showing what is gained and lost in cost, risk, and AI maturity." },
-        { id: "D", text: "Align with CFO on near-term financial proof points", detail: "Shift the conversation to CFO-defined success metrics (opex reduction, margin protection, avoided spend) before revisiting CX expansion." },
+        { id: "D", text: "Align with the CFO on near-term financial proof points", detail: "Shift the conversation to CFO-defined success metrics (opex reduction, margin protection, avoided spend) before revisiting CX expansion." },
         { id: "E", text: "Proactively reduce Genesys' commercial footprint to preserve momentum", detail: "Offer temporary pricing, ramp schedules, or contractual flexibility to reduce near-term cash impact while keeping the deal alive." },
       ],
       multiSelectScores: {
-        "A,C": 10,
-        "C,D": 8,
-        "A,D": 8,
-        "A,B": 6,
-        "B,C": 6,
-        "B,D": 4,
-        "C,E": 4,
-        "A,E": 2,
-        "D,E": 0,
-        "B,E": 0,
+        "A,C": 10, "C,D": 8, "A,D": 8, "A,B": 6, "B,C": 6,
+        "B,D": 4, "C,E": 4, "A,E": 2, "D,E": 0, "B,E": 0,
       },
     },
     scoringCriteria: [
-      { name: "Alignment to CIO/CFO Decision Risks", weight: 25, description: "Actions directly de-risk global platform decision with CIO/CFO-specific steps", poor: "Actions focus on CX leadership only; CIO/CFO concerns not addressed", champion: "Actions directly de-risk the global platform decision with CIO/CFO-specific steps" },
-      { name: "Global Platform & AI Positioning", weight: 25, description: "Actions position Genesys as enterprise CX + AI execution layer across regions", poor: "Actions reinforce regional autonomy or pilots; AI treated as optional", champion: "Actions position Genesys as the enterprise CX + AI execution layer across regions" },
-      { name: "Action Coverage Across Roles", weight: 25, description: "Fully orchestrated actions across roles with clear ownership and sequencing", poor: "Actions concentrated in 1-2 roles; regional or siloed execution", champion: "Fully orchestrated actions across roles with clear ownership, sequencing, and handoffs" },
-      { name: "Trade-Off Framing", weight: 15, description: "Proactively frames trade-offs to help executives choose a path", poor: "Assumes expansion is universally positive; avoids trade-offs", champion: "Proactively frames trade-offs to help executives choose a path" },
-      { name: "Sequencing & Global Momentum", weight: 10, description: "Clear sequencing tied to executive milestones and global rollout governance", poor: "Actions are unordered or region-specific; no path to approval", champion: "Clear sequencing tied to executive milestones and global rollout governance" },
+      { name: "Alignment to CIO/CFO Decision Risks", weight: 25, description: "Actions directly de-risk the global platform decision with CIO/CFO-specific mitigation", poor: "Actions focus primarily on CX leadership priorities; CIO/CFO concerns (cost predictability, migration risk, governance, AI economics) are not addressed.", champion: "Actions directly de-risk the global platform decision with CIO/CFO-specific mitigation plans — including AI token economics clarity, governance model, migration risk sequencing, and measurable ROI framing." },
+      { name: "Global Platform & AI Positioning", weight: 25, description: "Positions Genesys as enterprise CX + AI execution layer enabling LAMs and governance", poor: "Actions reinforce regional autonomy or pilots; AI framed as incremental efficiency or optional add-on.", champion: "Positions Genesys as the enterprise CX + AI execution layer — enabling action-based AI (LAMs), governance, and predictable AI economics across regions; clearly differentiated from regional tools or infrastructure-only platforms." },
+      { name: "Action Coverage Across Roles", weight: 25, description: "Fully orchestrated cross-role plan with clear ownership and sequencing", poor: "Actions concentrated in 1-2 roles (e.g., AE-only); no executive motion; regional or siloed execution.", champion: "Fully orchestrated cross-role plan with clear ownership, sequencing, and executive touchpoints — demonstrating internal alignment equal to the global expansion ambition." },
+      { name: "Trade-Off Framing", weight: 15, description: "Proactively frames trade-offs in a decision-ready way for executives", poor: "Assumes expansion is universally positive; avoids naming trade-offs.", champion: "Proactively frames trade-offs in a decision-ready way — helping executives choose a path with clarity on AI economics, migration sequencing, and risk containment." },
+      { name: "Sequencing & Global Momentum", weight: 10, description: "Clear executive-aligned sequencing tied to approval gates and phased AI rollout", poor: "Actions are unordered, region-specific, or lack a path to executive approval.", champion: "Clear executive-aligned sequencing tied to approval gates, global governance structure, and phased AI rollout — creating momentum toward enterprise-scale adoption." },
+    ],
+    penalties: [
+      "Frames expansion primarily around EMEA success without translating into global governance, sequencing, or executive-ready business case",
+      "Fails to address CIO/CFO concerns around predictability of AI consumption costs",
+      "Roadmap does not take cross-functional and cross-regional milestones into account",
+      "No actions defined for CSM",
+      "No actions defined for BDR",
     ],
     icon: Rocket,
     industryImage: "/industries/logistics.png",
@@ -892,6 +944,26 @@ export default function GenesysSimulation() {
         if (!hasTeamContent) {
           submissionText += "(No next actions provided by the team)\n";
         }
+      } else if (currentRound.inputLayout === "statusQuoBiases") {
+        // Format status quo biases with dual fields per bias
+        submissionText = "Status Quo Bias Analysis:\n\n";
+        currentRound.inputFields.forEach(field => {
+          submissionText += `Bias: ${field.biasLabel}\n`;
+          if (formData[`${field.id}_risk`]) {
+            submissionText += `Unconsidered Risks:\n${formData[`${field.id}_risk`]}\n`;
+          }
+          if (formData[`${field.id}_evidence`]) {
+            submissionText += `Evidence/Diagnostic Action:\n${formData[`${field.id}_evidence`]}\n`;
+          }
+          submissionText += "\n";
+        });
+      } else if (currentRound.inputLayout === "threeColumnPlusOne") {
+        // Format three-column layout with labels
+        currentRound.inputFields.forEach(field => {
+          if (formData[field.id]) {
+            submissionText += `${field.label}:\n${formData[field.id]}\n\n`;
+          }
+        });
       } else {
         currentRound.inputFields.forEach(field => {
           if (formData[field.id]) {
@@ -917,6 +989,8 @@ export default function GenesysSimulation() {
             challenge: currentRound.challenge,
             context: currentRound.context,
             scoringCriteria: currentRound.scoringCriteria,
+            penalties: currentRound.penalties,
+            accountPlanSnapshot: currentRound.accountPlanSnapshot,
             wobble: { title: currentRound.wobble.title, description: currentRound.wobble.description },
           },
           phase: "initial",
@@ -1007,10 +1081,13 @@ export default function GenesysSimulation() {
             challenge: currentRound.challenge,
             context: currentRound.context,
             scoringCriteria: currentRound.scoringCriteria,
+            penalties: currentRound.penalties,
+            accountPlanSnapshot: currentRound.accountPlanSnapshot,
             wobble: {
               title: currentRound.wobble.title,
               description: currentRound.wobble.description,
               question: currentRound.wobble.question,
+              scoringGuidance: currentRound.wobble.scoringGuidance,
             },
           },
           phase: "wobble",
@@ -1042,7 +1119,6 @@ export default function GenesysSimulation() {
           finalScore,
           finalFeedback: result.coaching,
           finalCriteriaScores: result.score.criteria,
-          discussionSummary: result.discussionSummary,
         },
       };
       setSubmissions(newSubmissions);
@@ -1099,7 +1175,7 @@ export default function GenesysSimulation() {
             <div className="text-center mb-8">
               <img src="/genesys-logo.png" alt="Genesys" className="h-16 mx-auto mb-6" />
               <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2" style={{ color: theme.white }}>
-                Sales Simulation
+                The Game
               </h1>
             </div>
 
@@ -1265,7 +1341,7 @@ export default function GenesysSimulation() {
                 >
                   <p className="text-sm" style={{ color: theme.muted }}>
                     Look for your team name on the big screen!<br />
-                    Wait for the facilitator to begin the simulation.
+                    Wait for the facilitator to begin The Game.
                   </p>
                 </div>
 
@@ -1590,136 +1666,104 @@ export default function GenesysSimulation() {
                         </div>
                       );
 
-                      // Layout: Single question at top, then 2x2 grid
-                      if (currentRound.inputLayout === "singleTop-2x2") {
-                        const [firstField, ...restFields] = currentRound.inputFields;
+                      // Layout: Three columns top row + one full-width bottom (Round 1)
+                      if (currentRound.inputLayout === "threeColumnPlusOne") {
+                        const columnFields = currentRound.inputFields.filter(f => f.column);
+                        const fullWidthFields = currentRound.inputFields.filter(f => f.fullWidth);
                         return (
                           <>
-                            {/* Single question at top */}
-                            <div className="mb-6">
-                              {renderField(firstField)}
+                            <div className="grid md:grid-cols-3 gap-4 mb-4">
+                              {columnFields.map((field) => (
+                                <div key={field.id}>
+                                  <h3 className="text-base font-bold mb-1" style={{ color: roundColor }}>{field.label}</h3>
+                                  <p className="text-xs mb-2" style={{ color: theme.muted }}>{field.sublabel}</p>
+                                  <textarea
+                                    value={formData[field.id] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                    placeholder={field.placeholder}
+                                    className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                                    rows={8}
+                                    style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                  />
+                                </div>
+                              ))}
                             </div>
-                            {/* 2x2 grid for remaining questions */}
-                            <div className="grid md:grid-cols-2 gap-4">
-                              {restFields.map(renderField)}
-                            </div>
+                            {fullWidthFields.map((field) => (
+                              <div key={field.id}>
+                                <h3 className="text-base font-bold mb-1" style={{ color: roundColor }}>{field.label}</h3>
+                                <p className="text-xs mb-2" style={{ color: theme.muted }}>{field.sublabel}</p>
+                                <textarea
+                                  value={formData[field.id] || ''}
+                                  onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                  placeholder={field.placeholder}
+                                  className="w-full px-4 py-3 rounded-xl text-sm resize-none"
+                                  rows={4}
+                                  style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                />
+                              </div>
+                            ))}
                           </>
                         );
                       }
 
-                      // Layout: Two columns side by side with headers (Round 2)
-                      if (currentRound.inputLayout === "twoColumnHeaders") {
-                        const leftField = currentRound.inputFields.find(f => f.column === "left");
-                        const rightField = currentRound.inputFields.find(f => f.column === "right");
+                      // Layout: Status Quo Biases table (Round 2)
+                      if (currentRound.inputLayout === "statusQuoBiases") {
                         return (
-                          <div className="grid md:grid-cols-2 gap-6">
-                            {/* Left Column */}
-                            <div>
-                              <h3 className="text-xl font-bold mb-3" style={{ color: roundColor }}>{leftField.header}</h3>
-                              <p className="text-sm mb-3" style={{ color: theme.muted }}>{leftField.label}</p>
-                              <textarea
-                                value={formData[leftField.id] || ''}
-                                onChange={(e) => setFormData({ ...formData, [leftField.id]: e.target.value })}
-                                placeholder={leftField.placeholder}
-                                className="w-full px-4 py-3 rounded-xl text-sm resize-none"
-                                rows={10}
-                                style={{
-                                  backgroundColor: theme.dark,
-                                  border: `1px solid ${theme.darkMuted}`,
-                                  color: theme.white,
-                                }}
-                              />
-                            </div>
-                            {/* Right Column */}
-                            <div>
-                              <h3 className="text-xl font-bold mb-3" style={{ color: roundColor }}>{rightField.header}</h3>
-                              <p className="text-sm mb-3" style={{ color: theme.muted }}>{rightField.label}</p>
-                              <textarea
-                                value={formData[rightField.id] || ''}
-                                onChange={(e) => setFormData({ ...formData, [rightField.id]: e.target.value })}
-                                placeholder={rightField.placeholder}
-                                className="w-full px-4 py-3 rounded-xl text-sm resize-none"
-                                rows={10}
-                                style={{
-                                  backgroundColor: theme.dark,
-                                  border: `1px solid ${theme.darkMuted}`,
-                                  color: theme.white,
-                                }}
-                              />
-                            </div>
+                          <div className="space-y-5">
+                            {currentRound.inputFields.map((field) => (
+                              <div key={field.id} className="p-4 rounded-xl" style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}` }}>
+                                <div className="mb-3 pb-3 border-b" style={{ borderColor: theme.darkMuted }}>
+                                  <p className="text-sm font-bold italic" style={{ color: theme.white }}>{field.biasLabel}</p>
+                                  {field.biasContext && <p className="text-xs mt-1" style={{ color: theme.subtle }}>{field.biasContext}</p>}
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-xs font-medium mb-2 block" style={{ color: theme.muted }}>{field.riskLabel}</label>
+                                    <textarea
+                                      value={formData[`${field.id}_risk`] || ''}
+                                      onChange={(e) => setFormData({ ...formData, [`${field.id}_risk`]: e.target.value })}
+                                      placeholder="Identify hidden, unconsidered risks..."
+                                      className="w-full px-3 py-2 rounded-lg text-sm resize-none"
+                                      rows={4}
+                                      style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-medium mb-2 block" style={{ color: theme.muted }}>{field.evidenceLabel}</label>
+                                    <textarea
+                                      value={formData[`${field.id}_evidence`] || ''}
+                                      onChange={(e) => setFormData({ ...formData, [`${field.id}_evidence`]: e.target.value })}
+                                      placeholder="Data, comparisons, or diagnostic actions..."
+                                      className="w-full px-3 py-2 rounded-lg text-sm resize-none"
+                                      rows={4}
+                                      style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         );
                       }
 
-                      // Layout: Strategy selection paired with rationale, then remaining fields
-                      if (currentRound.inputLayout === "strategyPaired") {
-                        const strategyFields = currentRound.inputFields.filter(f => f.group === "strategy");
-                        const otherFields = currentRound.inputFields.filter(f => f.group !== "strategy");
-                        const strategySelect = strategyFields.find(f => f.type === "strategy-select");
-                        const strategyRationale = strategyFields.find(f => f.type === "textarea");
-
+                      // Layout: Stacked questions (Round 3)
+                      if (currentRound.inputLayout === "stackedQuestions") {
                         return (
-                          <>
-                            {/* Strategy Selection + Rationale in connected group */}
-                            <div className="p-5 rounded-xl mb-6" style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}` }}>
-                              {/* Strategy Selection */}
-                              <label className="text-sm font-medium mb-3 block" style={{ color: theme.white }}>
-                                {strategySelect.label}
-                              </label>
-                              <div className="grid grid-cols-4 gap-3 mb-5">
-                                {strategySelect.options.map((opt) => (
-                                  <button
-                                    key={opt}
-                                    onClick={() => setFormData({ ...formData, [strategySelect.id]: opt })}
-                                    className={`p-4 rounded-xl text-center transition-all ${
-                                      formData[strategySelect.id] === opt ? 'ring-2' : ''
-                                    }`}
-                                    style={{
-                                      backgroundColor: formData[strategySelect.id] === opt ? `${roundColor}20` : theme.darker,
-                                      color: formData[strategySelect.id] === opt ? roundColor : theme.white,
-                                      ringColor: roundColor,
-                                    }}
-                                  >
-                                    <div className="flex flex-col items-center gap-1">
-                                      {formData[strategySelect.id] === opt ? (
-                                        <CheckCircle className="w-6 h-6" />
-                                      ) : (
-                                        <CircleDot className="w-6 h-6" style={{ color: theme.muted }} />
-                                      )}
-                                      <span className="font-bold">{opt}</span>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-
-                              {/* Rationale directly below */}
-                              <div className="pt-4 border-t" style={{ borderColor: theme.darkMuted }}>
-                                <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>
-                                  {strategyRationale.label}
-                                </label>
+                          <div className="space-y-4">
+                            {currentRound.inputFields.map((field) => (
+                              <div key={field.id}>
+                                <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>{field.label}</label>
                                 <textarea
-                                  value={formData[strategyRationale.id] || ''}
-                                  onChange={(e) => setFormData({ ...formData, [strategyRationale.id]: e.target.value })}
-                                  placeholder={strategyRationale.placeholder}
+                                  value={formData[field.id] || ''}
+                                  onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                                  placeholder={field.placeholder}
                                   className="w-full px-4 py-3 rounded-xl text-sm resize-none"
-                                  rows={3}
-                                  style={{
-                                    backgroundColor: theme.darker,
-                                    border: `1px solid ${theme.darkMuted}`,
-                                    color: theme.white,
-                                  }}
+                                  rows={4}
+                                  style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
                                 />
                               </div>
-                            </div>
-
-                            {/* Remaining fields - 2 on top, 1 full width below */}
-                            <div className="grid md:grid-cols-2 gap-4 mb-4">
-                              {otherFields.slice(0, 2).map(renderField)}
-                            </div>
-                            <div>
-                              {otherFields.slice(2).map(renderField)}
-                            </div>
-                          </>
+                            ))}
+                          </div>
                         );
                       }
 
@@ -2115,15 +2159,15 @@ export default function GenesysSimulation() {
                   </div>
                 </div>
 
-                {/* Key Insight - Big takeaway */}
-                {submissions[currentRound.id].discussionSummary?.keyInsight && (
+                {/* Coach's Assessment */}
+                {submissions[currentRound.id].finalFeedback?.mainFeedback && (
                   <div className="p-4 rounded-xl mb-6" style={{ backgroundColor: `${roundColor}20`, border: `1px solid ${roundColor}40` }}>
                     <div className="flex items-start gap-3">
                       <Lightbulb className="w-6 h-6 flex-shrink-0 mt-0.5" style={{ color: roundColor }} />
                       <div>
-                        <h3 className="text-sm font-bold mb-1" style={{ color: roundColor }}>Key Insight</h3>
-                        <p className="text-base font-medium" style={{ color: theme.white }}>
-                          {submissions[currentRound.id].discussionSummary.keyInsight}
+                        <h3 className="text-sm font-bold mb-1" style={{ color: roundColor }}>Coach's Assessment</h3>
+                        <p className="text-base leading-relaxed" style={{ color: theme.white }}>
+                          {submissions[currentRound.id].finalFeedback.mainFeedback}
                         </p>
                       </div>
                     </div>
@@ -2132,51 +2176,64 @@ export default function GenesysSimulation() {
 
                 {/* What Worked & Growth Area */}
                 <div className="grid md:grid-cols-2 gap-4 mb-6">
-                  {/* What Worked */}
+                  {/* Strengths */}
                   <div className="p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
                     <div className="flex items-center gap-2 mb-3">
                       <ThumbsUp className="w-5 h-5" style={{ color: "#10B981" }} />
                       <h4 className="text-sm font-bold" style={{ color: "#10B981" }}>What Worked</h4>
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: theme.light }}>
-                      {submissions[currentRound.id].discussionSummary?.whatWorked ||
-                       submissions[currentRound.id].finalFeedback?.strengths?.join(". ")}
-                    </p>
+                    <ul className="space-y-1.5">
+                      {submissions[currentRound.id].finalFeedback?.strengths?.map((s, i) => (
+                        <li key={i} className="text-sm leading-relaxed" style={{ color: theme.light }}>• {s}</li>
+                      ))}
+                    </ul>
                   </div>
 
-                  {/* Growth Area */}
+                  {/* Areas for Improvement */}
                   <div className="p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
                     <div className="flex items-center gap-2 mb-3">
                       <TrendingUp className="w-5 h-5" style={{ color: theme.orange }} />
-                      <h4 className="text-sm font-bold" style={{ color: theme.orange }}>Area for Growth</h4>
+                      <h4 className="text-sm font-bold" style={{ color: theme.orange }}>Areas for Growth</h4>
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: theme.light }}>
-                      {submissions[currentRound.id].discussionSummary?.growthArea ||
-                       submissions[currentRound.id].finalFeedback?.improvements?.join(". ")}
-                    </p>
+                    <ul className="space-y-1.5">
+                      {submissions[currentRound.id].finalFeedback?.improvements?.map((s, i) => (
+                        <li key={i} className="text-sm leading-relaxed" style={{ color: theme.light }}>• {s}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
 
-                {/* Team Discussion Questions */}
+                {/* Team Debrief */}
                 <div className="p-5 rounded-xl" style={{ backgroundColor: `${roundColor}10`, border: `1px solid ${roundColor}30` }}>
                   <div className="flex items-center gap-2 mb-4">
-                    <MessageSquare className="w-5 h-5" style={{ color: roundColor }} />
-                    <h4 className="text-base font-bold" style={{ color: theme.white }}>Team Discussion</h4>
+                    <Users className="w-5 h-5" style={{ color: roundColor }} />
+                    <h4 className="text-base font-bold" style={{ color: theme.white }}>Team Debrief</h4>
                   </div>
-                  <ul className="space-y-3">
-                    {(submissions[currentRound.id].discussionSummary?.discussionQuestions ||
-                      submissions[currentRound.id].finalFeedback?.nextSteps)?.map((question, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div
-                          className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                          style={{ backgroundColor: roundColor, color: theme.white }}
-                        >
-                          {i + 1}
+
+                  {/* Role-based reflection */}
+                  <div className="p-4 rounded-xl mb-4" style={{ backgroundColor: theme.dark }}>
+                    <p className="text-sm font-bold mb-3" style={{ color: theme.white }}>
+                      From your role's perspective, what is one specific thing you would do to increase our chances of winning in similar situations?
+                    </p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {["AE", "SC", "BDR", "CS", "Leader"].map((role) => (
+                        <div key={role} className="text-center p-2 rounded-lg" style={{ backgroundColor: theme.darker }}>
+                          <div className="text-xs font-bold mb-1" style={{ color: roundColor }}>{role}</div>
+                          <div className="text-xs" style={{ color: theme.muted }}>Go around the table</div>
                         </div>
-                        <p className="text-sm leading-relaxed" style={{ color: theme.light }}>{question}</p>
-                      </li>
-                    ))}
-                  </ul>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Collaboration question */}
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
+                    <p className="text-sm font-bold" style={{ color: theme.white }}>
+                      In what ways can we better collaborate as ONE Genesys in these situations?
+                    </p>
+                    <p className="text-xs mt-2" style={{ color: theme.muted }}>
+                      Discuss as a team – how can each role contribute to a stronger, more coordinated approach?
+                    </p>
+                  </div>
                 </div>
               </Card>
 
@@ -2187,7 +2244,7 @@ export default function GenesysSimulation() {
               ) : (
                 <GlowButton onClick={() => setRoundPhase("final")} color={theme.orange} className="w-full">
                   <Trophy className="inline-block mr-2 w-5 h-5" />
-                  Complete Simulation
+                  Complete The Game
                 </GlowButton>
               )}
             </div>
@@ -2201,7 +2258,7 @@ export default function GenesysSimulation() {
                 <div className="relative">
                   <Crown className="w-20 h-20 mx-auto mb-4" style={{ color: "#FFD700" }} />
                   <h1 className="text-4xl md:text-5xl font-black mb-3" style={{ color: theme.white }}>
-                    Simulation Complete!
+                    The Game Complete!
                   </h1>
                   <p className="text-xl mb-6" style={{ color: theme.muted }}>
                     Congratulations, {teamName}!
