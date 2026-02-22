@@ -17,46 +17,76 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Settings,
   X,
   Award,
   Target,
   Zap,
+  Shield,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 
 // ============================================================================
-// DESIGN SYSTEM - Presenter Theme (High contrast for projectors)
+// DESIGN SYSTEM - Presenter Theme (Refined, high contrast for projectors)
 // ============================================================================
 
 const theme = {
-  // Core brand colors
   orange: "#FF4F1F",
+  orangeGlow: "rgba(255, 79, 31, 0.35)",
+  orangeSubtle: "rgba(255, 79, 31, 0.08)",
 
-  // Dark palette
   black: "#000000",
   darker: "#0A0A0B",
-  dark: "#111111",
+  dark: "#111113",
+  darkMuted: "#1A1A1F",
+  darkCard: "#141417",
 
-  // Light palette
   white: "#FFFFFF",
   light: "#F4F4F5",
   muted: "#A1A1AA",
+  subtle: "#71717A",
 
-  // Round colors & info
+  // Actual round data from the simulation
   rounds: {
-    0: { color: "#F59E0B", name: "Registration", subtitle: "", customer: "" },
-    1: { color: "#10B981", name: "Shape the Vision", subtitle: "New Logo Opportunity", customer: "Everwell Health Services" },
-    2: { color: "#FF4F1F", name: "Disrupt Status Quo", subtitle: "Expand / Cross-Sell", customer: "Meridian Financial Group" },
-    3: { color: "#3B82F6", name: "Hold the High Ground", subtitle: "Competitive Defend", customer: "Summit Telecom" },
-    4: { color: "#8B5CF6", name: "Capture More Share", subtitle: "Deal Review", customer: "NovaTech Industries" },
+    0: { color: "#F59E0B", name: "Registration", subtitle: "", customer: "", motion: "" },
+    1: { color: "#10B981", name: "Shape the Vision", subtitle: "New Logo Opportunity", customer: "Everwell Health Services", motion: "Legacy Displacement" },
+    2: { color: "#FF4F1F", name: "Disrupt Status Quo", subtitle: "New Logo Opportunity", customer: "Aureon Financial Holdings", motion: "CCaaS Replacement" },
+    3: { color: "#3B82F6", name: "Hold the High Ground", subtitle: "Account Defense", customer: "Summit Ridge Retail Group", motion: "Expansion" },
+    4: { color: "#8B5CF6", name: "Capture More Share", subtitle: "Account Expansion", customer: "Orion Global Logistics", motion: "Pure-Play AI" },
+  },
+
+  transition: {
+    fast: "150ms cubic-bezier(0.4, 0, 0.2, 1)",
+    base: "250ms cubic-bezier(0.4, 0, 0.2, 1)",
   },
 };
+
+// ============================================================================
+// SHARED UI COMPONENTS
+// ============================================================================
+
+function GlassCard({ children, className = "", style = {}, ...props }) {
+  return (
+    <div
+      className={`rounded-2xl ${className}`}
+      style={{
+        backgroundColor: theme.darkCard,
+        border: `1px solid rgba(255,255,255,0.04)`,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+        ...style,
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
 
 // ============================================================================
 // WORD CLOUD COMPONENT
 // ============================================================================
 
-function WordCloud({ teams, roomColor }) {
+function WordCloud({ teams }) {
   const getTeamStyle = (team, index) => {
     const seed = team.teamName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const left = 15 + (seed * 7 % 70);
@@ -100,8 +130,9 @@ function WordCloud({ teams, roomColor }) {
         );
       })}
       {teams.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-4xl font-medium" style={{ color: theme.muted }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          <Users className="w-20 h-20 opacity-10" style={{ color: theme.muted }} />
+          <p className="text-4xl font-medium" style={{ color: theme.subtle }}>
             Waiting for teams to register...
           </p>
         </div>
@@ -111,7 +142,7 @@ function WordCloud({ teams, roomColor }) {
 }
 
 // ============================================================================
-// LEADERBOARD COMPONENT (Large format for projector)
+// LEADERBOARD COMPONENT (Refined, with round-by-round + bonus columns)
 // ============================================================================
 
 function LeaderboardDisplay({ teams, currentRound }) {
@@ -124,80 +155,145 @@ function LeaderboardDisplay({ teams, currentRound }) {
     return bTotal - aTotal;
   });
 
-  const getMedalStyle = (index) => {
-    if (index === 0) return { bg: '#FFD700', text: '#000000' }; // Gold
-    if (index === 1) return { bg: '#C0C0C0', text: '#000000' }; // Silver
-    if (index === 2) return { bg: '#CD7F32', text: '#000000' }; // Bronze
-    return { bg: theme.dark, text: theme.muted };
+  const getMedalColor = (index) => {
+    if (index === 0) return '#FFD700';
+    if (index === 1) return '#C0C0C0';
+    if (index === 2) return '#CD7F32';
+    return theme.subtle;
   };
 
+  // Determine which rounds have any scores
+  const activeRounds = [1, 2, 3, 4].filter(r =>
+    sortedTeams.some(t => t.scores?.[r] !== undefined)
+  );
+
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full">
       {sortedTeams.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-4xl font-medium" style={{ color: theme.muted }}>
-            No scores yet for this round
+          <Trophy className="w-20 h-20 mx-auto mb-4 opacity-10" style={{ color: theme.muted }} />
+          <p className="text-3xl font-medium" style={{ color: theme.subtle }}>
+            Scores will appear as teams submit
           </p>
         </div>
       ) : (
-        sortedTeams.slice(0, 15).map((team, index) => {
-          const roundScoreTotal = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0);
-          const totalScore = roundScoreTotal + (team.bonusPoints || 0);
-          const medalStyle = getMedalStyle(index);
-          // Check if this team's current round score is still "initial" (pre-wobble)
-          const currentPhase = team.phases?.[currentRound];
-          const hasCurrentRoundScore = team.scores?.[currentRound] !== undefined;
-
-          return (
-            <div
-              key={`${team.teamName}-${team.table}`}
-              className="flex items-center gap-6 p-5 rounded-2xl transition-all"
-              style={{ backgroundColor: theme.dark }}
-            >
-              {/* Rank */}
+        <div className="space-y-2">
+          {/* Column Headers */}
+          <div className="flex items-center gap-4 px-6 py-3 text-sm font-medium" style={{ color: theme.subtle }}>
+            <div className="w-14" />
+            <div className="flex-1">TEAM</div>
+            {activeRounds.map(r => (
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center font-black text-3xl flex-shrink-0"
-                style={{ backgroundColor: medalStyle.bg, color: medalStyle.text }}
+                key={r}
+                className="w-20 text-center font-bold"
+                style={{ color: theme.rounds[r]?.color || theme.muted }}
               >
-                {index + 1}
+                R{r}
               </div>
+            ))}
+            {sortedTeams.some(t => (t.bonusPoints || 0) > 0) && (
+              <div className="w-16 text-center" style={{ color: '#FFD700' }}>
+                <Star className="w-4 h-4 mx-auto" />
+              </div>
+            )}
+            <div className="w-28 text-right font-bold">TOTAL</div>
+          </div>
 
-              {/* Team Name & Table */}
-              <div className="flex-1 min-w-0">
-                <div className="text-4xl font-black truncate" style={{ color: theme.white }}>
-                  {team.teamName}
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xl" style={{ color: theme.muted }}>
-                    Table {team.table}
-                  </span>
-                  {team.bonusPoints > 0 && (
-                    <span className="text-sm px-2 py-0.5 rounded-full" style={{ backgroundColor: '#FFD70030', color: '#FFD700' }}>
-                      +{team.bonusPoints} bonus
-                    </span>
-                  )}
-                  {hasCurrentRoundScore && currentPhase === "initial" && (
-                    <span className="text-sm px-2 py-0.5 rounded-full animate-pulse" style={{ backgroundColor: `${roundColor}30`, color: roundColor }}>
-                      awaiting wobble
-                    </span>
-                  )}
-                </div>
-              </div>
+          {/* Team Rows */}
+          {sortedTeams.slice(0, 15).map((team, index) => {
+            const roundScoreTotal = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0);
+            const totalScore = roundScoreTotal + (team.bonusPoints || 0);
+            const medalColor = getMedalColor(index);
+            const hasCurrentRoundScore = team.scores?.[currentRound] !== undefined;
+            const currentPhase = team.phases?.[currentRound];
+            const showBonus = sortedTeams.some(t => (t.bonusPoints || 0) > 0);
 
-              {/* Score */}
-              <div className="text-6xl font-black" style={{ color: roundColor }}>
-                {totalScore}
-              </div>
-            </div>
-          );
-        })
+            return (
+              <GlassCard
+                key={`${team.teamName}-${team.table}`}
+                className="flex items-center gap-4 px-6 py-4 transition-all"
+                style={{
+                  backgroundColor: index < 3 ? `${roundColor}08` : theme.darkCard,
+                  borderColor: index === 0 ? `${medalColor}30` : 'rgba(255,255,255,0.04)',
+                }}
+              >
+                {/* Rank */}
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center font-black text-2xl flex-shrink-0"
+                  style={{
+                    background: index < 3
+                      ? `linear-gradient(135deg, ${medalColor}25, ${medalColor}10)`
+                      : theme.dark,
+                    color: medalColor,
+                    border: `1px solid ${medalColor}30`,
+                  }}
+                >
+                  {index + 1}
+                </div>
+
+                {/* Team Name & Table */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-3xl font-black truncate" style={{ color: theme.white }}>
+                    {team.teamName}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-base" style={{ color: theme.subtle }}>
+                      Table {team.table}
+                    </span>
+                    {hasCurrentRoundScore && currentPhase === "initial" && (
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full animate-pulse font-medium"
+                        style={{ backgroundColor: `${roundColor}20`, color: roundColor }}
+                      >
+                        awaiting wobble
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Round-by-Round Scores */}
+                {activeRounds.map(r => {
+                  const rScore = team.scores?.[r];
+                  const rColor = theme.rounds[r]?.color || theme.muted;
+                  return (
+                    <div
+                      key={r}
+                      className="w-20 text-center text-2xl font-bold"
+                      style={{ color: rScore !== undefined ? rColor : `${theme.subtle}40` }}
+                    >
+                      {rScore !== undefined ? rScore : '–'}
+                    </div>
+                  );
+                })}
+
+                {/* Bonus Points (smaller column) */}
+                {showBonus && (
+                  <div
+                    className="w-16 text-center text-base font-medium"
+                    style={{ color: (team.bonusPoints || 0) > 0 ? '#FFD700' : `${theme.subtle}40` }}
+                  >
+                    {(team.bonusPoints || 0) > 0 ? `+${team.bonusPoints}` : '–'}
+                  </div>
+                )}
+
+                {/* Total Score */}
+                <div
+                  className="w-28 text-right text-5xl font-black"
+                  style={{ color: roundColor }}
+                >
+                  {totalScore}
+                </div>
+              </GlassCard>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 }
 
 // ============================================================================
-// ACTIVITY IN PROGRESS COMPONENT (shown while teams are working)
+// ACTIVITY IN PROGRESS COMPONENT (Refined design with timer)
 // ============================================================================
 
 function ActivityInProgress({ currentRound, timerSeconds, isTimerRunning, onToggleTimer, onResetTimer }) {
@@ -206,65 +302,105 @@ function ActivityInProgress({ currentRound, timerSeconds, isTimerRunning, onTogg
 
   const minutes = Math.floor(timerSeconds / 60);
   const seconds = timerSeconds % 60;
-  const progress = timerSeconds / (15 * 60); // 15 min total
+  const totalDuration = 15 * 60;
+  const progress = timerSeconds / totalDuration;
+
+  // Circular progress for visual interest
+  const radius = 180;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - progress);
+
+  const timerColor = timerSeconds <= 60 ? '#EF4444' : timerSeconds <= 180 ? '#F59E0B' : roundColor;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-12">
-      {/* Round info */}
+    <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-8">
+      {/* Round context */}
       <div className="text-center">
         <div
-          className="inline-block px-6 py-2 rounded-full text-2xl font-bold mb-6"
-          style={{ backgroundColor: `${roundColor}25`, color: roundColor }}
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-lg font-bold mb-4"
+          style={{ backgroundColor: `${roundColor}15`, color: roundColor, border: `1px solid ${roundColor}25` }}
         >
-          {roundInfo?.subtitle}
+          <Target className="w-5 h-5" />
+          {roundInfo?.motion}
         </div>
-        <h2 className="text-6xl font-black mb-4" style={{ color: theme.white }}>
+        <h2 className="text-6xl font-black mb-3" style={{ color: theme.white }}>
           {roundInfo?.customer}
         </h2>
-        <p className="text-3xl" style={{ color: theme.muted }}>
-          Activity in progress...
+        <p className="text-2xl font-medium" style={{ color: theme.subtle }}>
+          {roundInfo?.subtitle}
         </p>
       </div>
 
-      {/* Timer */}
-      <div className="text-center">
-        <div
-          className="text-[12rem] font-black leading-none tabular-nums"
-          style={{ color: timerSeconds <= 60 ? '#EF4444' : timerSeconds <= 180 ? '#F59E0B' : theme.white }}
-        >
-          {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-        </div>
-
-        {/* Progress bar */}
-        <div className="w-[600px] mx-auto mt-6 h-3 rounded-full overflow-hidden" style={{ backgroundColor: theme.dark }}>
-          <div
-            className="h-full rounded-full transition-all duration-1000"
-            style={{
-              width: `${Math.max(0, progress * 100)}%`,
-              backgroundColor: timerSeconds <= 60 ? '#EF4444' : timerSeconds <= 180 ? '#F59E0B' : roundColor,
-            }}
+      {/* Timer with circular progress ring */}
+      <div className="relative flex items-center justify-center" style={{ width: '420px', height: '420px' }}>
+        {/* SVG ring */}
+        <svg className="absolute inset-0" viewBox="0 0 420 420" style={{ transform: 'rotate(-90deg)' }}>
+          {/* Background ring */}
+          <circle
+            cx="210" cy="210" r={radius}
+            fill="none"
+            stroke={theme.dark}
+            strokeWidth="8"
           />
-        </div>
+          {/* Progress ring */}
+          <circle
+            cx="210" cy="210" r={radius}
+            fill="none"
+            stroke={timerColor}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease' }}
+          />
+        </svg>
 
-        {/* Timer controls (small, bottom of screen - for presenter to tap) */}
-        <div className="flex items-center justify-center gap-4 mt-8">
-          <button
-            onClick={onToggleTimer}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-lg font-bold transition-all"
-            style={{ backgroundColor: isTimerRunning ? '#EF4444' : '#10B981', color: theme.white }}
+        {/* Timer text */}
+        <div className="text-center z-10">
+          <div
+            className="font-black leading-none tabular-nums"
+            style={{
+              fontSize: '8rem',
+              color: timerColor,
+              textShadow: `0 0 40px ${timerColor}30`,
+            }}
           >
-            {isTimerRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-            {isTimerRunning ? 'Pause' : 'Start'}
-          </button>
-          <button
-            onClick={onResetTimer}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-lg font-bold transition-all"
-            style={{ backgroundColor: theme.dark, color: theme.muted }}
-          >
-            <RotateCcw className="w-5 h-5" />
-            Reset
-          </button>
+            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+          </div>
+          {!isTimerRunning && timerSeconds === totalDuration && (
+            <p className="text-lg mt-2" style={{ color: theme.subtle }}>Ready to start</p>
+          )}
+          {!isTimerRunning && timerSeconds < totalDuration && timerSeconds > 0 && (
+            <p className="text-lg mt-2" style={{ color: theme.subtle }}>Paused</p>
+          )}
+          {timerSeconds === 0 && (
+            <p className="text-xl font-bold mt-2" style={{ color: '#EF4444' }}>Time's up!</p>
+          )}
         </div>
+      </div>
+
+      {/* Timer controls */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={onToggleTimer}
+          className="flex items-center gap-3 px-8 py-4 rounded-2xl text-xl font-bold transition-all hover:scale-105"
+          style={{
+            backgroundColor: isTimerRunning ? '#EF444420' : `${roundColor}20`,
+            color: isTimerRunning ? '#EF4444' : roundColor,
+            border: `1px solid ${isTimerRunning ? '#EF444440' : `${roundColor}40`}`,
+          }}
+        >
+          {isTimerRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+          {isTimerRunning ? 'Pause' : 'Start Timer'}
+        </button>
+        <button
+          onClick={onResetTimer}
+          className="flex items-center gap-3 px-6 py-4 rounded-2xl text-xl font-bold transition-all hover:bg-white/5"
+          style={{ color: theme.muted, border: `1px solid ${theme.dark}` }}
+        >
+          <RotateCcw className="w-5 h-5" />
+          Reset
+        </button>
       </div>
     </div>
   );
@@ -280,7 +416,8 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const sortedTeams = [...teams].sort((a, b) => (a.table || '').localeCompare(b.table || '', undefined, { numeric: true }));
+  // Sort by team name alphabetically for easy finding
+  const sortedTeams = [...teams].sort((a, b) => a.teamName.localeCompare(b.teamName));
 
   const handleSubmit = async () => {
     if (!selectedTeam || bonusAmount === 0) return;
@@ -311,39 +448,44 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
-      <div
-        className="w-full max-w-2xl p-8 rounded-3xl max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: theme.darker }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }} onClick={onClose}>
+      <GlassCard
+        className="w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto"
+        style={{ backgroundColor: theme.darker, border: `1px solid rgba(255,255,255,0.06)` }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-black" style={{ color: theme.white }}>
-            <Award className="inline-block w-8 h-8 mr-3" style={{ color: '#FFD700' }} />
-            Award Bonus Points
-          </h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#FFD70015', border: '1px solid #FFD70025' }}>
+              <Award className="w-6 h-6" style={{ color: '#FFD700' }} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black" style={{ color: theme.white }}>Award Bonus Points</h2>
+              <p className="text-sm" style={{ color: theme.subtle }}>Room {roomNumber}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
             <X className="w-6 h-6" style={{ color: theme.muted }} />
           </button>
         </div>
 
-        {/* Team Selection */}
+        {/* Team Selection - showing team names */}
         <div className="mb-6">
-          <label className="block text-lg font-medium mb-3" style={{ color: theme.muted }}>Select Team</label>
-          <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+          <label className="block text-sm font-bold uppercase tracking-wider mb-3" style={{ color: theme.subtle }}>Select Team</label>
+          <div className="grid grid-cols-2 gap-2 max-h-[280px] overflow-y-auto pr-1">
             {sortedTeams.map((team) => (
               <button
                 key={team.teamKey}
                 onClick={() => setSelectedTeam(team)}
                 className="text-left p-3 rounded-xl transition-all"
                 style={{
-                  backgroundColor: selectedTeam?.teamKey === team.teamKey ? `${theme.orange}30` : theme.dark,
+                  backgroundColor: selectedTeam?.teamKey === team.teamKey ? `${theme.orange}15` : theme.dark,
                   border: selectedTeam?.teamKey === team.teamKey ? `2px solid ${theme.orange}` : '2px solid transparent',
                   color: theme.white,
                 }}
               >
                 <div className="font-bold truncate">{team.teamName}</div>
-                <div className="text-sm" style={{ color: theme.muted }}>Table {team.table}</div>
+                <div className="text-xs" style={{ color: theme.subtle }}>Table {team.table}{(team.bonusPoints || 0) > 0 ? ` · +${team.bonusPoints} bonus` : ''}</div>
               </button>
             ))}
           </div>
@@ -351,31 +493,30 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
 
         {/* Points Amount */}
         <div className="mb-6">
-          <label className="block text-lg font-medium mb-3" style={{ color: theme.muted }}>Points</label>
-          <div className="flex items-center gap-4">
+          <label className="block text-sm font-bold uppercase tracking-wider mb-3" style={{ color: theme.subtle }}>Points</label>
+          <div className="flex items-center gap-4 justify-center">
             <button
               onClick={() => setBonusAmount(Math.max(-10, bonusAmount - 1))}
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:bg-white/10"
               style={{ backgroundColor: theme.dark, color: theme.white }}
             >
               <Minus className="w-5 h-5" />
             </button>
             <div
-              className="text-5xl font-black w-32 text-center"
-              style={{ color: bonusAmount > 0 ? '#10B981' : bonusAmount < 0 ? '#EF4444' : theme.muted }}
+              className="text-6xl font-black w-36 text-center tabular-nums"
+              style={{ color: bonusAmount > 0 ? '#10B981' : bonusAmount < 0 ? '#EF4444' : theme.subtle }}
             >
               {bonusAmount > 0 ? '+' : ''}{bonusAmount}
             </div>
             <button
               onClick={() => setBonusAmount(Math.min(25, bonusAmount + 1))}
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all hover:bg-white/10"
               style={{ backgroundColor: theme.dark, color: theme.white }}
             >
               <Plus className="w-5 h-5" />
             </button>
           </div>
-          {/* Quick select */}
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-4 justify-center">
             {[1, 2, 5, 10, 15].map((pts) => (
               <button
                 key={pts}
@@ -384,6 +525,7 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
                 style={{
                   backgroundColor: bonusAmount === pts ? theme.orange : theme.dark,
                   color: theme.white,
+                  border: bonusAmount === pts ? 'none' : `1px solid ${theme.darkMuted}`,
                 }}
               >
                 +{pts}
@@ -392,16 +534,16 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
           </div>
         </div>
 
-        {/* Reason (optional) */}
-        <div className="mb-6">
-          <label className="block text-lg font-medium mb-3" style={{ color: theme.muted }}>Reason (optional)</label>
+        {/* Reason */}
+        <div className="mb-8">
+          <label className="block text-sm font-bold uppercase tracking-wider mb-3" style={{ color: theme.subtle }}>Reason (optional)</label>
           <input
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="e.g., Great teamwork, Best presentation..."
-            className="w-full px-4 py-3 rounded-xl text-lg"
-            style={{ backgroundColor: theme.dark, color: theme.white, border: `1px solid ${theme.dark}` }}
+            className="w-full px-4 py-3 rounded-xl text-base"
+            style={{ backgroundColor: theme.dark, color: theme.white, border: `1px solid ${theme.darkMuted}` }}
           />
         </div>
 
@@ -409,12 +551,16 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
         <button
           onClick={handleSubmit}
           disabled={!selectedTeam || bonusAmount === 0 || isSubmitting}
-          className="w-full py-4 rounded-xl text-xl font-bold transition-all disabled:opacity-40"
-          style={{ backgroundColor: theme.orange, color: theme.white }}
+          className="w-full py-4 rounded-xl text-lg font-bold transition-all disabled:opacity-30 hover:scale-[1.01]"
+          style={{
+            background: `linear-gradient(135deg, ${theme.orange}, ${theme.orange}DD)`,
+            color: theme.white,
+            boxShadow: `0 4px 20px ${theme.orangeGlow}`,
+          }}
         >
-          {isSubmitting ? 'Awarding...' : `Award ${bonusAmount > 0 ? '+' : ''}${bonusAmount} pts to ${selectedTeam?.teamName || '...'}`}
+          {isSubmitting ? 'Awarding...' : selectedTeam ? `Award ${bonusAmount > 0 ? '+' : ''}${bonusAmount} to ${selectedTeam.teamName}` : 'Select a team above'}
         </button>
-      </div>
+      </GlassCard>
     </div>
   );
 }
@@ -424,16 +570,15 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
 // ============================================================================
 
 export default function PresenterView() {
-  // State
   const [roomNumber, setRoomNumber] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentRound, setCurrentRound] = useState(0); // 0 = registration
+  const [currentRound, setCurrentRound] = useState(0);
   const [teams, setTeams] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [showBonusModal, setShowBonusModal] = useState(false);
 
   // View mode: "leaderboard" or "activity"
-  const [viewMode, setViewMode] = useState("leaderboard");
+  const [viewMode, setViewMode] = useState("activity");
 
   // Timer state (15 minutes = 900 seconds)
   const [timerSeconds, setTimerSeconds] = useState(15 * 60);
@@ -469,7 +614,6 @@ export default function PresenterView() {
   // Fetch teams data
   const fetchTeams = useCallback(async () => {
     if (!roomNumber) return;
-
     try {
       const response = await fetch(`/api/leaderboard?room=${encodeURIComponent(roomNumber)}`);
       if (response.ok) {
@@ -486,7 +630,7 @@ export default function PresenterView() {
   useEffect(() => {
     if (isLoggedIn && roomNumber) {
       fetchTeams();
-      const interval = setInterval(fetchTeams, 3000); // Every 3 seconds
+      const interval = setInterval(fetchTeams, 3000);
       return () => clearInterval(interval);
     }
   }, [isLoggedIn, roomNumber, fetchTeams]);
@@ -499,7 +643,6 @@ export default function PresenterView() {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
     sessionStorage.removeItem("presenter_room");
     setIsLoggedIn(false);
@@ -508,13 +651,19 @@ export default function PresenterView() {
     setTeams([]);
   };
 
-  // Round navigation
+  // Round navigation — default to "activity" for rounds 1-4, reset timer
   const goToRound = (round) => {
-    setCurrentRound(Math.max(0, Math.min(4, round)));
-    setViewMode("leaderboard"); // Reset view when changing rounds
+    const r = Math.max(0, Math.min(4, round));
+    setCurrentRound(r);
+    if (r > 0) {
+      setViewMode("activity");
+      setTimerSeconds(15 * 60);
+      setIsTimerRunning(false);
+    } else {
+      setViewMode("leaderboard");
+    }
   };
 
-  // Timer controls
   const toggleTimer = () => setIsTimerRunning(!isTimerRunning);
   const resetTimer = () => {
     setIsTimerRunning(false);
@@ -534,35 +683,23 @@ export default function PresenterView() {
         className="min-h-screen flex items-center justify-center p-8"
         style={{ backgroundColor: theme.black }}
       >
-        <div
-          className="w-full max-w-lg p-12 rounded-3xl text-center"
-          style={{ backgroundColor: theme.darker }}
-        >
+        <GlassCard className="w-full max-w-lg p-12 text-center" style={{ backgroundColor: theme.darker }}>
           <img
             src="/genesys-logo.png"
             alt="Genesys"
             className="h-16 mx-auto mb-8"
           />
-          <h1
-            className="text-4xl font-black mb-2"
-            style={{ color: theme.white }}
-          >
+          <h1 className="text-5xl font-black mb-2" style={{ color: theme.white }}>
             The Game
           </h1>
-          <p
-            className="text-xl mb-10"
-            style={{ color: theme.muted }}
-          >
-            Presenter View
+          <p className="text-xl mb-10" style={{ color: theme.subtle }}>
+            Presenter Dashboard
           </p>
 
           <div className="space-y-6">
             <div>
-              <label
-                className="block text-lg font-medium mb-3 text-left"
-                style={{ color: theme.muted }}
-              >
-                Enter Room Number
+              <label className="block text-sm font-bold uppercase tracking-wider mb-3 text-left" style={{ color: theme.subtle }}>
+                Room Number
               </label>
               <input
                 type="text"
@@ -574,7 +711,7 @@ export default function PresenterView() {
                 style={{
                   backgroundColor: theme.dark,
                   color: theme.white,
-                  border: `2px solid ${theme.orange}`,
+                  border: `2px solid ${theme.orange}40`,
                 }}
               />
             </div>
@@ -582,17 +719,18 @@ export default function PresenterView() {
             <button
               onClick={handleLogin}
               disabled={!roomNumber.trim()}
-              className="w-full py-4 px-8 rounded-xl text-xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full py-4 px-8 rounded-xl text-xl font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-30 hover:scale-[1.01]"
               style={{
-                backgroundColor: theme.orange,
+                background: `linear-gradient(135deg, ${theme.orange}, ${theme.orange}DD)`,
                 color: theme.white,
+                boxShadow: `0 4px 20px ${theme.orangeGlow}`,
               }}
             >
               <LogIn className="w-6 h-6" />
               Enter Room
             </button>
           </div>
-        </div>
+        </GlassCard>
       </div>
     );
   }
@@ -602,73 +740,77 @@ export default function PresenterView() {
   // ============================================================================
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: theme.black }}
-    >
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: theme.black }}>
       {/* Header */}
       <header
-        className="flex items-center justify-between px-8 py-4 border-b"
-        style={{ borderColor: theme.dark }}
+        className="flex items-center justify-between px-8 py-4"
+        style={{ borderBottom: `1px solid rgba(255,255,255,0.06)` }}
       >
-        {/* Left: Room Info */}
-        <div className="flex items-center gap-6">
-          <img src="/genesys-logo.png" alt="Genesys" className="h-12" />
+        {/* Left: Logo + Room */}
+        <div className="flex items-center gap-5">
+          <img src="/genesys-logo.png" alt="Genesys" className="h-10 opacity-80" />
+          <div className="h-8 w-px" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }} />
           <div
-            className="px-6 py-2 rounded-xl text-2xl font-black"
-            style={{ backgroundColor: roundColor, color: theme.white }}
+            className="px-5 py-1.5 rounded-lg text-lg font-black tracking-wider"
+            style={{ backgroundColor: `${roundColor}20`, color: roundColor, border: `1px solid ${roundColor}30` }}
           >
             ROOM {roomNumber}
           </div>
         </div>
 
-        {/* Center: Round Indicator */}
-        <div className="flex items-center gap-2">
-          {[0, 1, 2, 3, 4].map((round) => (
-            <button
-              key={round}
-              onClick={() => goToRound(round)}
-              className="w-4 h-4 rounded-full transition-all"
-              style={{
-                backgroundColor: currentRound === round ? roundColor : theme.dark,
-                border: currentRound === round ? 'none' : `2px solid ${theme.muted}`,
-                transform: currentRound === round ? 'scale(1.3)' : 'scale(1)',
-              }}
-            />
-          ))}
+        {/* Center: Round Dots */}
+        <div className="flex items-center gap-3">
+          {[0, 1, 2, 3, 4].map((round) => {
+            const rc = theme.rounds[round]?.color || theme.muted;
+            const isActive = currentRound === round;
+            return (
+              <button
+                key={round}
+                onClick={() => goToRound(round)}
+                className="relative flex items-center justify-center transition-all"
+                style={{
+                  width: isActive ? '36px' : '12px',
+                  height: '12px',
+                  borderRadius: '6px',
+                  backgroundColor: isActive ? rc : `${rc}30`,
+                }}
+                title={theme.rounds[round]?.name}
+              />
+            );
+          })}
         </div>
 
         {/* Right: Controls */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2" style={{ color: theme.muted }}>
-            <Users className="w-5 h-5" />
-            <span className="text-lg font-medium">{teams.length} teams</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ backgroundColor: theme.dark, color: theme.subtle }}>
+            <Users className="w-4 h-4" />
+            <span className="text-sm font-medium">{teams.length} teams</span>
           </div>
 
-          {/* View Toggle (only for rounds 1-4) */}
+          {/* View Toggle (rounds 1-4) */}
           {currentRound > 0 && (
-            <div className="flex rounded-xl overflow-hidden" style={{ border: `1px solid ${theme.dark}` }}>
-              <button
-                onClick={() => setViewMode("leaderboard")}
-                className="px-4 py-2 text-sm font-medium transition-all flex items-center gap-2"
-                style={{
-                  backgroundColor: viewMode === "leaderboard" ? roundColor : 'transparent',
-                  color: viewMode === "leaderboard" ? theme.white : theme.muted,
-                }}
-              >
-                <Trophy className="w-4 h-4" />
-                Scores
-              </button>
+            <div className="flex rounded-lg overflow-hidden" style={{ border: `1px solid rgba(255,255,255,0.06)` }}>
               <button
                 onClick={() => setViewMode("activity")}
-                className="px-4 py-2 text-sm font-medium transition-all flex items-center gap-2"
+                className="px-3 py-1.5 text-sm font-medium transition-all flex items-center gap-1.5"
                 style={{
-                  backgroundColor: viewMode === "activity" ? roundColor : 'transparent',
-                  color: viewMode === "activity" ? theme.white : theme.muted,
+                  backgroundColor: viewMode === "activity" ? `${roundColor}20` : 'transparent',
+                  color: viewMode === "activity" ? roundColor : theme.subtle,
                 }}
               >
-                <Clock className="w-4 h-4" />
-                Activity
+                <Clock className="w-3.5 h-3.5" />
+                Timer
+              </button>
+              <button
+                onClick={() => setViewMode("leaderboard")}
+                className="px-3 py-1.5 text-sm font-medium transition-all flex items-center gap-1.5"
+                style={{
+                  backgroundColor: viewMode === "leaderboard" ? `${roundColor}20` : 'transparent',
+                  color: viewMode === "leaderboard" ? roundColor : theme.subtle,
+                }}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                Scores
               </button>
             </div>
           )}
@@ -677,49 +819,44 @@ export default function PresenterView() {
           {currentRound > 0 && (
             <button
               onClick={() => setShowBonusModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-105"
-              style={{ backgroundColor: '#FFD70020', color: '#FFD700', border: '1px solid #FFD70040' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all hover:scale-105"
+              style={{ backgroundColor: '#FFD70010', color: '#FFD700', border: '1px solid #FFD70020' }}
             >
-              <Star className="w-4 h-4" />
+              <Star className="w-3.5 h-3.5" />
               Bonus
             </button>
           )}
 
           <button
             onClick={handleLogout}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-white/10"
-            style={{ color: theme.muted }}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors hover:bg-white/5"
+            style={{ color: theme.subtle }}
           >
-            Change Room
+            Exit
           </button>
         </div>
       </header>
 
       {/* Round Title Bar */}
       <div
-        className="px-8 py-6 text-center"
-        style={{ backgroundColor: `${roundColor}15` }}
+        className="px-8 py-5 text-center"
+        style={{
+          background: `linear-gradient(180deg, ${roundColor}12 0%, transparent 100%)`,
+        }}
       >
-        <h1
-          className="text-5xl font-black"
-          style={{ color: roundColor }}
-        >
+        <h1 className="text-5xl font-black tracking-tight" style={{ color: roundColor }}>
           {currentRound === 0 ? 'TEAM REGISTRATION' : `ROUND ${currentRound}: ${roundInfo?.name?.toUpperCase()}`}
         </h1>
-        {viewMode === "activity" && currentRound > 0 && (
-          <p className="text-xl mt-2" style={{ color: theme.muted }}>
-            Teams are working on their submissions
-          </p>
+        {currentRound > 0 && viewMode === "leaderboard" && (
+          <p className="text-lg mt-1" style={{ color: theme.subtle }}>{roundInfo?.customer}</p>
         )}
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 px-8 py-4 overflow-auto">
         {currentRound === 0 ? (
-          // Registration: Word Cloud
-          <WordCloud teams={teams} roomColor={roundColor} />
+          <WordCloud teams={teams} />
         ) : viewMode === "activity" ? (
-          // Activity in progress with timer
           <ActivityInProgress
             currentRound={currentRound}
             timerSeconds={timerSeconds}
@@ -728,47 +865,47 @@ export default function PresenterView() {
             onResetTimer={resetTimer}
           />
         ) : (
-          // Leaderboard
           <LeaderboardDisplay teams={teams} currentRound={currentRound} />
         )}
       </main>
 
       {/* Footer: Navigation */}
       <footer
-        className="px-8 py-4 border-t flex items-center justify-between"
-        style={{ borderColor: theme.dark }}
+        className="px-8 py-3 flex items-center justify-between"
+        style={{ borderTop: `1px solid rgba(255,255,255,0.06)` }}
       >
-        {/* Previous */}
         {currentRound > 0 ? (
           <button
             onClick={() => goToRound(currentRound - 1)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl text-xl font-bold transition-all"
-            style={{ backgroundColor: theme.dark, color: theme.white }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-lg font-bold transition-all hover:bg-white/5"
+            style={{ color: theme.muted, border: `1px solid rgba(255,255,255,0.06)` }}
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5" />
             {currentRound === 1 ? 'Registration' : `Round ${currentRound - 1}`}
           </button>
         ) : (
           <div style={{ width: '180px' }} />
         )}
 
-        {/* Last Updated */}
-        <div className="flex items-center gap-2" style={{ color: theme.muted }}>
-          <RefreshCw className="w-4 h-4" />
-          <span className="text-sm">
-            {lastUpdate ? `Updated ${lastUpdate.toLocaleTimeString()}` : 'Updating...'}
+        <div className="flex items-center gap-2" style={{ color: theme.subtle }}>
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span className="text-xs">
+            {lastUpdate ? `${lastUpdate.toLocaleTimeString()}` : '...'}
           </span>
         </div>
 
-        {/* Next */}
         <button
           onClick={() => goToRound(currentRound + 1)}
           disabled={currentRound === 4}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl text-xl font-bold transition-all disabled:opacity-30"
-          style={{ backgroundColor: roundColor, color: theme.white }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-lg font-bold transition-all disabled:opacity-20 hover:scale-[1.01]"
+          style={{
+            background: currentRound < 4 ? `linear-gradient(135deg, ${roundColor}, ${roundColor}DD)` : theme.dark,
+            color: theme.white,
+            boxShadow: currentRound < 4 ? `0 2px 12px ${roundColor}30` : 'none',
+          }}
         >
           {currentRound === 0 ? 'Round 1' : currentRound === 4 ? 'Final' : `Round ${currentRound + 1}`}
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5" />
         </button>
       </footer>
 
