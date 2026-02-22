@@ -1893,16 +1893,41 @@ export default function GenesysSimulation() {
                   {submissions[currentRound.id].initialFeedback?.mainFeedback}
                 </p>
 
-                {/* Criteria Scores */}
-                <div className="space-y-3 mb-6">
-                  {currentRound.scoringCriteria.map((criterion, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: theme.dark }}>
-                      <span className="text-sm font-medium" style={{ color: theme.white }}>{criterion.name}</span>
-                      <span className="text-lg font-bold" style={{ color: roundColor }}>
-                        {submissions[currentRound.id].criteriaScores?.[criterion.name] || 0}
-                      </span>
+                {/* Criteria Scores — show weights so the math is transparent */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between px-3 pb-2 mb-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: theme.muted }}>Scoring Rubric</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: theme.muted }}>Weight</span>
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: theme.muted, minWidth: '2.5rem', textAlign: 'right' }}>Score</span>
                     </div>
-                  ))}
+                  </div>
+                  <div className="space-y-2">
+                    {currentRound.scoringCriteria.map((criterion, idx) => {
+                      const criterionScore = submissions[currentRound.id].criteriaScores?.[criterion.name] || 0;
+                      const barColor = criterionScore >= 75 ? '#10B981' : criterionScore >= 55 ? roundColor : criterionScore >= 35 ? '#F59E0B' : '#EF4444';
+                      return (
+                        <div key={idx} className="p-3 rounded-lg" style={{ backgroundColor: theme.dark }}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium" style={{ color: theme.white }}>{criterion.name}</span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: `${theme.muted}30`, color: theme.muted }}>{criterion.weight}%</span>
+                              <span className="text-lg font-bold" style={{ color: barColor, minWidth: '2.5rem', textAlign: 'right' }}>
+                                {criterionScore}
+                              </span>
+                            </div>
+                          </div>
+                          {/* Score bar */}
+                          <div className="w-full h-1.5 rounded-full mt-1" style={{ backgroundColor: `${theme.muted}20` }}>
+                            <div className="h-full rounded-full transition-all" style={{ width: `${criterionScore}%`, backgroundColor: barColor }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs mt-2 text-right" style={{ color: theme.muted }}>
+                    Overall = weighted average of criteria scores
+                  </p>
                 </div>
 
                 {/* Strengths & Improvements */}
