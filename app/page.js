@@ -190,7 +190,8 @@ function ProgressDots({ total, current, roundColor }) {
 // ============================================================================
 
 function Header({ teamName, room, table, roundNumber, roundColor, submissions, onLeaderboardClick }) {
-  const totalScore = Object.values(submissions).reduce((sum, s) => sum + (s.finalScore || 0), 0);
+  // Show score in real-time: use finalScore if wobble is done, otherwise initialScore
+  const totalScore = Object.values(submissions).reduce((sum, s) => sum + (s.finalScore || s.initialScore || 0), 0);
 
   return (
     <header
@@ -399,7 +400,7 @@ const simulationRounds = [
     ],
     wobble: {
       title: "Past Failure Revealed",
-      description: "Right before meeting with the VP of Customer Service Operations, we learn: The LATAM region participated in a hybrid NiCE pilot last year. The pilot was highly disruptive to operations and agent workflows. Adoption was inconsistent and agent trust was eroded. Leadership ultimately pulled the program.",
+      description: "Right before meeting with the VP of Customer Service Operations, we learn:\n• The LATAM region participated in a hybrid NiCE pilot last year\n• The pilot was highly disruptive to operations and agent workflows\n• Adoption was inconsistent and agent trust was eroded\n• Leadership ultimately pulled the program",
       question: "What is the most effective way to discuss the pilot's failure so the conversation minimizes defensiveness and uncovers systemic lessons?",
       type: "text-questions",
       textQuestions: [
@@ -484,15 +485,15 @@ const simulationRounds = [
     },
     wobble: {
       title: "AI Pure-Play Threat Escalation",
-      description: "The VP of Customer Experience shares new information: The CIO is accelerating a cloud consolidation strategy centered on AWS. The AI Committee is close to approving a pilot of Sierra – positioned as an AI-native CX layer running on AWS infrastructure. The framing is shifting from 'customer experience platform' to 'AI-driven automation and cost efficiency aligned to AWS'.",
+      description: "The VP of Customer Experience shares new information:\n• The CIO is accelerating a cloud consolidation strategy centered on AWS\n• The AI Committee is close to approving a pilot of Sierra – positioned as an AI-native CX layer running on AWS infrastructure\n• The framing is shifting from 'customer experience platform' to 'AI-driven automation and cost efficiency aligned to AWS'",
       question: "Rank the following strategic adjustments from most effective to least effective.",
       type: "ranking",
       shuffleOptions: true,
       options: [
-        { id: "A", text: "Broaden the executive conversation", detail: "Broaden the executive conversation from an AI agent pilot to enterprise CX orchestration – positioning Genesys as the layer that connects AI, humans, journeys, and systems across channels and regions (regardless of cloud provider)." },
-        { id: "B", text: "Discourage the Sierra pilot", detail: "Discourage the Sierra pilot by emphasizing that Genesys already delivers comparable AI capabilities – positioning Sierra as redundant and introducing unnecessary complexity into the stack." },
-        { id: "C", text: "Partner with AWS leadership", detail: "Actively partner with AWS leadership to reinforce alignment with the CIO's cloud consolidation strategy – positioning Genesys as the preferred CX orchestration partner within AWS and discouraging the need for an external AI Pure Play." },
-        { id: "D", text: "Allow the Sierra pilot to proceed", detail: "Allow the Sierra pilot to proceed, but reposition Genesys as the enterprise orchestration and governance layer that integrates and operationalizes AI agents – ensuring scale, workforce integration, and measurable business outcomes." },
+        { id: "A", text: "Broaden the executive conversation beyond an AI agent pilot", detail: "Broaden the executive conversation from an AI agent pilot to enterprise CX orchestration – positioning Genesys as the layer that connects AI, humans, journeys, and systems across channels and regions (regardless of cloud provider). Reframe the evaluation criteria from 'which AI agent tool do we pilot?' to 'how do we orchestrate AI-driven customer experiences at enterprise scale?'" },
+        { id: "B", text: "Discourage the Sierra pilot", detail: "Discourage the Sierra pilot by emphasizing that Genesys already delivers comparable AI capabilities – positioning Sierra as redundant and introducing unnecessary complexity into the tech stack. Highlight the risk of adding yet another vendor when consolidation is the stated enterprise direction." },
+        { id: "C", text: "Actively partner with AWS leadership", detail: "Actively partner with AWS leadership to reinforce alignment with the CIO's cloud consolidation strategy – positioning Genesys as the preferred CX orchestration partner within the AWS ecosystem. Demonstrate that Genesys natively runs on AWS, integrates with AWS AI/ML services, and enables the CIO's consolidation vision without requiring a separate AI layer. Discourage the need for an external AI Pure Play by proving enterprise CX orchestration is already available within the AWS stack." },
+        { id: "D", text: "Allow the Sierra pilot to proceed", detail: "Allow the Sierra pilot to proceed, but reposition Genesys as the enterprise orchestration and governance layer that integrates and operationalizes AI agents at scale. Frame Genesys as the system that ensures AI agents (from any source, including Sierra) deliver measurable business outcomes, workforce integration, compliance, and enterprise-grade reliability – not just experimentation." },
       ],
       rankingScores: {
         "C,A,B,D": 10, "C,A,D,B": 8, "C,B,A,D": 8, "C,B,D,A": 6,
@@ -1727,40 +1728,93 @@ export default function GenesysSimulation() {
 
                       // Layout: Status Quo Biases table (Round 2)
                       if (currentRound.inputLayout === "statusQuoBiases") {
+                        const requiredFields = currentRound.inputFields.filter(f => f.id !== "biasOther");
+                        const otherField = currentRound.inputFields.find(f => f.id === "biasOther");
                         return (
-                          <div className="space-y-5">
-                            {currentRound.inputFields.map((field) => (
-                              <div key={field.id} className="p-4 rounded-xl" style={{ backgroundColor: theme.dark, border: `1px solid ${theme.darkMuted}` }}>
-                                <div className="mb-3 pb-3 border-b" style={{ borderColor: theme.darkMuted }}>
-                                  <p className="text-sm font-bold italic" style={{ color: theme.white }}>{field.biasLabel}</p>
-                                  {field.biasContext && <p className="text-xs mt-1" style={{ color: theme.subtle }}>{field.biasContext}</p>}
+                          <div className="space-y-0">
+                            {/* Table Header */}
+                            <div className="grid grid-cols-[1fr_1fr_1fr] gap-0 rounded-t-xl overflow-hidden">
+                              <div className="px-4 py-3" style={{ backgroundColor: `${roundColor}20`, borderRight: `1px solid ${theme.darkMuted}` }}>
+                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: roundColor }}>Status Quo Bias</span>
+                              </div>
+                              <div className="px-4 py-3" style={{ backgroundColor: `${roundColor}20`, borderRight: `1px solid ${theme.darkMuted}` }}>
+                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: roundColor }}>Unconsidered Risks</span>
+                              </div>
+                              <div className="px-4 py-3" style={{ backgroundColor: `${roundColor}20` }}>
+                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: roundColor }}>Evidence / Diagnostic Action</span>
+                              </div>
+                            </div>
+
+                            {/* Table Rows */}
+                            {requiredFields.map((field, idx) => (
+                              <div
+                                key={field.id}
+                                className="grid grid-cols-[1fr_1fr_1fr] gap-0"
+                                style={{
+                                  borderBottom: `1px solid ${theme.darkMuted}`,
+                                  borderLeft: `1px solid ${theme.darkMuted}`,
+                                  borderRight: `1px solid ${theme.darkMuted}`,
+                                  backgroundColor: idx % 2 === 0 ? theme.dark : theme.darker,
+                                }}
+                              >
+                                {/* Bias label cell */}
+                                <div className="px-4 py-3 flex items-start" style={{ borderRight: `1px solid ${theme.darkMuted}` }}>
+                                  <p className="text-sm font-medium italic leading-relaxed" style={{ color: theme.light }}>{field.biasLabel}</p>
                                 </div>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="text-xs font-medium mb-2 block" style={{ color: theme.muted }}>{field.riskLabel}</label>
-                                    <textarea
-                                      value={formData[`${field.id}_risk`] || ''}
-                                      onChange={(e) => setFormData({ ...formData, [`${field.id}_risk`]: e.target.value })}
-                                      placeholder="Identify hidden, unconsidered risks..."
-                                      className="w-full px-3 py-2 rounded-lg text-sm resize-none"
-                                      rows={4}
-                                      style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs font-medium mb-2 block" style={{ color: theme.muted }}>{field.evidenceLabel}</label>
-                                    <textarea
-                                      value={formData[`${field.id}_evidence`] || ''}
-                                      onChange={(e) => setFormData({ ...formData, [`${field.id}_evidence`]: e.target.value })}
-                                      placeholder="Data, comparisons, or diagnostic actions..."
-                                      className="w-full px-3 py-2 rounded-lg text-sm resize-none"
-                                      rows={4}
-                                      style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
-                                    />
-                                  </div>
+                                {/* Risk textarea cell */}
+                                <div className="p-2" style={{ borderRight: `1px solid ${theme.darkMuted}` }}>
+                                  <textarea
+                                    value={formData[`${field.id}_risk`] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [`${field.id}_risk`]: e.target.value })}
+                                    placeholder="Hidden risks of staying the course..."
+                                    className="w-full px-3 py-2 rounded-lg text-sm resize-none"
+                                    rows={3}
+                                    style={{ backgroundColor: `${theme.black}80`, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                  />
+                                </div>
+                                {/* Evidence textarea cell */}
+                                <div className="p-2">
+                                  <textarea
+                                    value={formData[`${field.id}_evidence`] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [`${field.id}_evidence`]: e.target.value })}
+                                    placeholder="Data, comparisons, or diagnostic actions..."
+                                    className="w-full px-3 py-2 rounded-lg text-sm resize-none"
+                                    rows={3}
+                                    style={{ backgroundColor: `${theme.black}80`, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                  />
                                 </div>
                               </div>
                             ))}
+
+                            {/* Optional "Other" bias */}
+                            {otherField && (
+                              <div
+                                className="rounded-b-xl p-4 mt-3"
+                                style={{ backgroundColor: theme.dark, border: `1px dashed ${theme.darkMuted}` }}
+                              >
+                                <p className="text-xs font-medium mb-3" style={{ color: theme.subtle }}>
+                                  Optional: Identify another status quo bias not listed above
+                                </p>
+                                <div className="grid md:grid-cols-2 gap-3">
+                                  <textarea
+                                    value={formData[`${otherField.id}_risk`] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [`${otherField.id}_risk`]: e.target.value })}
+                                    placeholder="Additional bias & its unconsidered risks..."
+                                    className="w-full px-3 py-2 rounded-lg text-sm resize-none"
+                                    rows={2}
+                                    style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                  />
+                                  <textarea
+                                    value={formData[`${otherField.id}_evidence`] || ''}
+                                    onChange={(e) => setFormData({ ...formData, [`${otherField.id}_evidence`]: e.target.value })}
+                                    placeholder="Evidence or diagnostic action..."
+                                    className="w-full px-3 py-2 rounded-lg text-sm resize-none"
+                                    rows={2}
+                                    style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       }
@@ -1890,9 +1944,11 @@ export default function GenesysSimulation() {
                   <AlertTriangle className="w-6 h-6" style={{ color: "#F59E0B" }} />
                   <h2 className="text-2xl font-bold" style={{ color: theme.white }}>Wobble: {currentRound.wobble.title}</h2>
                 </div>
-                <p className="text-base leading-relaxed mb-6" style={{ color: theme.light }}>
-                  {currentRound.wobble.description}
-                </p>
+                <div className="text-base leading-relaxed mb-6" style={{ color: theme.light }}>
+                  {currentRound.wobble.description.split('\n').map((line, i) => (
+                    <p key={i} className={line.startsWith('•') ? 'ml-2 mb-1' : 'mb-2'}>{line}</p>
+                  ))}
+                </div>
                 <p className="text-lg font-medium mb-6" style={{ color: theme.white }}>
                   {currentRound.wobble.question}
                 </p>
