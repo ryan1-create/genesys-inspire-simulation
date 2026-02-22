@@ -305,98 +305,102 @@ function ActivityInProgress({ currentRound, timerSeconds, isTimerRunning, onTogg
   const totalDuration = 15 * 60;
   const progress = timerSeconds / totalDuration;
 
-  // Circular progress for visual interest
-  const radius = 180;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference * (1 - progress);
-
-  const timerColor = timerSeconds <= 60 ? '#EF4444' : timerSeconds <= 180 ? '#F59E0B' : roundColor;
+  const timerColor = timerSeconds <= 60 ? '#EF4444' : timerSeconds <= 180 ? '#F59E0B' : theme.white;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[500px] gap-8">
+    <div className="flex flex-col items-center justify-center h-full min-h-[500px]" style={{ gap: '40px' }}>
       {/* Round context */}
       <div className="text-center">
         <div
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-lg font-bold mb-4"
-          style={{ backgroundColor: `${roundColor}15`, color: roundColor, border: `1px solid ${roundColor}25` }}
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold mb-5"
+          style={{ backgroundColor: `${roundColor}15`, color: roundColor, border: `1px solid ${roundColor}25`, fontSize: '18px' }}
         >
           <Target className="w-5 h-5" />
           {roundInfo?.motion}
         </div>
-        <h2 className="text-6xl font-black mb-3" style={{ color: theme.white }}>
+        <h2 style={{ fontSize: '52px', fontWeight: 900, color: theme.white, marginBottom: '8px', lineHeight: 1.1 }}>
           {roundInfo?.customer}
         </h2>
-        <p className="text-2xl font-medium" style={{ color: theme.subtle }}>
+        <p style={{ fontSize: '22px', fontWeight: 500, color: theme.subtle }}>
           {roundInfo?.subtitle}
         </p>
       </div>
 
-      {/* Timer with circular progress ring */}
-      <div className="relative flex items-center justify-center" style={{ width: '420px', height: '420px' }}>
-        {/* SVG ring */}
-        <svg className="absolute inset-0" viewBox="0 0 420 420" style={{ transform: 'rotate(-90deg)' }}>
-          {/* Background ring */}
-          <circle
-            cx="210" cy="210" r={radius}
-            fill="none"
-            stroke={theme.dark}
-            strokeWidth="8"
-          />
-          {/* Progress ring */}
-          <circle
-            cx="210" cy="210" r={radius}
-            fill="none"
-            stroke={timerColor}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease' }}
-          />
-        </svg>
-
-        {/* Timer text */}
-        <div className="text-center z-10">
-          <div
-            className="font-black leading-none tabular-nums"
-            style={{
-              fontSize: '8rem',
-              color: timerColor,
-              textShadow: `0 0 40px ${timerColor}30`,
-            }}
-          >
-            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </div>
-          {!isTimerRunning && timerSeconds === totalDuration && (
-            <p className="text-lg mt-2" style={{ color: theme.subtle }}>Ready to start</p>
-          )}
-          {!isTimerRunning && timerSeconds < totalDuration && timerSeconds > 0 && (
-            <p className="text-lg mt-2" style={{ color: theme.subtle }}>Paused</p>
-          )}
-          {timerSeconds === 0 && (
-            <p className="text-xl font-bold mt-2" style={{ color: '#EF4444' }}>Time's up!</p>
-          )}
+      {/* Timer display — clean, large, centered */}
+      <div className="text-center">
+        <div
+          style={{
+            fontSize: '10vw',
+            fontWeight: 900,
+            lineHeight: 1,
+            color: timerColor,
+            fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
         </div>
+
+        {/* Progress bar */}
+        <div style={{ width: '50vw', maxWidth: '600px', margin: '24px auto 0', height: '6px', borderRadius: '3px', backgroundColor: theme.dark }}>
+          <div
+            style={{
+              height: '100%',
+              borderRadius: '3px',
+              backgroundColor: timerColor,
+              width: `${Math.max(0, progress * 100)}%`,
+              transition: 'width 1s linear, background-color 0.5s ease',
+            }}
+          />
+        </div>
+
+        {/* Status text */}
+        <p style={{ marginTop: '12px', fontSize: '16px', color: theme.subtle, minHeight: '24px' }}>
+          {!isTimerRunning && timerSeconds === totalDuration && 'Ready to start'}
+          {!isTimerRunning && timerSeconds < totalDuration && timerSeconds > 0 && 'Paused'}
+          {timerSeconds === 0 && <span style={{ color: '#EF4444', fontWeight: 700 }}>Time&apos;s up!</span>}
+          {isTimerRunning && '\u00A0'}
+        </p>
       </div>
 
       {/* Timer controls */}
-      <div className="flex items-center gap-4">
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
         <button
           onClick={onToggleTimer}
-          className="flex items-center gap-3 px-8 py-4 rounded-2xl text-xl font-bold transition-all hover:scale-105"
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '14px 32px',
+            borderRadius: '16px',
+            fontSize: '18px',
+            fontWeight: 700,
             backgroundColor: isTimerRunning ? '#EF444420' : `${roundColor}20`,
             color: isTimerRunning ? '#EF4444' : roundColor,
             border: `1px solid ${isTimerRunning ? '#EF444440' : `${roundColor}40`}`,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
           }}
         >
-          {isTimerRunning ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+          {isTimerRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           {isTimerRunning ? 'Pause' : 'Start Timer'}
         </button>
         <button
           onClick={onResetTimer}
-          className="flex items-center gap-3 px-6 py-4 rounded-2xl text-xl font-bold transition-all hover:bg-white/5"
-          style={{ color: theme.muted, border: `1px solid ${theme.dark}` }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '14px 24px',
+            borderRadius: '16px',
+            fontSize: '18px',
+            fontWeight: 700,
+            color: theme.muted,
+            border: `1px solid ${theme.dark}`,
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
         >
           <RotateCcw className="w-5 h-5" />
           Reset
