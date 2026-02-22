@@ -820,6 +820,16 @@ export default function GenesysSimulation() {
   // Step 1: Sign in with room and table
   const handleSignIn = useCallback(() => {
     if (tableNumber.trim() && roomNumber.trim()) {
+      // If a different team was previously saved, clear their progress
+      // This prevents accidentally resuming another team's session
+      const previousTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+      if (previousTeam) {
+        const prev = JSON.parse(previousTeam);
+        if (prev.room !== roomNumber || prev.table !== tableNumber) {
+          localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+        }
+      }
+
       // Save room/table but not team name yet
       localStorage.setItem(STORAGE_KEYS.TEAM_INFO, JSON.stringify({
         room: roomNumber,
@@ -1214,8 +1224,11 @@ export default function GenesysSimulation() {
     4: "/industries/logistics.png",
   };
 
-  // Check for saved session on home screen
-  const hasSavedSession = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.PROGRESS);
+  // Check for saved session on home screen — also extract saved team info for display
+  const savedSessionRaw = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.PROGRESS);
+  const savedTeamRaw = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+  const savedTeamInfo = savedTeamRaw ? JSON.parse(savedTeamRaw) : null;
+  const hasSavedSession = !!savedSessionRaw && savedTeamInfo?.name;
 
   // ============================================================================
   // RENDER: HOME SCREEN (Multi-step registration)
@@ -1287,7 +1300,7 @@ export default function GenesysSimulation() {
                     Continue <ChevronRight className="inline-block ml-2 w-5 h-5" />
                   </GlowButton>
 
-                  {hasSavedSession && (
+                  {hasSavedSession && savedTeamInfo && (
                     <button
                       onClick={handleResumeSession}
                       className="w-full py-4 rounded-xl text-lg font-medium transition-all hover:bg-opacity-80"
@@ -1297,7 +1310,10 @@ export default function GenesysSimulation() {
                         color: theme.white,
                       }}
                     >
-                      Resume Previous Session
+                      <span>Resume Previous Session</span>
+                      <span className="block text-sm mt-1" style={{ color: theme.muted }}>
+                        {savedTeamInfo.name} · Room {savedTeamInfo.room} · Table {savedTeamInfo.table}
+                      </span>
                     </button>
                   )}
                 </div>
