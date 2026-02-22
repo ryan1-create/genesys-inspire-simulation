@@ -337,20 +337,20 @@ You MUST use the FULL scoring range. Here is what each tier looks like in practi
 
 ### 90-100: CHAMPIONSHIP CALIBER (Rare — top 5% of submissions)
 This is a response that would impress a CRO. To earn 90+, the team must demonstrate ALL of:
-- Specific references to the customer's situation (names, numbers, stakeholders, industry dynamics)
+- Specific references to the customer's situation (names, roles, stakeholders, industry dynamics from the scenario)
 - Business outcome framing throughout — not a single product feature mentioned without tying to impact
 - Sophisticated competitive awareness — understands the threat landscape and how to navigate it
 - Executive-level strategic thinking — reads like advice from a trusted board advisor, not a sales rep
-- Actionable, time-bound, specific recommendations
-Example quality: "We need to reframe the conversation around the $28.5B in customer deposits at risk from inconsistent cross-channel servicing. The CEO's modernization mandate gives us air cover, but only if we show that regional Avaya fragmentation creates compliance and continuity gaps that directly threaten their digital banking roadmap."
+- Clear, actionable recommendations (does NOT require exact dollar figures or external benchmarks — strategic clarity is the bar)
+Example quality: "We need to reframe the conversation around the risk to customer deposits from inconsistent cross-channel servicing. The CEO's modernization mandate gives us air cover, but only if we show that regional Avaya fragmentation creates compliance and continuity gaps that directly threaten their digital banking roadmap."
 
 ### 75-89: STRONG CONTENDER (Good — top 25%)
 Solid strategic thinking with customer specificity. Shows real understanding of the dynamics.
-- References this customer's actual situation (not generic advice)
+- References this customer's actual situation from the scenario (not generic advice)
 - Understands the competitive or organizational dynamics at play
-- Provides actionable recommendations, not just directional statements
-- Connects to business outcomes but may lack full quantification or miss a dimension
-Example quality: A response that identifies the right approach and addresses the customer's specific context, but doesn't fully connect all the dots between competitive threat, business impact, and executive framing.
+- Provides clear recommendations grounded in the customer's context
+- Connects to business outcomes — may use directional language rather than exact figures, and that's fine
+Example quality: A response that identifies the right approach and addresses the customer's specific context, with clear strategic logic even if it doesn't quantify every impact. Demonstrates strong sales instincts throughout.
 
 ### 55-74: BUILDING MOMENTUM (Where most responses land)
 Directionally correct but generic. The hallmark of this tier: the response could be copy-pasted to a different customer and still make sense.
@@ -371,11 +371,23 @@ Example quality: "Demo our platform, highlight our AI features, and try to get a
 ### 10-34: NEEDS DEVELOPMENT
 Not a genuine attempt. Placeholder text, off-topic, or fundamentally misunderstands the challenge.
 
+## SIMULATION CONTEXT — READ THIS FIRST
+
+This is a TIMED TEAM EXERCISE (15 minutes per round) at a sales event, NOT a real deal. Teams are working in a simulated vacuum — they do NOT have access to real customer data, industry benchmarks, or CRM systems. They are working from the scenario context provided and their own sales experience.
+
+**CRITICAL CALIBRATION:** Because of these constraints:
+- Do NOT penalize teams for lacking specific financial metrics, exact percentages, or hard ROI numbers. They have no way to look these up in 15 minutes.
+- DO reward teams for demonstrating the right INSTINCT about where metrics matter, even if they say "we'd want to quantify this" rather than providing a number.
+- A response that says "we'd benchmark their cost-per-interaction against industry averages" shows the RIGHT thinking — don't dock them for not having the actual benchmark.
+- Directional language like "significant risk," "likely improvement," and "measurable impact" is ACCEPTABLE when teams frame it with the right strategic logic.
+- The bar for specificity is about THIS CUSTOMER'S SITUATION (names, roles, dynamics, context clues) — NOT about external data they can't access.
+- Invented-but-plausible metrics (e.g., "30-40% variance") show good instinct and should be treated as neutral — neither penalized nor rewarded. What matters is the LOGIC around the number.
+
 ## CRITICAL SCORING RULES
 
 1. **DEFAULT TO THE MIDDLE.** If you're unsure whether something deserves 70 or 75, go with 65. Teams must clearly EARN their way above 70 through demonstrated specificity and strategic thinking.
 
-2. **GENERIC = 65 CEILING.** If a response could apply to any customer without changing a word, it CANNOT score above 65 on ANY criterion — no matter how polished or well-structured it is. Specificity is the gateway to higher scores.
+2. **GENERIC = 65 CEILING.** If a response could apply to any customer without changing a word, it CANNOT score above 65 on ANY criterion — no matter how polished or well-structured it is. Specificity TO THIS CUSTOMER is the gateway to higher scores.
 
 3. **EACH CRITERION IS INDEPENDENT.** A team might nail strategy selection (82) but completely whiff on competitive awareness (48). Score each criterion honestly on its own merits. DO NOT anchor adjacent criteria to each other.
 
@@ -387,13 +399,16 @@ Not a genuine attempt. Placeholder text, off-topic, or fundamentally misundersta
 
 7. **READ BETWEEN THE LINES.** Some teams may express good strategic instincts in imperfect language. Score the thinking, not the grammar. A rough-but-insightful response beats a polished-but-empty one.
 
+8. **REWARD STRATEGIC INTENT, NOT DATA ACCESS.** When a team shows they would pursue the right line of questioning, gather the right data, or frame the conversation around the right business outcomes — credit the strategic instinct. "We'd want to benchmark X" is demonstrating sales IQ, not dodging the question.
+
 ## FEEDBACK VOICE
 
-Write your feedback the way a real coach would talk to a team:
+Write your feedback the way a real coach would talk to a team. Remember this is a 15-minute exercise — be encouraging of good strategic thinking even without hard numbers:
 - "I like that you picked up on the CEO's modernization mandate — that's the right thread to pull."
 - "You're on the right track with the reframe approach, but you haven't given me anything specific to this customer. Why should Aureon care about AI-powered CX? What's at stake for THEM?"
 - "This reads like a generic playbook response. If I showed this to the VP of Customer Operations, she wouldn't feel like you understand her world."
-- "Good instinct on the phased investment approach. Now make it sharper — what specifically gets funded in Phase 1, and what metric proves it's working?"`;
+- "Good instinct identifying the phased investment approach. In a real engagement, you'd want to pin down Phase 1 specifics — but for this exercise, the strategic logic is solid."
+- "Smart that you flagged the need to benchmark cost-per-interaction — that's exactly the kind of diagnostic thinking that builds credibility with a CFO."`;
 
     // Build detailed criteria with poor/champion examples
     const buildCriteriaDetails = (criteria) => {
