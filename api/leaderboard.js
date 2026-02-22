@@ -25,9 +25,21 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      // Get leaderboard for a specific room
-      const { room } = req.query;
+      const { room, action, teamKey } = req.query;
 
+      // Check for a pending reset signal for a specific team
+      if (action === 'check-reset' && teamKey) {
+        const resetKey = `reset:${teamKey}`;
+        const resetData = await redis.get(resetKey);
+        if (resetData) {
+          // Consume the reset signal (delete it so it doesn't fire again)
+          await redis.del(resetKey);
+          return res.status(200).json({ hasReset: true, targetRound: resetData.targetRound, timestamp: resetData.timestamp });
+        }
+        return res.status(200).json({ hasReset: false });
+      }
+
+      // Get leaderboard for a specific room
       if (!room) {
         return res.status(400).json({ error: 'Room number required' });
       }
