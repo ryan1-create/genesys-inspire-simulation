@@ -875,14 +875,63 @@ export default function GenesysSimulation() {
     setCurrentView("simulation");
   }, []);
 
-  const handleResumeSession = useCallback(() => {
+  const handleResumeSession = useCallback(async () => {
     const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
-    if (savedProgress) {
-      const progress = JSON.parse(savedProgress);
-      setSubmissions(progress.submissions || {});
-      setCurrentRoundIndex(progress.currentRound || 0);
-      setRoundPhase(progress.currentPhase || "intro");
+    if (!savedProgress) {
+      setCurrentView("simulation");
+      return;
     }
+
+    const progress = JSON.parse(savedProgress);
+    let resumeSubmissions = progress.submissions || {};
+    let resumeRoundIndex = progress.currentRound || 0;
+    let resumePhase = progress.currentPhase || "intro";
+
+    // Check if the admin has issued a reset-to-round for this team
+    const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+    if (savedTeam) {
+      const team = JSON.parse(savedTeam);
+      const teamKey = `${team.room}-${team.table}`;
+      try {
+        const res = await fetch(`/api/leaderboard?action=check-reset&teamKey=${encodeURIComponent(teamKey)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.hasReset) {
+            const targetRound = data.targetRound; // 1-4
+            const targetRoundIndex = targetRound - 1; // 0-3
+
+            // Clear submissions for this round and all later rounds
+            const cleanedSubmissions = {};
+            for (const [roundId, submission] of Object.entries(resumeSubmissions)) {
+              if (parseInt(roundId) < targetRound) {
+                cleanedSubmissions[roundId] = submission;
+              }
+            }
+
+            resumeSubmissions = cleanedSubmissions;
+            resumeRoundIndex = targetRoundIndex;
+            resumePhase = "intro";
+
+            // Save the cleaned state back to localStorage
+            const cleanedProgress = {
+              submissions: cleanedSubmissions,
+              currentRound: targetRoundIndex,
+              currentPhase: "intro",
+            };
+            localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(cleanedProgress));
+
+            console.log(`Admin reset detected: resetting to Round ${targetRound}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check for admin reset:", err);
+        // Continue with normal resume if check fails
+      }
+    }
+
+    setSubmissions(resumeSubmissions);
+    setCurrentRoundIndex(resumeRoundIndex);
+    setRoundPhase(resumePhase);
     setCurrentView("simulation");
   }, []);
 
