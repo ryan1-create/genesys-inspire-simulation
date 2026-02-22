@@ -1979,6 +1979,26 @@ export default function GenesysSimulation() {
                   </p>
                 </div>
 
+                {/* Penalty Alert */}
+                {submissions[currentRound.id].initialFeedback?.penaltiesApplied?.length > 0 && (
+                  <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: '#7f1d1d20', border: '1px solid #EF444440' }}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-5 h-5" style={{ color: '#EF4444' }} />
+                      <h4 className="text-sm font-bold" style={{ color: '#EF4444' }}>
+                        Penalty Received ({submissions[currentRound.id].initialFeedback.penaltiesApplied.length * -5} pts)
+                      </h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {submissions[currentRound.id].initialFeedback.penaltiesApplied.map((penalty, i) => (
+                        <li key={i} className="text-sm flex items-start gap-2" style={{ color: '#FCA5A5' }}>
+                          <span className="mt-0.5 flex-shrink-0">-5</span>
+                          <span>{penalty}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* Strengths & Improvements */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl" style={{ backgroundColor: theme.dark }}>
@@ -2263,6 +2283,26 @@ export default function GenesysSimulation() {
                     </span>
                   </div>
                 </div>
+
+                {/* Penalty Alert — Final Score */}
+                {submissions[currentRound.id].finalFeedback?.penaltiesApplied?.length > 0 && (
+                  <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: '#7f1d1d20', border: '1px solid #EF444440' }}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-5 h-5" style={{ color: '#EF4444' }} />
+                      <h4 className="text-sm font-bold" style={{ color: '#EF4444' }}>
+                        Penalty Received ({submissions[currentRound.id].finalFeedback.penaltiesApplied.length * -5} pts)
+                      </h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {submissions[currentRound.id].finalFeedback.penaltiesApplied.map((penalty, i) => (
+                        <li key={i} className="text-sm flex items-start gap-2" style={{ color: '#FCA5A5' }}>
+                          <span className="mt-0.5 flex-shrink-0">-5</span>
+                          <span>{penalty}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <p className="text-base leading-relaxed mb-6" style={{ color: theme.light }}>
                   {submissions[currentRound.id].finalFeedback?.mainFeedback}
