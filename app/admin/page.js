@@ -16,6 +16,10 @@ export default function AdminPanel() {
   const [bonusAmount, setBonusAmount] = useState(5);
   const [bonusReason, setBonusReason] = useState("");
 
+  // Reset-to-round state
+  const [resetTeamData, setResetTeamData] = useState(null);
+  const [resetTargetRound, setResetTargetRound] = useState(1);
+
   const apiCall = async (action, extra = {}) => {
     setLoading(true);
     setMessage("");
@@ -133,6 +137,22 @@ export default function AdminPanel() {
       setMessage(`Error: ${err.message}`);
     }
     setLoading(false);
+  };
+
+  const resetToRound = async () => {
+    if (!resetTeamData || !resetTargetRound) return;
+    if (!confirm(`Reset ${resetTeamData.teamName} to the beginning of Round ${resetTargetRound}? This will clear their scores for Round ${resetTargetRound}${resetTargetRound < 4 ? ` through Round 4` : ''} and signal their browser to restart from that round.`)) return;
+    const data = await apiCall("reset-to-round", {
+      room: selectedRoom,
+      teamKey: resetTeamData.teamKey,
+      targetRound: resetTargetRound,
+    });
+    if (data) {
+      setMessage(data.message);
+      setResetTeamData(null);
+      setResetTargetRound(1);
+      setLeaderboard(data.leaderboard || []);
+    }
   };
 
   if (!isLoggedIn) {
@@ -362,19 +382,19 @@ export default function AdminPanel() {
                                   +Bonus
                                 </button>
                                 <button
-                                  onClick={() => resetTeam(team.teamKey)}
+                                  onClick={() => { setResetTeamData(team); setResetTargetRound(1); }}
                                   style={{
                                     padding: "6px 12px",
                                     borderRadius: "4px",
-                                    background: "#27272A",
-                                    color: "white",
-                                    border: "none",
+                                    background: "#1e1b4b",
+                                    color: "#818cf8",
+                                    border: "1px solid #818cf840",
                                     cursor: "pointer",
                                     marginRight: "8px",
                                     fontSize: "12px"
                                   }}
                                 >
-                                  Reset
+                                  ↩ Reset Round
                                 </button>
                                 <button
                                   onClick={() => removeTeam(team.teamKey)}
@@ -471,6 +491,75 @@ export default function AdminPanel() {
                             Award +{bonusAmount}
                           </button>
                         </div>
+                      </div>
+                    )}
+                    {/* Reset to Round Panel */}
+                    {resetTeamData && (
+                      <div style={{
+                        marginTop: "20px",
+                        padding: "20px",
+                        background: "#0f0a2a",
+                        borderRadius: "12px",
+                        border: "1px solid #818cf830"
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                          <h3 style={{ margin: 0, color: "#818cf8", fontSize: "16px" }}>
+                            Reset <strong>{resetTeamData.teamName}</strong> to Round:
+                          </h3>
+                          <button
+                            onClick={() => setResetTeamData(null)}
+                            style={{ background: "none", border: "none", color: "#a1a1aa", cursor: "pointer", fontSize: "18px" }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            {[1, 2, 3, 4].map((round) => (
+                              <button
+                                key={round}
+                                onClick={() => setResetTargetRound(round)}
+                                style={{
+                                  padding: "10px 20px",
+                                  borderRadius: "8px",
+                                  background: resetTargetRound === round ? "#4f46e5" : "#27272A",
+                                  color: "white",
+                                  border: resetTargetRound === round ? "2px solid #818cf8" : "2px solid transparent",
+                                  cursor: "pointer",
+                                  fontWeight: "bold",
+                                  fontSize: "15px",
+                                  minWidth: "60px"
+                                }}
+                              >
+                                R{round}
+                              </button>
+                            ))}
+                          </div>
+                          <div style={{ flex: 1, color: "#a1a1aa", fontSize: "13px", lineHeight: "1.4" }}>
+                            {resetTargetRound === 1
+                              ? "Clears all scores. Team restarts from Round 1."
+                              : `Keeps R1${resetTargetRound > 2 ? `–R${resetTargetRound - 1}` : ''} scores. Clears R${resetTargetRound}${resetTargetRound < 4 ? `–R4` : ''}.`}
+                          </div>
+                          <button
+                            onClick={resetToRound}
+                            disabled={loading}
+                            style={{
+                              padding: "10px 24px",
+                              borderRadius: "8px",
+                              background: "#4f46e5",
+                              color: "white",
+                              border: "none",
+                              cursor: "pointer",
+                              fontWeight: "bold",
+                              fontSize: "14px"
+                            }}
+                          >
+                            Reset to R{resetTargetRound}
+                          </button>
+                        </div>
+                        <p style={{ color: "#6b7280", fontSize: "12px", marginTop: "12px", fontStyle: "italic" }}>
+                          The team will pick up this reset when they tap &quot;Resume Previous Session&quot; on the registration page.
+                        </p>
                       </div>
                     )}
                   </>
