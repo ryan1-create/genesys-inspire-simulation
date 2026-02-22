@@ -63,9 +63,11 @@ function assessSubmissionQuality(submission, phase) {
     return { quality: "normal", score: null, skipAI: false, penalty: 0 };
   }
 
-  // Extract just the team-authored content by removing field labels/prompts
-  // Submission format is: "Label:\nTeam content\n\nLabel:\nTeam content..."
-  // Or for deal review: "=== TEAM'S AUTHORED RESPONSES... ===\nNext Actions for...\ncontent"
+  // Extract just the team-authored content by removing ALL field labels/prompts.
+  // Submission formats:
+  //   Regular: "Label:\nTeam content\n\nLabel:\nTeam content..."
+  //   Status Quo Biases: "Status Quo Bias Analysis:\n\nBias: ...\nUnconsidered Risks:\ncontent\nEvidence/Diagnostic Action:\ncontent"
+  //   Deal Review: "=== TEAM'S AUTHORED RESPONSES... ===\nNext Actions for...\ncontent"
   let teamContent = fullText;
 
   // For deal review format, extract only the team-authored section
@@ -76,19 +78,32 @@ function assessSubmissionQuality(submission, phase) {
       .replace(/Next Actions for "[^"]*":\n/g, '') // Strip "Next Actions for..." labels
       .trim();
   } else {
-    // For regular fields, strip the prompt labels (lines ending with ? or :)
-    // Keep only the content lines that follow them
+    // Strip ALL structural/label lines to isolate team-authored content only.
+    // This catches: field labels ("Value Gaps:"), sublabels ("How can we...?"),
+    // bias labels ("Bias: ..."), section headers, and format artifacts.
     const lines = fullText.split('\n');
     const contentLines = [];
-    let skipNext = false;
     for (const line of lines) {
       const trimmed = line.trim();
-      // Skip lines that are field labels (end with ? or : and look like prompts)
-      if (trimmed.match(/^(How can we|What can we|What is one|What question|Which strategy|Given what|What 2-3|What messages|What must be|What are|Describe|Write a|List|Explain|Prepare)/i) ||
-          trimmed.match(/\?\s*$/) ||
-          trimmed === '') {
-        continue;
-      }
+      if (trimmed === '') continue;
+
+      // Skip sublabel prompts (questions starting with common patterns)
+      if (trimmed.match(/^(How can we|What can we|What is one|What question|Which strategy|Given what|What 2-3|What messages|What must be|What are|Describe|Write a|List|Explain|Prepare|How should|How would|What would|For each)/i)) continue;
+
+      // Skip lines ending with ? (question prompts)
+      if (trimmed.match(/\?\s*$/)) continue;
+
+      // Skip field label lines — short lines (under 80 chars) ending with ":"
+      // These are structural labels like "Value Gaps:", "Art of the Possible:", "Impact:",
+      // "Unconsidered Risks:", "Evidence/Diagnostic Action:", etc.
+      if (trimmed.match(/:\s*$/) && trimmed.length < 80) continue;
+
+      // Skip bias format labels: "Bias: ..." (the quoted bias statement, not team content)
+      if (trimmed.match(/^Bias:\s*"/i)) continue;
+
+      // Skip section headers
+      if (trimmed.match(/^(Status Quo Bias Analysis|Competitive Strategy|Deal Review|Next Actions)/i)) continue;
+
       contentLines.push(trimmed);
     }
     if (contentLines.length > 0) {
@@ -115,18 +130,36 @@ function assessSubmissionQuality(submission, phase) {
     return { quality: "empty", score: 5, skipAI: true };
   }
 
-  if (garbageRatio >= 0.85 && wordCount <= 20) {
+  // Garbage detection: most/all unique words are trash
+  // Lowered threshold: if 70%+ of words are garbage AND total word count is low → trash
+  if (garbageRatio >= 0.70 && wordCount <= 30) {
     return { quality: "garbage", score: 10, skipAI: true };
   }
 
-  // Highly repetitive: same 1-2 words repeated many times
-  if (uniqueWords.size <= 2 && wordCount > 6) {
+  // Very short content with high garbage ratio (e.g., 4 fields × "test" = 4 words)
+  if (wordCount <= 8 && garbageRatio >= 0.5) {
+    return { quality: "garbage", score: 10, skipAI: true };
+  }
+
+  // Highly repetitive: same 1-2 unique words across many instances
+  if (uniqueWords.size <= 2 && wordCount >= 3) {
     return { quality: "repetitive", score: 12, skipAI: true };
+  }
+
+  // All content is a single repeated word
+  if (uniqueWords.size === 1 && wordCount >= 2) {
+    return { quality: "repetitive", score: 8, skipAI: true };
   }
 
   // Placeholder patterns at the start of content
   if (/^(lorem ipsum|placeholder|sample text|coming soon|will update)/i.test(teamContent)) {
     return { quality: "garbage", score: 10, skipAI: true };
+  }
+
+  // Extremely short: fewer than 15 characters of actual content across all fields
+  // (genuine short answers are usually 1 field; this catches all-fields-minimal)
+  if (charCount < 15 && wordCount < 6) {
+    return { quality: "minimal", score: 15, skipAI: true };
   }
 
   // ---- EVERYTHING ELSE GOES TO THE AI ----
@@ -141,15 +174,17 @@ function generateGarbageScore(round, qualityResult) {
   const baseScore = qualityResult.score;
   const criteriaScores = {};
 
+  // All criteria get the SAME low score as overall — no confusing variance.
+  // This makes it crystal clear: garbage in = garbage out, no ambiguity.
   round.scoringCriteria.forEach(c => {
-    // Slight variance per criterion but all very low
-    criteriaScores[c.name] = Math.round(Math.max(5, baseScore + (Math.random() * 8 - 4)));
+    criteriaScores[c.name] = baseScore;
   });
 
   const feedbackByQuality = {
     empty: "No submission was provided. Your team needs to enter a strategic response to the customer scenario. Review the selling objective and customer context, discuss as a team, and provide your best thinking.",
     garbage: "This doesn't appear to be a genuine attempt at the challenge. I'm looking for real strategic thinking here — how would you actually approach this customer conversation? Take another look at the scenario, talk it through as a team, and give me something I can coach you on.",
     repetitive: "I can see this isn't a serious submission. In a real customer meeting, you'd need a thoughtful, specific approach. Review the customer context, discuss the challenge as a team, and put together a response that reflects your best strategic thinking.",
+    minimal: "There's not enough here for me to coach on. I need to see your team's actual strategic thinking — not just a few words. Dig into the customer context, talk through the challenge as a team, and give me a real response I can work with.",
   };
 
   return {
