@@ -777,11 +777,12 @@ export default function PresenterView() {
   if (!isLoggedIn) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center p-8"
+        className="min-h-screen flex items-center justify-center p-8 relative"
         style={{ backgroundImage: 'url(/gradient-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
+        <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)', pointerEvents: 'none' }} />
         <div
-          className="w-full max-w-lg p-12 text-center rounded-3xl"
+          className="relative z-10 w-full max-w-lg p-12 text-center rounded-3xl"
           style={{ backgroundColor: theme.bgCard, border: `1px solid rgba(255,255,255,0.04)`, boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}
         >
           <img
@@ -842,12 +843,15 @@ export default function PresenterView() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="min-h-screen flex flex-col relative"
       style={{ backgroundImage: 'url(/gradient-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}
     >
+      {/* Dark overlay for contrast */}
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0, 0, 0, 0.55)', pointerEvents: 'none', zIndex: 0 }} />
+
       {/* Header */}
       <header
-        className="flex items-center px-8 py-4"
+        className="relative z-10 flex items-center px-8 py-4"
         style={{ borderBottom: `1px solid ${theme.faint}` }}
       >
         {/* Left: Logo + Room */}
@@ -949,7 +953,7 @@ export default function PresenterView() {
       </header>
 
       {/* Round Title Area */}
-      <div className="px-8 pt-6 pb-2 text-center">
+      <div className="relative z-10 px-8 pt-6 pb-2 text-center">
         <h1
           style={{
             fontSize: currentRound === 0 ? 'clamp(2rem, 4vw, 3.5rem)' : 'clamp(1.5rem, 3vw, 2.5rem)',
@@ -970,7 +974,7 @@ export default function PresenterView() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 px-8 py-2 overflow-auto">
+      <main className="relative z-10 flex-1 px-8 py-2 overflow-auto">
         {currentRound === 0 ? (
           <TeamRegistrationWall teams={teams} />
         ) : viewMode === "activity" ? (
@@ -988,7 +992,7 @@ export default function PresenterView() {
 
       {/* Footer — minimal */}
       <footer
-        className="px-8 py-3 flex items-center justify-between"
+        className="relative z-10 px-8 py-3 flex items-center justify-between"
         style={{ borderTop: `1px solid ${theme.faint}` }}
       >
         {currentRound > 0 ? (
