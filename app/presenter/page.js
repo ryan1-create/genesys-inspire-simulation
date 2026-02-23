@@ -103,8 +103,8 @@ function TeamRegistrationWall({ teams }) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: '12px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '16px',
         }}
       >
         {teams.map((team, index) => {
@@ -117,9 +117,9 @@ function TeamRegistrationWall({ teams }) {
               style={{
                 backgroundColor: colorSet.bg,
                 color: colorSet.text,
-                borderRadius: '16px',
-                padding: '20px 24px',
-                fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)',
+                borderRadius: '20px',
+                padding: '28px 32px',
+                fontSize: 'clamp(1.4rem, 2.2vw, 2rem)',
                 fontWeight: 800,
                 lineHeight: 1.2,
                 overflow: 'hidden',
@@ -128,7 +128,9 @@ function TeamRegistrationWall({ teams }) {
                 animation: `tilePop 0.4s ease-out ${index * 0.05}s both`,
                 display: 'flex',
                 alignItems: 'center',
-                minHeight: '64px',
+                justifyContent: 'center',
+                textAlign: 'center',
+                minHeight: '80px',
               }}
             >
               {team.teamName}
@@ -776,7 +778,7 @@ export default function PresenterView() {
     return (
       <div
         className="min-h-screen flex items-center justify-center p-8"
-        style={{ backgroundColor: theme.bg }}
+        style={{ backgroundImage: 'url(/gradient-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <div
           className="w-full max-w-lg p-12 text-center rounded-3xl"
@@ -841,7 +843,7 @@ export default function PresenterView() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ backgroundColor: theme.bg }}
+      style={{ backgroundImage: 'url(/gradient-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}
     >
       {/* Header */}
       <header
