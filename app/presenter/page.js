@@ -61,15 +61,18 @@ const theme = {
 // WORD CLOUD COMPONENT — Grid-based layout, no overlaps
 // ============================================================================
 
-function WordCloud({ teams }) {
-  const colors = [
-    theme.rounds[1].color,
-    theme.rounds[2].color,
-    theme.rounds[3].color,
-    theme.rounds[4].color,
-    "#F59E0B",
-    "#EC4899",
-    "#06B6D4",
+function TeamRegistrationWall({ teams }) {
+  const bgColors = [
+    { bg: '#10B981', text: '#FFFFFF' },  // emerald
+    { bg: '#3B82F6', text: '#FFFFFF' },  // blue
+    { bg: '#8B5CF6', text: '#FFFFFF' },  // violet
+    { bg: '#F59E0B', text: '#FFFFFF' },  // amber
+    { bg: '#EC4899', text: '#FFFFFF' },  // pink
+    { bg: '#06B6D4', text: '#FFFFFF' },  // cyan
+    { bg: '#EF4444', text: '#FFFFFF' },  // red
+    { bg: '#FF4F1F', text: '#FFFFFF' },  // genesys orange
+    { bg: '#14B8A6', text: '#FFFFFF' },  // teal
+    { bg: '#A855F7', text: '#FFFFFF' },  // purple
   ];
 
   if (teams.length === 0) {
@@ -91,40 +94,63 @@ function WordCloud({ teams }) {
     );
   }
 
-  // Flex wrap layout with varying sizes — clean, no overlaps
+  // Colored tile grid — like Mentimeter participant wall
   return (
     <div
-      className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5 px-12 py-8"
-      style={{ minHeight: '60vh', alignContent: 'center' }}
+      className="w-full max-w-[1600px] mx-auto px-6 py-6"
+      style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
     >
-      {teams.map((team, index) => {
-        const seed = team.teamName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const color = colors[seed % colors.length];
-        // Vary size based on seed — 3 tiers
-        const sizeIndex = seed % 3;
-        const fontSize = sizeIndex === 0 ? 'clamp(2rem, 4.5vw, 4.5rem)' : sizeIndex === 1 ? 'clamp(1.6rem, 3.5vw, 3.5rem)' : 'clamp(1.4rem, 3vw, 3rem)';
-        const opacity = sizeIndex === 0 ? 1 : sizeIndex === 1 ? 0.9 : 0.75;
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          gap: '12px',
+        }}
+      >
+        {teams.map((team, index) => {
+          const seed = team.teamName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const colorSet = bgColors[seed % bgColors.length];
 
-        return (
-          <div
-            key={team.teamKey || team.teamName}
-            className="font-black whitespace-nowrap"
-            style={{
-              fontSize,
-              color,
-              opacity,
-              lineHeight: 1.1,
-              animation: `wordFadeIn 0.6s ease-out ${index * 0.08}s both`,
-            }}
-          >
-            {team.teamName}
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={team.teamKey || team.teamName}
+              style={{
+                backgroundColor: colorSet.bg,
+                color: colorSet.text,
+                borderRadius: '16px',
+                padding: '20px 24px',
+                fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)',
+                fontWeight: 800,
+                lineHeight: 1.2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                animation: `tilePop 0.4s ease-out ${index * 0.05}s both`,
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: '64px',
+              }}
+            >
+              {team.teamName}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Team count */}
+      <div className="text-center mt-8">
+        <span
+          className="text-lg font-bold"
+          style={{ color: theme.subtle }}
+        >
+          {teams.length} {teams.length === 1 ? 'team' : 'teams'} registered
+        </span>
+      </div>
+
       <style jsx>{`
-        @keyframes wordFadeIn {
-          from { opacity: 0; transform: translateY(12px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes tilePop {
+          from { opacity: 0; transform: scale(0.85); }
+          to { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>
@@ -750,7 +776,7 @@ export default function PresenterView() {
     return (
       <div
         className="min-h-screen flex items-center justify-center p-8"
-        style={{ background: `radial-gradient(ellipse at center, ${theme.bgElevated} 0%, ${theme.bg} 70%)` }}
+        style={{ backgroundColor: theme.bg }}
       >
         <div
           className="w-full max-w-lg p-12 text-center rounded-3xl"
@@ -759,7 +785,7 @@ export default function PresenterView() {
           <img
             src="/genesys-logo.png"
             alt="Genesys"
-            className="h-14 mx-auto mb-8 opacity-90"
+            className="h-20 mx-auto mb-8"
           />
           <h1 className="text-5xl font-black mb-2" style={{ color: theme.white, letterSpacing: '-0.02em' }}>
             The Game
@@ -815,56 +841,58 @@ export default function PresenterView() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: `radial-gradient(ellipse at top center, ${roundColor}06 0%, ${theme.bg} 50%)` }}
+      style={{ backgroundColor: theme.bg }}
     >
-      {/* Header — minimal, refined */}
+      {/* Header */}
       <header
-        className="flex items-center justify-between px-8 py-3"
+        className="flex items-center px-8 py-4"
         style={{ borderBottom: `1px solid ${theme.faint}` }}
       >
-        {/* Left: Logo + Room */}
-        <div className="flex items-center gap-4">
-          <img src="/genesys-logo.png" alt="Genesys" className="h-8 opacity-70" />
-          <div className="h-6 w-px" style={{ backgroundColor: theme.faint }} />
+        {/* Left: Logo + Room — fixed width so center stays centered */}
+        <div className="flex items-center gap-5" style={{ width: '280px' }}>
+          <img src="/genesys-logo.png" alt="Genesys" className="h-12 opacity-90" />
+          <div className="h-8 w-px" style={{ backgroundColor: `${theme.subtle}30` }} />
           <span
-            className="text-sm font-bold tracking-widest"
-            style={{ color: theme.subtle }}
+            className="text-base font-bold tracking-widest"
+            style={{ color: theme.muted }}
           >
             ROOM {roomNumber}
           </span>
         </div>
 
-        {/* Center: Round Navigation — refined pills */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl" style={{ backgroundColor: theme.bgCard }}>
-          {[0, 1, 2, 3, 4].map((round) => {
-            const rc = theme.rounds[round]?.color || theme.muted;
-            const isActive = currentRound === round;
-            return (
-              <button
-                key={round}
-                onClick={() => goToRound(round)}
-                className="relative flex items-center justify-center transition-all"
-                style={{
-                  padding: isActive ? '6px 16px' : '6px 10px',
-                  borderRadius: '10px',
-                  backgroundColor: isActive ? `${rc}18` : 'transparent',
-                  color: isActive ? rc : theme.subtle,
-                  fontSize: '13px',
-                  fontWeight: isActive ? 800 : 600,
-                  border: isActive ? `1px solid ${rc}25` : '1px solid transparent',
-                }}
-                title={theme.rounds[round]?.name}
-              >
-                {round === 0 ? (isActive ? 'Lobby' : '\u2302') : `R${round}`}
-              </button>
-            );
-          })}
+        {/* Center: Round Navigation — truly centered with flex-1 */}
+        <div className="flex-1 flex justify-center">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.faint}` }}>
+            {[0, 1, 2, 3, 4].map((round) => {
+              const rc = theme.rounds[round]?.color || theme.muted;
+              const isActive = currentRound === round;
+              return (
+                <button
+                  key={round}
+                  onClick={() => goToRound(round)}
+                  className="relative flex items-center justify-center transition-all"
+                  style={{
+                    padding: isActive ? '8px 20px' : '8px 14px',
+                    borderRadius: '12px',
+                    backgroundColor: isActive ? `${rc}18` : 'transparent',
+                    color: isActive ? rc : theme.subtle,
+                    fontSize: '14px',
+                    fontWeight: isActive ? 800 : 600,
+                    border: isActive ? `1px solid ${rc}25` : '1px solid transparent',
+                  }}
+                  title={theme.rounds[round]?.name}
+                >
+                  {round === 0 ? (isActive ? 'Lobby' : '\u2302') : `R${round}`}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Right: Controls */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium" style={{ color: theme.subtle }}>
-            <Users className="w-3.5 h-3.5" />
+        {/* Right: Controls — fixed width to match left */}
+        <div className="flex items-center justify-end gap-3" style={{ width: '280px' }}>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium" style={{ color: theme.subtle }}>
+            <Users className="w-4 h-4" />
             {teams.length}
           </div>
 
@@ -942,7 +970,7 @@ export default function PresenterView() {
       {/* Main Content */}
       <main className="flex-1 px-8 py-2 overflow-auto">
         {currentRound === 0 ? (
-          <WordCloud teams={teams} />
+          <TeamRegistrationWall teams={teams} />
         ) : viewMode === "activity" ? (
           <ActivityInProgress
             currentRound={currentRound}
