@@ -848,8 +848,8 @@ export default function PresenterView() {
         className="flex items-center px-8 py-4"
         style={{ borderBottom: `1px solid ${theme.faint}` }}
       >
-        {/* Left: Logo + Room — fixed width so center stays centered */}
-        <div className="flex items-center gap-5" style={{ width: '280px' }}>
+        {/* Left: Logo + Room */}
+        <div className="flex items-center gap-5 flex-shrink-0">
           <img src="/genesys-logo.png" alt="Genesys" className="h-12 opacity-90" />
           <div className="h-8 w-px" style={{ backgroundColor: `${theme.subtle}30` }} />
           <span
@@ -889,8 +889,8 @@ export default function PresenterView() {
           </div>
         </div>
 
-        {/* Right: Controls — fixed width to match left */}
-        <div className="flex items-center justify-end gap-3" style={{ width: '280px' }}>
+        {/* Right: Controls */}
+        <div className="flex items-center justify-end gap-3 flex-shrink-0">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium" style={{ color: theme.subtle }}>
             <Users className="w-4 h-4" />
             {teams.length}
