@@ -817,8 +817,11 @@ export default function GenesysSimulation() {
   }, []);
 
   // Handlers
+  // Server-side team data (for cross-computer resume)
+  const [serverTeamData, setServerTeamData] = useState(null);
+
   // Step 1: Sign in with room and table
-  const handleSignIn = useCallback(() => {
+  const handleSignIn = useCallback(async () => {
     if (tableNumber.trim() && roomNumber.trim()) {
       // If a different team was previously saved, clear their progress
       // This prevents accidentally resuming another team's session
@@ -828,6 +831,25 @@ export default function GenesysSimulation() {
         if (prev.room !== roomNumber || prev.table !== tableNumber) {
           localStorage.removeItem(STORAGE_KEYS.PROGRESS);
         }
+      }
+
+      // Check server for an already-registered team at this room/table
+      try {
+        const res = await fetch(`/api/leaderboard?room=${encodeURIComponent(roomNumber)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const teamKey = `${roomNumber}-${tableNumber}`;
+          const existingTeam = (data.leaderboard || []).find(t => t.teamKey === teamKey);
+          if (existingTeam && existingTeam.teamName) {
+            // Team already registered on server — offer resume
+            setServerTeamData(existingTeam);
+          } else {
+            setServerTeamData(null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to check server for existing team:", err);
+        setServerTeamData(null);
       }
 
       // Save room/table but not team name yet
@@ -885,65 +907,108 @@ export default function GenesysSimulation() {
     setCurrentView("simulation");
   }, []);
 
-  const handleResumeSession = useCallback(async () => {
-    const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
-    if (!savedProgress) {
+  const handleResumeSession = useCallback(async (serverTeam) => {
+    // Determine team info — use provided serverTeam, or fall back to localStorage
+    const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+    const teamInfo = serverTeam
+      ? { room: serverTeam.room, table: serverTeam.table, name: serverTeam.teamName }
+      : (savedTeam ? JSON.parse(savedTeam) : null);
+
+    if (!teamInfo) {
       setCurrentView("simulation");
       return;
     }
 
-    const progress = JSON.parse(savedProgress);
-    let resumeSubmissions = progress.submissions || {};
-    let resumeRoundIndex = progress.currentRound || 0;
-    let resumePhase = progress.currentPhase || "intro";
+    const teamKey = `${teamInfo.room}-${teamInfo.table}`;
 
-    // Check if the admin has issued a reset-to-round for this team
-    const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-    if (savedTeam) {
-      const team = JSON.parse(savedTeam);
-      const teamKey = `${team.room}-${team.table}`;
-      try {
-        const res = await fetch(`/api/leaderboard?action=check-reset&teamKey=${encodeURIComponent(teamKey)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.hasReset) {
-            const targetRound = data.targetRound; // 1-4
-            const targetRoundIndex = targetRound - 1; // 0-3
+    // Ensure team info is saved locally (important for cross-computer resume)
+    saveTeamInfo(teamInfo.name, teamInfo.table, teamInfo.room);
+    setTeamName(teamInfo.name);
+    setTableNumber(teamInfo.table);
+    setRoomNumber(teamInfo.room);
 
-            // Clear submissions for this round and all later rounds
-            const cleanedSubmissions = {};
-            for (const [roundId, submission] of Object.entries(resumeSubmissions)) {
-              if (parseInt(roundId) < targetRound) {
-                cleanedSubmissions[roundId] = submission;
-              }
-            }
+    // Try to load local progress first
+    const savedProgress = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+    let resumeSubmissions = {};
+    let resumeRoundIndex = 0;
+    let resumePhase = "intro";
 
-            resumeSubmissions = cleanedSubmissions;
-            resumeRoundIndex = targetRoundIndex;
+    if (savedProgress) {
+      const progress = JSON.parse(savedProgress);
+      resumeSubmissions = progress.submissions || {};
+      resumeRoundIndex = progress.currentRound || 0;
+      resumePhase = progress.currentPhase || "intro";
+    } else {
+      // No local progress — reconstruct position from server scores
+      // Figure out what round they should be on based on completed scores
+      const teamData = serverTeam || null;
+      if (teamData && teamData.scores) {
+        const completedRounds = Object.keys(teamData.scores).map(Number).sort((a, b) => a - b);
+        if (completedRounds.length > 0) {
+          const highestCompleted = completedRounds[completedRounds.length - 1];
+          // Position them at the intro of the NEXT round (or last round's debrief if all done)
+          if (highestCompleted >= 4) {
+            // All rounds done — put them at round 4 debrief
+            resumeRoundIndex = 3; // index of round 4
+            resumePhase = "debrief";
+          } else {
+            // Put them at the intro of the next round
+            resumeRoundIndex = highestCompleted; // e.g., completed R1 → index 1 = R2
             resumePhase = "intro";
-
-            // Save the cleaned state back to localStorage
-            const cleanedProgress = {
-              submissions: cleanedSubmissions,
-              currentRound: targetRoundIndex,
-              currentPhase: "intro",
-            };
-            localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(cleanedProgress));
-
-            console.log(`Admin reset detected: resetting to Round ${targetRound}`);
           }
         }
-      } catch (err) {
-        console.error("Failed to check for admin reset:", err);
-        // Continue with normal resume if check fails
       }
+      // Save this reconstructed state so future refreshes work
+      const reconstructedProgress = {
+        submissions: resumeSubmissions,
+        currentRound: resumeRoundIndex,
+        currentPhase: resumePhase,
+      };
+      localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(reconstructedProgress));
+    }
+
+    // Check if the admin has issued a reset-to-round for this team
+    try {
+      const res = await fetch(`/api/leaderboard?action=check-reset&teamKey=${encodeURIComponent(teamKey)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.hasReset) {
+          const targetRound = data.targetRound; // 1-4
+          const targetRoundIndex = targetRound - 1; // 0-3
+
+          // Clear submissions for this round and all later rounds
+          const cleanedSubmissions = {};
+          for (const [roundId, submission] of Object.entries(resumeSubmissions)) {
+            if (parseInt(roundId) < targetRound) {
+              cleanedSubmissions[roundId] = submission;
+            }
+          }
+
+          resumeSubmissions = cleanedSubmissions;
+          resumeRoundIndex = targetRoundIndex;
+          resumePhase = "intro";
+
+          // Save the cleaned state back to localStorage
+          const cleanedProgress = {
+            submissions: cleanedSubmissions,
+            currentRound: targetRoundIndex,
+            currentPhase: "intro",
+          };
+          localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(cleanedProgress));
+
+          console.log(`Admin reset detected: resetting to Round ${targetRound}`);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to check for admin reset:", err);
+      // Continue with normal resume if check fails
     }
 
     setSubmissions(resumeSubmissions);
     setCurrentRoundIndex(resumeRoundIndex);
     setRoundPhase(resumePhase);
     setCurrentView("simulation");
-  }, []);
+  }, [saveTeamInfo]);
 
   const currentRound = simulationRounds[currentRoundIndex];
   const roundColor = theme.rounds[currentRound?.id]?.color || theme.orange;
@@ -1224,11 +1289,12 @@ export default function GenesysSimulation() {
     4: "/industries/logistics.png",
   };
 
-  // Check for saved session on home screen — also extract saved team info for display
+  // Check for saved session on home screen — local progress OR server-registered team
   const savedSessionRaw = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.PROGRESS);
   const savedTeamRaw = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
   const savedTeamInfo = savedTeamRaw ? JSON.parse(savedTeamRaw) : null;
-  const hasSavedSession = !!savedSessionRaw && savedTeamInfo?.name;
+  const hasLocalSession = !!savedSessionRaw && savedTeamInfo?.name;
+  const hasSavedSession = hasLocalSession;
 
   // ============================================================================
   // RENDER: HOME SCREEN (Multi-step registration)
@@ -1302,7 +1368,7 @@ export default function GenesysSimulation() {
 
                   {hasSavedSession && savedTeamInfo && (
                     <button
-                      onClick={handleResumeSession}
+                      onClick={() => handleResumeSession(null)}
                       className="w-full py-4 rounded-xl text-lg font-medium transition-all hover:bg-opacity-80"
                       style={{
                         background: theme.dark,
@@ -1331,9 +1397,38 @@ export default function GenesysSimulation() {
                     Room {roomNumber} • Table {tableNumber}
                   </div>
                   <p className="text-lg" style={{ color: theme.muted }}>
-                    Discuss with your table and choose a team name!
+                    {serverTeamData ? 'Welcome back! Resume your session or register a new team name.' : 'Discuss with your table and choose a team name!'}
                   </p>
                 </div>
+
+                {/* Server-based resume — team already exists at this room/table */}
+                {serverTeamData && (
+                  <button
+                    onClick={() => handleResumeSession(serverTeamData)}
+                    className="w-full py-5 rounded-xl text-lg font-medium transition-all hover:brightness-110"
+                    style={{
+                      background: `linear-gradient(135deg, ${theme.orange}, ${theme.orange}DD)`,
+                      border: 'none',
+                      color: theme.white,
+                    }}
+                  >
+                    <span className="font-bold">Resume as {serverTeamData.teamName}</span>
+                    <span className="block text-sm mt-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      {Object.keys(serverTeamData.scores || {}).length > 0
+                        ? `${Object.keys(serverTeamData.scores).length} round${Object.keys(serverTeamData.scores).length !== 1 ? 's' : ''} completed`
+                        : 'Registered — no rounds completed yet'
+                      }
+                    </span>
+                  </button>
+                )}
+
+                {serverTeamData && (
+                  <div className="flex items-center gap-3" style={{ color: theme.subtle }}>
+                    <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
+                    <span className="text-xs font-bold uppercase tracking-widest">or register new</span>
+                    <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <div>
