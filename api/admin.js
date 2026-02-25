@@ -2,6 +2,7 @@
 //
 // This file goes in: api/admin.js
 //
+// Uses Redis Hash (HSET/HGETALL/HDEL) — matches leaderboard.js pattern.
 // Set your admin password in Vercel Environment Variables:
 // ADMIN_PASSWORD = "your-secret-password"
 
@@ -11,6 +12,14 @@ const redis = new Redis({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
 });
+
+// Helper: read all teams from a room hash and return as array
+async function getRoomTeams(room) {
+  const key = `leaderboard:room:${room}`;
+  const hash = await redis.hgetall(key);
+  if (!hash || typeof hash !== 'object') return [];
+  return Object.values(hash);
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -41,8 +50,7 @@ export default async function handler(req, res) {
       // Get leaderboard for a specific room
       case 'get-room': {
         if (!room) return res.status(400).json({ error: 'Room required' });
-        const key = `leaderboard:room:${room}`;
-        const leaderboard = await redis.get(key) || [];
+        const leaderboard = await getRoomTeams(room);
         return res.status(200).json({ room, leaderboard });
       }
 
@@ -58,9 +66,9 @@ export default async function handler(req, res) {
       case 'remove-team': {
         if (!room || !teamKey) return res.status(400).json({ error: 'Room and teamKey required' });
         const key = `leaderboard:room:${room}`;
-        let leaderboard = await redis.get(key) || [];
-        leaderboard = leaderboard.filter(t => t.teamKey !== teamKey);
-        await redis.set(key, leaderboard);
+        // Atomic delete of just this team's field
+        await redis.hdel(key, teamKey);
+        const leaderboard = await getRoomTeams(room);
         return res.status(200).json({ success: true, message: `Team ${teamKey} removed`, leaderboard });
       }
 
@@ -68,19 +76,16 @@ export default async function handler(req, res) {
       case 'reset-team': {
         if (!room || !teamKey) return res.status(400).json({ error: 'Room and teamKey required' });
         const key = `leaderboard:room:${room}`;
-        let leaderboard = await redis.get(key) || [];
-        leaderboard = leaderboard.map(t => {
-          if (t.teamKey === teamKey) {
-            return { ...t, scores: {}, lastUpdated: Date.now() };
-          }
-          return t;
-        });
-        await redis.set(key, leaderboard);
+        const existing = await redis.hget(key, teamKey);
+        if (existing) {
+          const updated = { ...existing, scores: {}, phases: {}, lastUpdated: Date.now() };
+          await redis.hset(key, { [teamKey]: updated });
+        }
+        const leaderboard = await getRoomTeams(room);
         return res.status(200).json({ success: true, message: `Team ${teamKey} scores reset`, leaderboard });
       }
 
-      // Reset a team to a specific round — clears that round's score (and all later rounds)
-      // from the leaderboard, and stores a reset signal so the team's browser picks it up.
+      // Reset a team to a specific round
       case 'reset-to-round': {
         const { targetRound } = req.body;
         if (!room || !teamKey || !targetRound) {
@@ -91,43 +96,40 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'targetRound must be 1-4' });
         }
 
-        // 1. Clear scores for this round and all later rounds from leaderboard
+        // 1. Update only this team's data (atomic read + write of single field)
         const key = `leaderboard:room:${room}`;
-        let leaderboard = await redis.get(key) || [];
-        let teamName = '';
-        leaderboard = leaderboard.map(t => {
-          if (t.teamKey === teamKey) {
-            teamName = t.teamName;
-            const newScores = { ...t.scores };
-            const newPhases = { ...(t.phases || {}) };
-            for (let r = roundNum; r <= 4; r++) {
-              delete newScores[r];
-              delete newPhases[r];
-            }
-            return { ...t, scores: newScores, phases: newPhases, lastUpdated: Date.now() };
-          }
-          return t;
-        });
-        await redis.set(key, leaderboard);
+        const existing = await redis.hget(key, teamKey);
+        let teamName = teamKey;
 
-        // 2. Store a reset signal the client will check on resume
-        // Key: reset:{teamKey}, Value: { targetRound, timestamp }
-        // TTL: 4 hours (enough for any event day)
+        if (existing) {
+          teamName = existing.teamName || teamKey;
+          const newScores = { ...(existing.scores || {}) };
+          const newPhases = { ...(existing.phases || {}) };
+          for (let r = roundNum; r <= 4; r++) {
+            delete newScores[r];
+            delete newPhases[r];
+          }
+          const updated = { ...existing, scores: newScores, phases: newPhases, lastUpdated: Date.now() };
+          await redis.hset(key, { [teamKey]: updated });
+        }
+
+        // 2. Store reset signal for client
         const resetKey = `reset:${teamKey}`;
         await redis.set(resetKey, { targetRound: roundNum, timestamp: Date.now() }, { ex: 14400 });
 
+        const leaderboard = await getRoomTeams(room);
         return res.status(200).json({
           success: true,
-          message: `${teamName || teamKey} reset to Round ${roundNum}. Scores for R${roundNum}${roundNum < 4 ? `-R4` : ''} cleared. Team will pick up the reset on their next resume.`,
+          message: `${teamName} reset to Round ${roundNum}. Scores for R${roundNum}${roundNum < 4 ? `-R4` : ''} cleared. Team will pick up the reset on their next resume.`,
           leaderboard
         });
       }
 
-      // Clear ALL data (use with caution!)
+      // Clear ALL data
       case 'clear-all': {
         const keys = await redis.keys('leaderboard:room:*');
-        for (const key of keys) {
-          await redis.del(key);
+        for (const k of keys) {
+          await redis.del(k);
         }
         return res.status(200).json({ success: true, message: `Cleared ${keys.length} rooms` });
       }
