@@ -2,16 +2,35 @@
 //
 // This file goes in: api/leaderboard.js
 //
-// Your Upstash Redis is already connected - the environment variables
-// (KV_REST_API_URL, KV_REST_API_TOKEN) are automatically available.
+// Uses Redis Hash (HSET/HGETALL) for atomic per-team writes.
+// Each team is a separate field in the hash — no read-modify-write race conditions.
+// Key: leaderboard:room:{room}  |  Field: teamKey  |  Value: team JSON
 
 import { Redis } from '@upstash/redis';
 
-// Initialize Redis client using the env vars Vercel automatically added
 const redis = new Redis({
   url: process.env.KV_REST_API_URL,
   token: process.env.KV_REST_API_TOKEN,
 });
+
+// Helper: read all teams from a room hash and return sorted array
+async function getRoomLeaderboard(room) {
+  const key = `leaderboard:room:${room}`;
+  const hash = await redis.hgetall(key);
+  if (!hash || typeof hash !== 'object') return [];
+
+  // hash is { teamKey: teamData, teamKey: teamData, ... }
+  const teams = Object.values(hash);
+
+  // Sort by total score descending
+  teams.sort((a, b) => {
+    const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
+    const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
+    return bTotal - aTotal;
+  });
+
+  return teams;
+}
 
 export default async function handler(req, res) {
   // CORS headers
@@ -32,7 +51,6 @@ export default async function handler(req, res) {
         const resetKey = `reset:${teamKey}`;
         const resetData = await redis.get(resetKey);
         if (resetData) {
-          // Consume the reset signal (delete it so it doesn't fire again)
           await redis.del(resetKey);
           return res.status(200).json({ hasReset: true, targetRound: resetData.targetRound, timestamp: resetData.timestamp });
         }
@@ -44,20 +62,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Room number required' });
       }
 
-      const key = `leaderboard:room:${room}`;
-      const leaderboard = await redis.get(key) || [];
-
-      // Sort by total score (including bonus points) descending
-      const sorted = Array.isArray(leaderboard) ? leaderboard.sort((a, b) => {
-        const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
-        const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
-        return bTotal - aTotal;
-      }) : [];
-
-      return res.status(200).json({ leaderboard: sorted });
+      const leaderboard = await getRoomLeaderboard(room);
+      return res.status(200).json({ leaderboard });
 
     } else if (req.method === 'POST') {
-      // Submit or update a team's score, or register a new team
       const { room, table, teamName, roundId, score, action } = req.body;
 
       // Registration action - just adds team with no scores
@@ -70,18 +78,18 @@ export default async function handler(req, res) {
         }
 
         const key = `leaderboard:room:${room}`;
-        let leaderboard = await redis.get(key) || [];
-
-        if (!Array.isArray(leaderboard)) {
-          leaderboard = [];
-        }
-
         const teamKey = `${room}-${table}`;
-        const existingIdx = leaderboard.findIndex(t => t.teamKey === teamKey);
 
-        if (existingIdx < 0) {
-          // Add new team with empty scores
-          leaderboard.push({
+        // Read only this team's data (atomic read)
+        const existing = await redis.hget(key, teamKey);
+
+        if (existing) {
+          // Update team name only
+          const updated = { ...existing, teamName, lastUpdated: Date.now() };
+          await redis.hset(key, { [teamKey]: updated });
+        } else {
+          // New team
+          const newTeam = {
             teamKey,
             teamName,
             room,
@@ -89,22 +97,15 @@ export default async function handler(req, res) {
             scores: {},
             registeredAt: Date.now(),
             lastUpdated: Date.now()
-          });
-          await redis.set(key, leaderboard);
-        } else {
-          // Update team name if already registered
-          leaderboard[existingIdx].teamName = teamName;
-          leaderboard[existingIdx].lastUpdated = Date.now();
-          await redis.set(key, leaderboard);
+          };
+          await redis.hset(key, { [teamKey]: newTeam });
         }
 
-        return res.status(200).json({
-          success: true,
-          leaderboard: leaderboard
-        });
+        const leaderboard = await getRoomLeaderboard(room);
+        return res.status(200).json({ success: true, leaderboard });
       }
 
-      // Bonus points action - admin/presenter can add bonus points
+      // Bonus points action
       if (action === 'bonus') {
         const { points, reason } = req.body;
         if (!room || !table || points === undefined) {
@@ -115,23 +116,27 @@ export default async function handler(req, res) {
         }
 
         const key = `leaderboard:room:${room}`;
-        let leaderboard = await redis.get(key) || [];
-        if (!Array.isArray(leaderboard)) leaderboard = [];
-
         const teamKey = `${room}-${table}`;
-        const existingIdx = leaderboard.findIndex(t => t.teamKey === teamKey);
+        const existing = await redis.hget(key, teamKey);
 
-        if (existingIdx >= 0) {
-          const currentBonus = leaderboard[existingIdx].bonusPoints || 0;
-          leaderboard[existingIdx].bonusPoints = currentBonus + points;
-          leaderboard[existingIdx].lastUpdated = Date.now();
-          if (!leaderboard[existingIdx].bonusLog) leaderboard[existingIdx].bonusLog = [];
-          leaderboard[existingIdx].bonusLog.push({ points, reason: reason || '', time: Date.now() });
-          await redis.set(key, leaderboard);
-          return res.status(200).json({ success: true, leaderboard });
-        } else {
+        if (!existing) {
           return res.status(404).json({ error: 'Team not found' });
         }
+
+        const currentBonus = existing.bonusPoints || 0;
+        const bonusLog = existing.bonusLog || [];
+        bonusLog.push({ points, reason: reason || '', time: Date.now() });
+
+        const updated = {
+          ...existing,
+          bonusPoints: currentBonus + points,
+          bonusLog,
+          lastUpdated: Date.now()
+        };
+        await redis.hset(key, { [teamKey]: updated });
+
+        const leaderboard = await getRoomLeaderboard(room);
+        return res.status(200).json({ success: true, leaderboard });
       }
 
       // Score submission action
@@ -142,32 +147,24 @@ export default async function handler(req, res) {
         });
       }
 
-      // phase indicates whether this is an initial or final (wobble) score
       const { phase } = req.body;
-
       const key = `leaderboard:room:${room}`;
-      let leaderboard = await redis.get(key) || [];
-
-      // Ensure it's an array
-      if (!Array.isArray(leaderboard)) {
-        leaderboard = [];
-      }
-
-      // Find existing team entry or create new one
       const teamKey = `${room}-${table}`;
-      const existingIdx = leaderboard.findIndex(t => t.teamKey === teamKey);
 
-      if (existingIdx >= 0) {
-        // Update existing team's score for this round
-        leaderboard[existingIdx].scores[roundId] = score;
-        leaderboard[existingIdx].teamName = teamName;
-        leaderboard[existingIdx].lastUpdated = Date.now();
-        // Track phase for display purposes
-        if (!leaderboard[existingIdx].phases) leaderboard[existingIdx].phases = {};
-        leaderboard[existingIdx].phases[roundId] = phase || 'final';
+      // Read only this team's data
+      const existing = await redis.hget(key, teamKey);
+
+      let teamData;
+      if (existing) {
+        teamData = {
+          ...existing,
+          teamName,
+          scores: { ...(existing.scores || {}), [roundId]: score },
+          phases: { ...(existing.phases || {}), [roundId]: phase || 'final' },
+          lastUpdated: Date.now()
+        };
       } else {
-        // Add new team
-        leaderboard.push({
+        teamData = {
           teamKey,
           teamName,
           room,
@@ -175,23 +172,14 @@ export default async function handler(req, res) {
           scores: { [roundId]: score },
           phases: { [roundId]: phase || 'final' },
           lastUpdated: Date.now()
-        });
+        };
       }
 
-      // Save to Redis
-      await redis.set(key, leaderboard);
+      // Atomic write — only touches this team's field
+      await redis.hset(key, { [teamKey]: teamData });
 
-      // Return updated leaderboard sorted by score
-      const sorted = leaderboard.sort((a, b) => {
-        const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
-        const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
-        return bTotal - aTotal;
-      });
-
-      return res.status(200).json({
-        success: true,
-        leaderboard: sorted
-      });
+      const leaderboard = await getRoomLeaderboard(room);
+      return res.status(200).json({ success: true, leaderboard });
 
     } else {
       return res.status(405).json({ error: 'Method not allowed' });
