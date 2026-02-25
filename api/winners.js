@@ -70,15 +70,15 @@ export default async function handler(req, res) {
 
         // Verify this team is actually the winner for this room
         const leaderboardKey = `leaderboard:room:${room}`;
-        const leaderboard = await redis.get(leaderboardKey) || [];
-        if (Array.isArray(leaderboard) && leaderboard.length > 0) {
-          const sorted = leaderboard.sort((a, b) => {
+        const hash = await redis.hgetall(leaderboardKey);
+        if (hash && typeof hash === 'object') {
+          const teams = Object.values(hash);
+          teams.sort((a, b) => {
             const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
             const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
             return bTotal - aTotal;
           });
-          const topTeamKey = sorted[0]?.teamKey;
-          if (topTeamKey !== teamKey) {
+          if (teams.length > 0 && teams[0].teamKey !== teamKey) {
             return res.status(403).json({ error: 'Only the winning team can submit' });
           }
         }
