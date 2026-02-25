@@ -1,6 +1,69 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, Component } from "react";
+
+// ============================================================================
+// ERROR BOUNDARY — Catches render crashes, shows recovery UI instead of white screen
+// ============================================================================
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0A0A0F',
+          color: 'white',
+          fontFamily: 'system-ui, sans-serif',
+          padding: '24px',
+          textAlign: 'center',
+        }}>
+          <div style={{ maxWidth: '480px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px', color: '#FF4F1F' }}>
+              Something went wrong
+            </h1>
+            <p style={{ color: '#9898A6', marginBottom: '24px', lineHeight: 1.6 }}>
+              The app hit an unexpected error. Your progress has been saved. Please refresh the page to continue.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '14px 32px',
+                borderRadius: '12px',
+                background: '#FF4F1F',
+                color: 'white',
+                border: 'none',
+                fontSize: '16px',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 import {
   Trophy,
   Users,
@@ -708,7 +771,15 @@ const STORAGE_KEYS = {
 // MAIN APPLICATION
 // ============================================================================
 
-export default function GenesysSimulation() {
+export default function GenesysSimulationWrapper() {
+  return (
+    <ErrorBoundary>
+      <GenesysSimulation />
+    </ErrorBoundary>
+  );
+}
+
+function GenesysSimulation() {
   // State
   const [currentView, setCurrentView] = useState("home");
   const [registrationStep, setRegistrationStep] = useState("signin"); // "signin" | "teamname" | "ready"
@@ -2738,7 +2809,7 @@ export default function GenesysSimulation() {
                   </button>
                 </div>
                 <div className="space-y-2">
-                  {leaderboard.slice(0, 10).map((team, idx) => {
+                  {leaderboard.slice(0, 20).map((team, idx) => {
                     const isCurrentTeam = team.teamName === teamName && team.table === tableNumber;
                     const totalScore = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0) + (team.bonusPoints || 0);
                     return (
