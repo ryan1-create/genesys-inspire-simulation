@@ -999,6 +999,16 @@ export default function GenesysSimulation() {
     setCurrentView("simulation");
   }, []);
 
+  // Fisher-Yates shuffle — used by wobble phase and resume
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const handleResumeSession = useCallback(async (serverTeam) => {
     // Determine team info — use provided serverTeam, or fall back to localStorage
     const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
@@ -1099,6 +1109,13 @@ export default function GenesysSimulation() {
     setSubmissions(resumeSubmissions);
     setCurrentRoundIndex(resumeRoundIndex);
     setRoundPhase(resumePhase);
+
+    // If resuming into a wobble phase, ensure shuffled options are initialized
+    const resumeRound = simulationRounds[resumeRoundIndex];
+    if (resumePhase === "wobble" && resumeRound?.wobble?.shuffleOptions && resumeRound.wobble.options) {
+      setShuffledWobbleOptions(shuffleArray(resumeRound.wobble.options));
+    }
+
     setCurrentView("simulation");
   }, [saveTeamInfo]);
 
@@ -1106,16 +1123,6 @@ export default function GenesysSimulation() {
   const roundColor = theme.rounds[currentRound?.id]?.color || theme.orange;
   const phases = ["intro", "work", "feedback1", "wobble", "feedback2", "discussion"];
   const phaseIndex = phases.indexOf(roundPhase);
-
-  // Fisher-Yates shuffle
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
 
   const goToPhase = useCallback((phase) => {
     // Shuffle wobble options when entering wobble phase
