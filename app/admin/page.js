@@ -20,6 +20,10 @@ export default function AdminPanel() {
   const [resetTeamData, setResetTeamData] = useState(null);
   const [resetTargetRound, setResetTargetRound] = useState(1);
 
+  // Winners state
+  const [showWinners, setShowWinners] = useState(false);
+  const [winners, setWinners] = useState([]);
+
   const apiCall = async (action, extra = {}) => {
     setLoading(true);
     setMessage("");
@@ -132,6 +136,21 @@ export default function AdminPanel() {
       } else {
         const err = await res.json();
         setMessage(`Error: ${err.error}`);
+      }
+    } catch (err) {
+      setMessage(`Error: ${err.message}`);
+    }
+    setLoading(false);
+  };
+
+  const fetchWinners = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/winners?action=list");
+      if (res.ok) {
+        const data = await res.json();
+        setWinners(data.winners || []);
+        setMessage(`Found ${data.winners?.length || 0} winning team(s).`);
       }
     } catch (err) {
       setMessage(`Error: ${err.message}`);
@@ -287,11 +306,11 @@ export default function AdminPanel() {
                 {rooms.map((room) => (
                   <button
                     key={room}
-                    onClick={() => viewRoom(room)}
+                    onClick={() => { viewRoom(room); setShowWinners(false); }}
                     style={{
                       padding: "12px 16px",
                       borderRadius: "8px",
-                      background: selectedRoom === room ? "#FF4F1F" : "#27272A",
+                      background: selectedRoom === room && !showWinners ? "#FF4F1F" : "#27272A",
                       color: "white",
                       border: "none",
                       cursor: "pointer",
@@ -304,11 +323,140 @@ export default function AdminPanel() {
                 ))}
               </div>
             )}
+
+            {/* Winners Section */}
+            <div style={{ borderTop: "1px solid #27272A", marginTop: "20px", paddingTop: "20px" }}>
+              <button
+                onClick={() => { setShowWinners(true); setSelectedRoom(null); fetchWinners(); }}
+                style={{
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: "8px",
+                  background: showWinners ? "#FFD700" : "#422006",
+                  color: showWinners ? "#000" : "#FFD700",
+                  border: showWinners ? "none" : "1px solid #FFD70030",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px"
+                }}
+              >
+                🏆 Winners
+              </button>
+            </div>
           </div>
 
-          {/* Room Details */}
+          {/* Room Details / Winners */}
           <div style={{ background: "#18181B", borderRadius: "12px", padding: "20px" }}>
-            {selectedRoom ? (
+            {showWinners ? (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                  <h2 style={{ fontSize: "22px", margin: 0, color: "#FFD700" }}>🏆 Room Winners</h2>
+                  <button
+                    onClick={fetchWinners}
+                    disabled={loading}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "6px",
+                      background: "#27272A",
+                      color: "white",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                {winners.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                    <p style={{ color: "#71717a", fontSize: "18px", marginBottom: "8px" }}>No winners submitted yet</p>
+                    <p style={{ color: "#52525b", fontSize: "14px" }}>Winners will appear here once all teams in a room complete all rounds and the winning team submits their info.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    {winners.map((winner) => (
+                      <div
+                        key={winner.room}
+                        style={{
+                          padding: "24px",
+                          background: "#0f0a00",
+                          borderRadius: "12px",
+                          border: "1px solid #FFD70025"
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "4px" }}>
+                              <span style={{
+                                padding: "4px 12px",
+                                borderRadius: "6px",
+                                background: "#FFD70020",
+                                color: "#FFD700",
+                                fontSize: "12px",
+                                fontWeight: "bold"
+                              }}>
+                                Room {winner.room}
+                              </span>
+                              <span style={{ color: "#a1a1aa", fontSize: "13px" }}>
+                                Table {winner.table}
+                              </span>
+                            </div>
+                            <h3 style={{ fontSize: "20px", fontWeight: "bold", margin: "8px 0 0", color: "white" }}>
+                              {winner.teamName}
+                            </h3>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: "28px", fontWeight: "900", color: "#FF4F1F" }}>
+                              {winner.totalScore}
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#71717a", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                              Total Score
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ borderTop: "1px solid #27272A", paddingTop: "16px" }}>
+                          <h4 style={{ fontSize: "13px", color: "#a1a1aa", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                            Team Members ({winner.members?.length || 0})
+                          </h4>
+                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <thead>
+                              <tr>
+                                <th style={{ textAlign: "left", padding: "6px 8px", color: "#71717a", fontSize: "12px", borderBottom: "1px solid #27272A" }}>Name</th>
+                                <th style={{ textAlign: "left", padding: "6px 8px", color: "#71717a", fontSize: "12px", borderBottom: "1px solid #27272A" }}>Email</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(winner.members || []).map((member, idx) => (
+                                <tr key={idx}>
+                                  <td style={{ padding: "8px", color: "white", fontSize: "14px", borderBottom: "1px solid #1a1a1a" }}>
+                                    {member.name}
+                                  </td>
+                                  <td style={{ padding: "8px", fontSize: "14px", borderBottom: "1px solid #1a1a1a" }}>
+                                    <a href={`mailto:${member.email}`} style={{ color: "#60a5fa", textDecoration: "none" }}>
+                                      {member.email || '—'}
+                                    </a>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div style={{ marginTop: "12px", fontSize: "11px", color: "#52525b" }}>
+                          Submitted {winner.submittedAt ? new Date(winner.submittedAt).toLocaleString() : 'N/A'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : selectedRoom ? (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                   <h2 style={{ fontSize: "20px", margin: 0 }}>Room {selectedRoom}</h2>
