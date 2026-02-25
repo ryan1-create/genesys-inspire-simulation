@@ -1,6 +1,44 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, Component } from "react";
+
+// Error boundary — prevents white screen crashes on presenter projector
+class PresenterErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    console.error("Presenter error:", error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#08080C', color: 'white', fontFamily: 'system-ui', textAlign: 'center',
+        }}>
+          <div>
+            <h1 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '16px', color: '#FF4F1F' }}>
+              Display Error
+            </h1>
+            <p style={{ color: '#9898A6', marginBottom: '24px' }}>The presenter view hit an error.</p>
+            <button
+              onClick={() => window.location.reload()}
+              style={{ padding: '14px 32px', borderRadius: '12px', background: '#FF4F1F', color: 'white', border: 'none', fontSize: '16px', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import {
   Trophy,
   Users,
@@ -222,7 +260,7 @@ function LeaderboardDisplay({ teams, currentRound }) {
 
       {/* Team Rows */}
       <div className="space-y-1.5">
-        {sortedTeams.slice(0, 15).map((team, index) => {
+        {sortedTeams.slice(0, 20).map((team, index) => {
           const roundScoreTotal = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0);
           const totalScore = roundScoreTotal + (team.bonusPoints || 0);
           const barWidth = (totalScore / maxScore) * 100;
@@ -673,7 +711,15 @@ function BonusPointsModal({ teams, roomNumber, onClose, onBonusAdded }) {
 // MAIN PRESENTER COMPONENT
 // ============================================================================
 
-export default function PresenterView() {
+export default function PresenterViewWrapper() {
+  return (
+    <PresenterErrorBoundary>
+      <PresenterView />
+    </PresenterErrorBoundary>
+  );
+}
+
+function PresenterView() {
   const [roomNumber, setRoomNumber] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentRound, setCurrentRound] = useState(0);
@@ -730,7 +776,7 @@ export default function PresenterView() {
   useEffect(() => {
     if (isLoggedIn && roomNumber) {
       fetchTeams();
-      const interval = setInterval(fetchTeams, 3000);
+      const interval = setInterval(fetchTeams, 5000);
       return () => clearInterval(interval);
     }
   }, [isLoggedIn, roomNumber, fetchTeams]);
