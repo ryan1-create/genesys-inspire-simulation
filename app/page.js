@@ -36,6 +36,7 @@ import {
   Square,
   CheckSquare,
   X,
+  Plus,
 } from "lucide-react";
 
 // ============================================================================
@@ -730,6 +731,13 @@ export default function GenesysSimulation() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
+  // Winner form state
+  const [isRoomWinner, setIsRoomWinner] = useState(false);
+  const [allTeamsDone, setAllTeamsDone] = useState(false);
+  const [winnerMembers, setWinnerMembers] = useState([{ name: '', email: '' }]);
+  const [winnerSubmitted, setWinnerSubmitted] = useState(false);
+  const [winnerSubmitting, setWinnerSubmitting] = useState(false);
+
   // Load team info on mount
   useEffect(() => {
     const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
@@ -763,6 +771,90 @@ export default function GenesysSimulation() {
       return () => clearInterval(interval);
     }
   }, [roomNumber, showLeaderboard, fetchLeaderboard]);
+
+  // Check if this team is the room winner when entering final phase
+  useEffect(() => {
+    if (roundPhase !== "final" || !roomNumber) return;
+
+    const checkWinnerStatus = async () => {
+      try {
+        // Fetch latest leaderboard
+        const res = await fetch(`/api/leaderboard?room=${encodeURIComponent(roomNumber)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const lb = data.leaderboard || [];
+
+        // Check if ALL teams have completed all 4 rounds (phase "final" means wobble done)
+        const allDone = lb.length > 0 && lb.every(team => {
+          const scores = team.scores || {};
+          const phases = team.phases || {};
+          // Team must have scores for all 4 rounds, and round 4 must be phase "final" (wobble complete)
+          return scores[1] !== undefined && scores[2] !== undefined &&
+                 scores[3] !== undefined && scores[4] !== undefined &&
+                 phases[4] === 'final';
+        });
+
+        setAllTeamsDone(allDone);
+
+        if (allDone && lb.length > 0) {
+          // Leaderboard is already sorted by total score desc
+          const topTeam = lb[0];
+          const myTeamKey = `${roomNumber}-${tableNumber}`;
+          setIsRoomWinner(topTeam.teamKey === myTeamKey);
+        }
+
+        // Also check if winner form was already submitted
+        const winnerRes = await fetch(`/api/winners?room=${encodeURIComponent(roomNumber)}`);
+        if (winnerRes.ok) {
+          const winnerData = await winnerRes.json();
+          if (winnerData.winner) {
+            setWinnerSubmitted(true);
+          }
+        }
+
+        // Update leaderboard state for display
+        setLeaderboard(lb);
+      } catch (err) {
+        console.error("Failed to check winner status:", err);
+      }
+    };
+
+    checkWinnerStatus();
+    // Poll every 10s so when the last team finishes, the winner sees the form appear
+    const interval = setInterval(checkWinnerStatus, 10000);
+    return () => clearInterval(interval);
+  }, [roundPhase, roomNumber, tableNumber]);
+
+  // Submit winner form
+  const handleWinnerSubmit = useCallback(async () => {
+    const validMembers = winnerMembers.filter(m => m.name.trim());
+    if (validMembers.length === 0) return;
+
+    setWinnerSubmitting(true);
+    try {
+      const totalScore = Object.values(submissions).reduce((sum, s) => sum + (s.finalScore || 0), 0);
+      const res = await fetch('/api/winners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'submit',
+          room: roomNumber,
+          table: tableNumber,
+          teamName,
+          teamKey: `${roomNumber}-${tableNumber}`,
+          totalScore,
+          members: validMembers,
+        }),
+      });
+      if (res.ok) {
+        setWinnerSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Failed to submit winner info:", err);
+    } finally {
+      setWinnerSubmitting(false);
+    }
+  }, [winnerMembers, submissions, roomNumber, tableNumber, teamName]);
 
   // Helpers
   const saveProgress = useCallback((newSubmissions, roundIdx, phase) => {
@@ -2674,6 +2766,104 @@ export default function GenesysSimulation() {
                   })}
                 </div>
               </Card>
+
+              {/* Winner Form — only shown to #1 team when ALL teams in the room are done */}
+              {allTeamsDone && isRoomWinner && !winnerSubmitted && (
+                <Card className="p-6" glow color="#FFD700">
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-4" style={{ backgroundColor: '#FFD70015', border: '1px solid #FFD70030' }}>
+                      <Crown className="w-5 h-5" style={{ color: '#FFD700' }} />
+                      <span className="font-bold" style={{ color: '#FFD700' }}>Room {roomNumber} Winners!</span>
+                    </div>
+                    <h2 className="text-2xl font-black mb-2" style={{ color: theme.white }}>
+                      Congratulations, {teamName}!
+                    </h2>
+                    <p className="text-base" style={{ color: theme.muted }}>
+                      Enter each team member&apos;s name and email below to claim your prize.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {winnerMembers.map((member, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="flex-1 grid grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            placeholder="Full Name"
+                            value={member.name}
+                            onChange={(e) => {
+                              const updated = [...winnerMembers];
+                              updated[idx] = { ...updated[idx], name: e.target.value };
+                              setWinnerMembers(updated);
+                            }}
+                            className="px-4 py-3 rounded-xl text-sm outline-none"
+                            style={{ background: theme.dark, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                          />
+                          <input
+                            type="email"
+                            placeholder="Email Address"
+                            value={member.email}
+                            onChange={(e) => {
+                              const updated = [...winnerMembers];
+                              updated[idx] = { ...updated[idx], email: e.target.value };
+                              setWinnerMembers(updated);
+                            }}
+                            className="px-4 py-3 rounded-xl text-sm outline-none"
+                            style={{ background: theme.dark, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                          />
+                        </div>
+                        {winnerMembers.length > 1 && (
+                          <button
+                            onClick={() => setWinnerMembers(winnerMembers.filter((_, i) => i !== idx))}
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 hover:bg-white/10 transition-colors"
+                            style={{ color: theme.subtle }}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-6">
+                    <button
+                      onClick={() => setWinnerMembers([...winnerMembers, { name: '', email: '' }])}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:bg-white/10"
+                      style={{ border: `1px solid ${theme.darkMuted}`, color: theme.muted }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Member
+                    </button>
+                    <span className="text-xs" style={{ color: theme.subtle }}>
+                      {winnerMembers.filter(m => m.name.trim()).length} member{winnerMembers.filter(m => m.name.trim()).length !== 1 ? 's' : ''} entered
+                    </span>
+                  </div>
+
+                  <GlowButton
+                    onClick={handleWinnerSubmit}
+                    disabled={winnerMembers.filter(m => m.name.trim()).length === 0 || winnerSubmitting}
+                    color="#FFD700"
+                    className="w-full"
+                  >
+                    {winnerSubmitting ? (
+                      <><RefreshCw className="inline-block mr-2 w-5 h-5 animate-spin" /> Submitting...</>
+                    ) : (
+                      <><Trophy className="inline-block mr-2 w-5 h-5" /> Submit Winning Team</>
+                    )}
+                  </GlowButton>
+                </Card>
+              )}
+
+              {/* Winner submitted confirmation */}
+              {allTeamsDone && isRoomWinner && winnerSubmitted && (
+                <Card className="p-6 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style={{ backgroundColor: '#10B98120' }}>
+                    <Check className="w-8 h-8" style={{ color: '#10B981' }} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: theme.white }}>Winner Info Submitted!</h3>
+                  <p className="text-sm" style={{ color: theme.muted }}>Your team&apos;s details have been recorded. Congratulations!</p>
+                </Card>
+              )}
 
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-4">
