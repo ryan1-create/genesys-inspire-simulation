@@ -62,17 +62,18 @@ const theme = {
 // ============================================================================
 
 function TeamRegistrationWall({ teams }) {
+  // Genesys-inspired palette — warm oranges, corals, teals, navy
   const bgColors = [
-    { bg: '#10B981', text: '#FFFFFF' },  // emerald
-    { bg: '#3B82F6', text: '#FFFFFF' },  // blue
-    { bg: '#8B5CF6', text: '#FFFFFF' },  // violet
-    { bg: '#F59E0B', text: '#FFFFFF' },  // amber
-    { bg: '#EC4899', text: '#FFFFFF' },  // pink
-    { bg: '#06B6D4', text: '#FFFFFF' },  // cyan
-    { bg: '#EF4444', text: '#FFFFFF' },  // red
     { bg: '#FF4F1F', text: '#FFFFFF' },  // genesys orange
-    { bg: '#14B8A6', text: '#FFFFFF' },  // teal
-    { bg: '#A855F7', text: '#FFFFFF' },  // purple
+    { bg: '#FF6B3D', text: '#FFFFFF' },  // coral orange
+    { bg: '#E8461E', text: '#FFFFFF' },  // deep orange
+    { bg: '#2A6B6A', text: '#FFFFFF' },  // teal
+    { bg: '#1A4B5C', text: '#FFFFFF' },  // dark teal
+    { bg: '#37857F', text: '#FFFFFF' },  // warm teal
+    { bg: '#1B2A4A', text: '#FFFFFF' },  // navy
+    { bg: '#D4451A', text: '#FFFFFF' },  // burnt orange
+    { bg: '#F28C5A', text: '#FFFFFF' },  // light coral
+    { bg: '#3A9994', text: '#FFFFFF' },  // mid teal
   ];
 
   if (teams.length === 0) {
@@ -851,7 +852,7 @@ export default function PresenterView() {
 
       {/* Header */}
       <header
-        className="relative z-10 flex items-center px-8 py-4"
+        className="relative z-10 flex items-center justify-between px-8 py-4"
         style={{ borderBottom: `1px solid ${theme.faint}` }}
       >
         {/* Left: Logo + Room */}
@@ -866,8 +867,8 @@ export default function PresenterView() {
           </span>
         </div>
 
-        {/* Center: Round Navigation — truly centered with flex-1 */}
-        <div className="flex-1 flex justify-center">
+        {/* Center: Round Navigation — absolutely positioned for true center */}
+        <div className="absolute left-1/2 top-1/2" style={{ transform: 'translate(-50%, -50%)' }}>
           <div className="flex items-center gap-1.5 p-1.5 rounded-2xl" style={{ backgroundColor: theme.bgCard, border: `1px solid ${theme.faint}` }}>
             {[0, 1, 2, 3, 4].map((round) => {
               const rc = theme.rounds[round]?.color || theme.muted;
