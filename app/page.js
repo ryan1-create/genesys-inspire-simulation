@@ -2266,13 +2266,13 @@ function GenesysSimulation() {
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-5 h-5" style={{ color: '#EF4444' }} />
                       <h4 className="text-sm font-bold" style={{ color: '#EF4444' }}>
-                        Penalty Received ({submissions[currentRound.id].initialFeedback.penaltiesApplied.length * -5} pts)
+                        Penalty Received ({submissions[currentRound.id].initialFeedback.penaltiesApplied.length * -3} pts)
                       </h4>
                     </div>
                     <ul className="space-y-2">
                       {submissions[currentRound.id].initialFeedback.penaltiesApplied.map((penalty, i) => (
                         <li key={i} className="text-sm flex items-start gap-2" style={{ color: '#FCA5A5' }}>
-                          <span className="mt-0.5 flex-shrink-0">-5</span>
+                          <span className="mt-0.5 flex-shrink-0">-3</span>
                           <span>{penalty}</span>
                         </li>
                       ))}
@@ -2571,13 +2571,13 @@ function GenesysSimulation() {
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-5 h-5" style={{ color: '#EF4444' }} />
                       <h4 className="text-sm font-bold" style={{ color: '#EF4444' }}>
-                        Penalty Received ({submissions[currentRound.id].finalFeedback.penaltiesApplied.length * -5} pts)
+                        Penalty Received ({submissions[currentRound.id].finalFeedback.penaltiesApplied.length * -3} pts)
                       </h4>
                     </div>
                     <ul className="space-y-2">
                       {submissions[currentRound.id].finalFeedback.penaltiesApplied.map((penalty, i) => (
                         <li key={i} className="text-sm flex items-start gap-2" style={{ color: '#FCA5A5' }}>
-                          <span className="mt-0.5 flex-shrink-0">-5</span>
+                          <span className="mt-0.5 flex-shrink-0">-3</span>
                           <span>{penalty}</span>
                         </li>
                       ))}
