@@ -459,7 +459,7 @@ Write your feedback the way a real coach would talk to a team. Remember this is 
     // Build optional sections
     const buildPenaltiesSection = (penalties) => {
       if (!penalties || penalties.length === 0) return "";
-      return `\n### SCORING PENALTIES (Up to 5-point reduction each)\nApply these penalties to the overall score if the submission exhibits any of these:\n${penalties.map(p => `- ${p}`).join("\n")}\n`;
+      return `\n### SCORING PENALTIES (3-point reduction each, max 2 per round)\nApply these penalties to the overall score if the submission exhibits any of these:\n${penalties.map(p => `- ${p}`).join("\n")}\n`;
     };
 
     const buildAccountPlanSection = (accountPlan) => {
@@ -526,7 +526,7 @@ Read the team's submission carefully. Then:
    - Executive-level insight with specificity? 80+.
    - Championship caliber across the board? 90+ (this is rare).
 
-3. **Check for penalties:** If any of the listed penalties apply, note them and reduce the overall score accordingly (up to 5 points per penalty).
+3. **Check for penalties:** If any of the listed penalties apply, note them and reduce the overall score accordingly (3 points per penalty, maximum 2 penalties).
 
 4. **Ensure differentiation:** Your scores must have at least 12 points of spread. If the team is strong in one area and weak in another, your scores should reflect that.
 
@@ -658,12 +658,13 @@ Respond in this EXACT JSON format (no other text before or after):
     });
     let overallScore = Math.round(totalScore / totalWeight);
 
-    // Apply penalty deductions (up to 5 points each)
+    // Apply penalty deductions (-3 points each, max 2 per round)
     const penaltiesApplied = aiResult.penaltiesApplied?.filter(p => p && p !== "None" && !p.startsWith("[")) || [];
-    if (penaltiesApplied.length > 0) {
-      const penaltyDeduction = Math.min(penaltiesApplied.length * 5, 20); // Cap at 20 total
+    const cappedPenalties = penaltiesApplied.slice(0, 2); // Max 2 penalties per round
+    if (cappedPenalties.length > 0) {
+      const penaltyDeduction = cappedPenalties.length * 3; // 3 points each
       overallScore = Math.max(10, overallScore - penaltyDeduction);
-      console.log(`Penalties applied (${penaltiesApplied.length}): -${penaltyDeduction} points`);
+      console.log(`Penalties applied (${cappedPenalties.length}): -${penaltyDeduction} points`);
     }
 
     // Determine score interpretation
@@ -709,7 +710,7 @@ Respond in this EXACT JSON format (no other text before or after):
             : "Apply these lessons to your next customer conversation",
         ],
         scoreInterpretation,
-        penaltiesApplied: penaltiesApplied.length > 0 ? penaltiesApplied : undefined,
+        penaltiesApplied: cappedPenalties.length > 0 ? cappedPenalties : undefined,
       },
     };
 
