@@ -202,31 +202,48 @@ function TeamRegistrationWall({ teams }) {
 // LEADERBOARD COMPONENT — Clean, Mentimeter-style with score bars
 // ============================================================================
 
-function LeaderboardDisplay({ teams, currentRound }) {
+function LeaderboardDisplay({ teams, currentRound, leaderboardMode }) {
   const roundColor = theme.rounds[currentRound]?.color || theme.orange;
+  const isRoundView = leaderboardMode === 'round';
 
+  // Sort by round score or total score depending on mode
   const sortedTeams = [...teams].sort((a, b) => {
+    if (isRoundView) {
+      const aRound = a.scores?.[currentRound] || 0;
+      const bRound = b.scores?.[currentRound] || 0;
+      return bRound - aRound;
+    }
     const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
     const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
     return bTotal - aTotal;
   });
 
-  const maxScore = sortedTeams.length > 0
-    ? Math.max(1, ...sortedTeams.map(t => Object.values(t.scores || {}).reduce((s, v) => s + v, 0) + (t.bonusPoints || 0)))
+  // Filter teams with scores in this round for round view
+  const teamsWithRoundScore = isRoundView
+    ? sortedTeams.filter(t => t.scores?.[currentRound] !== undefined)
+    : sortedTeams;
+
+  const displayTeams = teamsWithRoundScore.slice(0, 20);
+
+  const maxScore = displayTeams.length > 0
+    ? Math.max(1, ...displayTeams.map(t => {
+        if (isRoundView) return t.scores?.[currentRound] || 0;
+        return Object.values(t.scores || {}).reduce((s, v) => s + v, 0) + (t.bonusPoints || 0);
+      }))
     : 1;
 
   const activeRounds = [1, 2, 3, 4].filter(r =>
     sortedTeams.some(t => t.scores?.[r] !== undefined)
   );
 
-  const showBonus = sortedTeams.some(t => (t.bonusPoints || 0) > 0);
+  const showBonus = !isRoundView && sortedTeams.some(t => (t.bonusPoints || 0) > 0);
 
-  if (sortedTeams.length === 0) {
+  if (displayTeams.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-6" style={{ minHeight: '50vh' }}>
         <Trophy className="w-20 h-20" style={{ color: theme.subtle, opacity: 0.3 }} />
         <p className="text-3xl font-medium" style={{ color: theme.subtle }}>
-          Scores will appear as teams submit
+          {isRoundView ? 'Waiting for round scores...' : 'Scores will appear as teams submit'}
         </p>
       </div>
     );
@@ -234,6 +251,19 @@ function LeaderboardDisplay({ teams, currentRound }) {
 
   return (
     <div className="w-full max-w-[1400px] mx-auto">
+      {/* Round Winner Header */}
+      {isRoundView && (
+        <div className="text-center mb-6">
+          <div
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold mb-2"
+            style={{ backgroundColor: `${roundColor}15`, color: roundColor, border: `1px solid ${roundColor}25` }}
+          >
+            <Trophy className="w-4 h-4" />
+            ROUND {currentRound} RESULTS
+          </div>
+        </div>
+      )}
+
       {/* Column Headers */}
       <div
         className="flex items-center gap-4 px-6 py-3 mb-2 text-xs font-bold uppercase tracking-widest"
@@ -241,32 +271,38 @@ function LeaderboardDisplay({ teams, currentRound }) {
       >
         <div style={{ width: '48px' }} />
         <div className="flex-1">Team</div>
-        {activeRounds.map(r => (
-          <div
-            key={r}
-            className="text-center"
-            style={{ width: '72px', color: theme.rounds[r]?.color || theme.muted, opacity: 0.7 }}
-          >
-            R{r}
-          </div>
-        ))}
-        {showBonus && (
-          <div className="text-center" style={{ width: '56px', color: '#FFD700', opacity: 0.7 }}>
-            <Star className="w-3.5 h-3.5 mx-auto" />
-          </div>
+        {isRoundView ? (
+          <div className="text-right" style={{ width: '120px', color: roundColor }}>Round {currentRound}</div>
+        ) : (
+          <>
+            {activeRounds.map(r => (
+              <div
+                key={r}
+                className="text-center"
+                style={{ width: '72px', color: theme.rounds[r]?.color || theme.muted, opacity: 0.7 }}
+              >
+                R{r}
+              </div>
+            ))}
+            {showBonus && (
+              <div className="text-center" style={{ width: '56px', color: '#FFD700', opacity: 0.7 }}>
+                <Star className="w-3.5 h-3.5 mx-auto" />
+              </div>
+            )}
+            <div className="text-right" style={{ width: '100px' }}>Total</div>
+          </>
         )}
-        <div className="text-right" style={{ width: '100px' }}>Total</div>
       </div>
 
       {/* Team Rows */}
       <div className="space-y-1.5">
-        {sortedTeams.slice(0, 20).map((team, index) => {
+        {displayTeams.map((team, index) => {
+          const roundScore = team.scores?.[currentRound] || 0;
           const roundScoreTotal = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0);
           const totalScore = roundScoreTotal + (team.bonusPoints || 0);
-          const barWidth = (totalScore / maxScore) * 100;
+          const displayScore = isRoundView ? roundScore : totalScore;
+          const barWidth = (displayScore / maxScore) * 100;
           const isTop3 = index < 3;
-          const currentPhase = team.phases?.[currentRound];
-          const hasCurrentRoundScore = team.scores?.[currentRound] !== undefined;
 
           return (
             <div
@@ -315,64 +351,68 @@ function LeaderboardDisplay({ teams, currentRound }) {
                 >
                   {team.teamName}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm" style={{ color: theme.subtle }}>
-                    Table {team.table}
-                  </span>
-                  {hasCurrentRoundScore && currentPhase === "initial" && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full animate-pulse font-medium"
-                      style={{ backgroundColor: `${roundColor}15`, color: roundColor }}
-                    >
-                      awaiting wobble
-                    </span>
-                  )}
-                </div>
+                <span className="text-sm" style={{ color: theme.subtle }}>
+                  Table {team.table}
+                </span>
               </div>
 
-              {/* Round-by-Round Scores */}
-              {activeRounds.map(r => {
-                const rScore = team.scores?.[r];
-                const rColor = theme.rounds[r]?.color || theme.muted;
-                return (
-                  <div
-                    key={r}
-                    className="relative z-10 text-center font-bold"
-                    style={{
-                      width: '72px',
-                      fontSize: '1.15rem',
-                      color: rScore !== undefined ? rColor : `${theme.subtle}30`,
-                    }}
-                  >
-                    {rScore !== undefined ? rScore : '\u2013'}
-                  </div>
-                );
-              })}
-
-              {/* Bonus Points */}
-              {showBonus && (
+              {isRoundView ? (
+                /* Round View — just the round score, big */
                 <div
-                  className="relative z-10 text-center text-sm font-medium"
+                  className="relative z-10 text-right font-black tabular-nums"
                   style={{
-                    width: '56px',
-                    color: (team.bonusPoints || 0) > 0 ? '#FFD700' : `${theme.subtle}30`,
+                    width: '120px',
+                    fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
+                    color: isTop3 ? roundColor : theme.light,
                   }}
                 >
-                  {(team.bonusPoints || 0) > 0 ? `+${team.bonusPoints}` : '\u2013'}
+                  {roundScore}
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Cumulative View — per-round + total */}
+                  {activeRounds.map(r => {
+                    const rScore = team.scores?.[r];
+                    const rColor = theme.rounds[r]?.color || theme.muted;
+                    return (
+                      <div
+                        key={r}
+                        className="relative z-10 text-center font-bold"
+                        style={{
+                          width: '72px',
+                          fontSize: '1.15rem',
+                          color: rScore !== undefined ? rColor : `${theme.subtle}30`,
+                        }}
+                      >
+                        {rScore !== undefined ? rScore : '\u2013'}
+                      </div>
+                    );
+                  })}
 
-              {/* Total Score */}
-              <div
-                className="relative z-10 text-right font-black tabular-nums"
-                style={{
-                  width: '100px',
-                  fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
-                  color: isTop3 ? roundColor : theme.light,
-                }}
-              >
-                {totalScore}
-              </div>
+                  {showBonus && (
+                    <div
+                      className="relative z-10 text-center text-sm font-medium"
+                      style={{
+                        width: '56px',
+                        color: (team.bonusPoints || 0) > 0 ? '#FFD700' : `${theme.subtle}30`,
+                      }}
+                    >
+                      {(team.bonusPoints || 0) > 0 ? `+${team.bonusPoints}` : '\u2013'}
+                    </div>
+                  )}
+
+                  <div
+                    className="relative z-10 text-right font-black tabular-nums"
+                    style={{
+                      width: '100px',
+                      fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)',
+                      color: isTop3 ? roundColor : theme.light,
+                    }}
+                  >
+                    {totalScore}
+                  </div>
+                </>
+              )}
             </div>
           );
         })}
@@ -389,26 +429,81 @@ function LeaderboardDisplay({ teams, currentRound }) {
 }
 
 // ============================================================================
-// ACTIVITY IN PROGRESS COMPONENT — Refined timer with ambient design
+// SVG RING COMPONENT — Apple Watch fitness ring style
 // ============================================================================
 
-function ActivityInProgress({ currentRound, timerSeconds, isTimerRunning, onToggleTimer, onResetTimer }) {
+function FitnessRing({ radius, stroke, progress, color, glowColor, label, timeText, isActive, isPulsing }) {
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = 2 * Math.PI * normalizedRadius;
+  const strokeDashoffset = circumference * (1 - Math.min(1, Math.max(0, progress)));
+
+  return (
+    <g>
+      {/* Track (background ring) */}
+      <circle
+        cx={radius > 120 ? 200 : 200}
+        cy={200}
+        r={normalizedRadius}
+        fill="none"
+        stroke={`${color}15`}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+      />
+      {/* Active ring */}
+      <circle
+        cx={200}
+        cy={200}
+        r={normalizedRadius}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={strokeDashoffset}
+        transform="rotate(-90 200 200)"
+        style={{
+          transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease',
+          filter: isActive ? `drop-shadow(0 0 ${isPulsing ? '12px' : '6px'} ${glowColor || color}80)` : 'none',
+        }}
+      />
+    </g>
+  );
+}
+
+// ============================================================================
+// ACTIVITY IN PROGRESS COMPONENT — Apple Watch fitness ring timer
+// ============================================================================
+
+function ActivityInProgress({
+  currentRound,
+  activitySeconds, activityDuration, isActivityRunning,
+  wobbleSeconds, wobbleDuration, isWobbleRunning, wobbleStarted,
+  onToggleActivity, onResetActivity, onAdjustActivity,
+  onToggleWobble, onResetWobble, onAdjustWobble,
+}) {
   const roundInfo = theme.rounds[currentRound];
   const roundColor = roundInfo?.color || theme.orange;
 
-  const minutes = Math.floor(timerSeconds / 60);
-  const seconds = timerSeconds % 60;
-  const totalDuration = 15 * 60;
-  const progress = timerSeconds / totalDuration;
+  const activityProgress = 1 - (activitySeconds / activityDuration);
+  const wobbleProgress = wobbleStarted ? 1 - (wobbleSeconds / wobbleDuration) : 0;
 
-  const timerColor = timerSeconds <= 60 ? '#EF4444' : timerSeconds <= 180 ? '#F59E0B' : theme.white;
+  const activityMin = Math.floor(activitySeconds / 60);
+  const activitySec = activitySeconds % 60;
+  const wobbleMin = Math.floor(wobbleSeconds / 60);
+  const wobbleSec = wobbleSeconds % 60;
+
+  const activityColor = activitySeconds <= 60 ? '#EF4444' : activitySeconds <= 180 ? '#F59E0B' : roundColor;
+  const wobbleColor = wobbleSeconds <= 30 ? '#EF4444' : wobbleSeconds <= 60 ? '#F59E0B' : '#8B5CF6';
+
+  const activityComplete = activitySeconds === 0;
+  const wobbleComplete = wobbleStarted && wobbleSeconds === 0;
 
   return (
-    <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: '65vh', gap: '48px' }}>
-      {/* Round context — pill + customer name */}
+    <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: '65vh', gap: '32px' }}>
+      {/* Round context */}
       <div className="text-center">
         <div
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold mb-6"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold mb-4"
           style={{
             background: `linear-gradient(135deg, ${roundColor}18, ${roundColor}08)`,
             color: roundColor,
@@ -422,129 +517,201 @@ function ActivityInProgress({ currentRound, timerSeconds, isTimerRunning, onTogg
         </div>
         <h2
           style={{
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+            fontSize: 'clamp(2rem, 4vw, 3.2rem)',
             fontWeight: 900,
             color: theme.white,
-            marginBottom: '8px',
+            marginBottom: '4px',
             lineHeight: 1.1,
             letterSpacing: '-0.02em',
           }}
         >
           {roundInfo?.customer}
         </h2>
-        <p style={{ fontSize: '1.2rem', fontWeight: 500, color: theme.subtle }}>
+        <p style={{ fontSize: '1.1rem', fontWeight: 500, color: theme.subtle }}>
           {roundInfo?.subtitle}
         </p>
       </div>
 
-      {/* Timer — large, centered, with ambient glow */}
-      <div className="text-center relative">
-        {/* Ambient glow behind timer */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '50vw',
-            height: '50vw',
-            maxWidth: '500px',
-            maxHeight: '500px',
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${timerColor}08 0%, transparent 70%)`,
-            pointerEvents: 'none',
-          }}
-        />
-        <div
-          className="relative"
-          style={{
-            fontSize: 'clamp(5rem, 14vw, 12rem)',
-            fontWeight: 900,
-            lineHeight: 1,
-            color: timerColor,
-            fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '-0.03em',
-            textShadow: timerSeconds <= 60 ? `0 0 40px ${timerColor}40` : 'none',
-          }}
-        >
-          {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-        </div>
+      {/* Fitness Rings + Timer Display */}
+      <div className="relative" style={{ width: '400px', height: '400px' }}>
+        <svg viewBox="0 0 400 400" width="400" height="400">
+          {/* Outer ring — Activity timer */}
+          <FitnessRing
+            radius={185}
+            stroke={28}
+            progress={activityProgress}
+            color={activityComplete ? '#10B981' : activityColor}
+            glowColor={activityColor}
+            isActive={isActivityRunning || activityComplete}
+            isPulsing={activitySeconds <= 60 && isActivityRunning}
+          />
+          {/* Inner ring — Wobble timer */}
+          <FitnessRing
+            radius={148}
+            stroke={22}
+            progress={wobbleProgress}
+            color={wobbleComplete ? '#10B981' : wobbleStarted ? wobbleColor : `${theme.subtle}30`}
+            glowColor={wobbleColor}
+            isActive={isWobbleRunning || wobbleComplete}
+            isPulsing={wobbleSeconds <= 30 && isWobbleRunning}
+          />
+        </svg>
 
-        {/* Progress bar — thin, elegant */}
+        {/* Center time display */}
         <div
-          style={{
-            width: 'min(60vw, 700px)',
-            margin: '28px auto 0',
-            height: '4px',
-            borderRadius: '2px',
-            backgroundColor: theme.bgSubtle,
-          }}
+          className="absolute inset-0 flex flex-col items-center justify-center"
+          style={{ pointerEvents: 'none' }}
         >
+          {/* Activity time */}
           <div
             style={{
-              height: '100%',
-              borderRadius: '2px',
-              backgroundColor: timerColor,
-              width: `${Math.max(0, progress * 100)}%`,
-              transition: 'width 1s linear, background-color 0.5s ease',
-              boxShadow: `0 0 12px ${timerColor}40`,
+              fontSize: activityComplete ? '3.5rem' : 'clamp(3rem, 8vw, 4.5rem)',
+              fontWeight: 900,
+              lineHeight: 1,
+              color: activityComplete ? '#10B981' : activityColor,
+              fontVariantNumeric: 'tabular-nums',
+              letterSpacing: '-0.03em',
+              textShadow: (activitySeconds <= 60 && isActivityRunning) ? `0 0 30px ${activityColor}50` : 'none',
             }}
-          />
+          >
+            {activityComplete ? '✓' : `${String(activityMin).padStart(2, '0')}:${String(activitySec).padStart(2, '0')}`}
+          </div>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: theme.subtle, letterSpacing: '0.15em', marginTop: '4px' }}>
+            ACTIVITY
+          </div>
+
+          {/* Divider */}
+          <div style={{ width: '40px', height: '1px', backgroundColor: `${theme.subtle}30`, margin: '10px 0' }} />
+
+          {/* Wobble time */}
+          <div
+            style={{
+              fontSize: wobbleComplete ? '1.8rem' : '1.8rem',
+              fontWeight: 800,
+              lineHeight: 1,
+              color: !wobbleStarted ? `${theme.subtle}40` : wobbleComplete ? '#10B981' : wobbleColor,
+              fontVariantNumeric: 'tabular-nums',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {wobbleComplete ? '✓' : `${String(wobbleMin).padStart(2, '0')}:${String(wobbleSec).padStart(2, '0')}`}
+          </div>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: `${theme.subtle}${wobbleStarted ? '' : '50'}`, letterSpacing: '0.15em', marginTop: '2px' }}>
+            WOBBLE
+          </div>
+        </div>
+      </div>
+
+      {/* Timer Controls — Two rows */}
+      <div className="flex flex-col items-center gap-4" style={{ width: '100%', maxWidth: '600px' }}>
+        {/* Activity Controls */}
+        <div className="flex items-center gap-3">
+          <span style={{ fontSize: '11px', fontWeight: 700, color: roundColor, letterSpacing: '0.1em', width: '70px', textAlign: 'right' }}>ACTIVITY</span>
+          <button
+            onClick={() => onAdjustActivity(-60)}
+            disabled={activitySeconds <= 0}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-20"
+            style={{ backgroundColor: theme.bgSubtle, color: theme.muted, border: `1px solid ${theme.faint}` }}
+            title="−1 min"
+          >
+            <Minus className="w-4 h-4" />
+          </button>
+          <span
+            className="text-sm font-bold tabular-nums"
+            style={{ color: theme.muted, minWidth: '50px', textAlign: 'center' }}
+          >
+            {Math.floor(activityDuration / 60)}m
+          </span>
+          <button
+            onClick={() => onAdjustActivity(60)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+            style={{ backgroundColor: theme.bgSubtle, color: theme.muted, border: `1px solid ${theme.faint}` }}
+            title="+1 min"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onToggleActivity}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{
+              backgroundColor: isActivityRunning ? '#EF444412' : `${roundColor}15`,
+              color: isActivityRunning ? '#EF4444' : roundColor,
+              border: `1px solid ${isActivityRunning ? '#EF444425' : `${roundColor}25`}`,
+              cursor: 'pointer',
+            }}
+          >
+            {isActivityRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isActivityRunning ? 'Pause' : activityComplete ? 'Done' : 'Start'}
+          </button>
+          <button
+            onClick={onResetActivity}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+            style={{ color: theme.subtle, border: `1px solid ${theme.faint}`, backgroundColor: 'transparent', cursor: 'pointer' }}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* Status text */}
-        <p style={{ marginTop: '16px', fontSize: '15px', color: theme.subtle, minHeight: '24px', letterSpacing: '0.05em' }}>
-          {!isTimerRunning && timerSeconds === totalDuration && 'READY TO START'}
-          {!isTimerRunning && timerSeconds < totalDuration && timerSeconds > 0 && 'PAUSED'}
-          {timerSeconds === 0 && <span style={{ color: '#EF4444', fontWeight: 700, letterSpacing: '0.1em' }}>TIME&apos;S UP</span>}
-          {isTimerRunning && '\u00A0'}
-        </p>
+        {/* Wobble Controls */}
+        <div className="flex items-center gap-3">
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#8B5CF6', letterSpacing: '0.1em', width: '70px', textAlign: 'right' }}>WOBBLE</span>
+          <button
+            onClick={() => onAdjustWobble(-60)}
+            disabled={wobbleSeconds <= 0}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-20"
+            style={{ backgroundColor: theme.bgSubtle, color: theme.muted, border: `1px solid ${theme.faint}` }}
+            title="−1 min"
+          >
+            <Minus className="w-4 h-4" />
+          </button>
+          <span
+            className="text-sm font-bold tabular-nums"
+            style={{ color: theme.muted, minWidth: '50px', textAlign: 'center' }}
+          >
+            {Math.floor(wobbleDuration / 60)}m
+          </span>
+          <button
+            onClick={() => onAdjustWobble(60)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+            style={{ backgroundColor: theme.bgSubtle, color: theme.muted, border: `1px solid ${theme.faint}` }}
+            title="+1 min"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onToggleWobble}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{
+              backgroundColor: isWobbleRunning ? '#EF444412' : '#8B5CF615',
+              color: isWobbleRunning ? '#EF4444' : '#8B5CF6',
+              border: `1px solid ${isWobbleRunning ? '#EF444425' : '#8B5CF625'}`,
+              cursor: 'pointer',
+              opacity: activityComplete || wobbleStarted ? 1 : 0.5,
+            }}
+          >
+            {isWobbleRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isWobbleRunning ? 'Pause' : wobbleComplete ? 'Done' : 'Start'}
+          </button>
+          <button
+            onClick={onResetWobble}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+            style={{ color: theme.subtle, border: `1px solid ${theme.faint}`, backgroundColor: 'transparent', cursor: 'pointer' }}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      {/* Timer controls — refined buttons */}
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <button
-          onClick={onToggleTimer}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '14px 36px',
-            borderRadius: '16px',
-            fontSize: '16px',
-            fontWeight: 700,
-            backgroundColor: isTimerRunning ? '#EF444412' : `${roundColor}12`,
-            color: isTimerRunning ? '#EF4444' : roundColor,
-            border: `1px solid ${isTimerRunning ? '#EF444430' : `${roundColor}30`}`,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            letterSpacing: '0.02em',
-          }}
-        >
-          {isTimerRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-          {isTimerRunning ? 'Pause' : 'Start'}
-        </button>
-        <button
-          onClick={onResetTimer}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '14px 24px',
-            borderRadius: '16px',
-            fontSize: '16px',
-            fontWeight: 600,
-            color: theme.subtle,
-            border: `1px solid ${theme.faint}`,
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-          }}
-        >
-          <RotateCcw className="w-4 h-4" />
-          Reset
-        </button>
-      </div>
+      {/* Status */}
+      <p style={{ fontSize: '14px', color: theme.subtle, letterSpacing: '0.05em', textAlign: 'center' }}>
+        {!isActivityRunning && !wobbleStarted && activitySeconds === activityDuration && 'READY TO START'}
+        {isActivityRunning && 'ACTIVITY IN PROGRESS'}
+        {activityComplete && !wobbleStarted && 'ACTIVITY COMPLETE — START WOBBLE'}
+        {isWobbleRunning && 'WOBBLE IN PROGRESS'}
+        {wobbleComplete && <span style={{ color: '#10B981', fontWeight: 700 }}>ROUND COMPLETE</span>}
+        {!isActivityRunning && !isWobbleRunning && activitySeconds < activityDuration && activitySeconds > 0 && !wobbleStarted && 'PAUSED'}
+        {!isWobbleRunning && wobbleStarted && !wobbleComplete && wobbleSeconds > 0 && 'WOBBLE PAUSED'}
+      </p>
     </div>
   );
 }
@@ -728,10 +895,20 @@ function PresenterView() {
   const [showBonusModal, setShowBonusModal] = useState(false);
 
   const [viewMode, setViewMode] = useState("activity");
+  const [leaderboardMode, setLeaderboardMode] = useState("round"); // "round" or "cumulative"
 
-  const [timerSeconds, setTimerSeconds] = useState(15 * 60);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const timerRef = useRef(null);
+  // Activity timer (configurable, default 20 min)
+  const [activityDuration, setActivityDuration] = useState(20 * 60);
+  const [activitySeconds, setActivitySeconds] = useState(20 * 60);
+  const [isActivityRunning, setIsActivityRunning] = useState(false);
+  const activityRef = useRef(null);
+
+  // Wobble timer (configurable, default 5 min)
+  const [wobbleDuration, setWobbleDuration] = useState(5 * 60);
+  const [wobbleSeconds, setWobbleSeconds] = useState(5 * 60);
+  const [isWobbleRunning, setIsWobbleRunning] = useState(false);
+  const [wobbleStarted, setWobbleStarted] = useState(false);
+  const wobbleRef = useRef(null);
 
   useEffect(() => {
     const savedRoom = sessionStorage.getItem("presenter_room");
@@ -741,22 +918,39 @@ function PresenterView() {
     }
   }, []);
 
-  // Timer countdown
+  // Activity timer countdown
   useEffect(() => {
-    if (isTimerRunning && timerSeconds > 0) {
-      timerRef.current = setInterval(() => {
-        setTimerSeconds((prev) => {
+    if (isActivityRunning && activitySeconds > 0) {
+      activityRef.current = setInterval(() => {
+        setActivitySeconds((prev) => {
           if (prev <= 1) {
-            setIsTimerRunning(false);
+            setIsActivityRunning(false);
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-      return () => clearInterval(timerRef.current);
+      return () => clearInterval(activityRef.current);
     }
-    return () => clearInterval(timerRef.current);
-  }, [isTimerRunning, timerSeconds]);
+    return () => clearInterval(activityRef.current);
+  }, [isActivityRunning, activitySeconds]);
+
+  // Wobble timer countdown
+  useEffect(() => {
+    if (isWobbleRunning && wobbleSeconds > 0) {
+      wobbleRef.current = setInterval(() => {
+        setWobbleSeconds((prev) => {
+          if (prev <= 1) {
+            setIsWobbleRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(wobbleRef.current);
+    }
+    return () => clearInterval(wobbleRef.current);
+  }, [isWobbleRunning, wobbleSeconds]);
 
   // Fetch teams data
   const fetchTeams = useCallback(async () => {
@@ -801,17 +995,50 @@ function PresenterView() {
     setCurrentRound(r);
     if (r > 0) {
       setViewMode("activity");
-      setTimerSeconds(15 * 60);
-      setIsTimerRunning(false);
+      setActivityDuration(20 * 60);
+      setActivitySeconds(20 * 60);
+      setIsActivityRunning(false);
+      setWobbleDuration(5 * 60);
+      setWobbleSeconds(5 * 60);
+      setIsWobbleRunning(false);
+      setWobbleStarted(false);
+      setLeaderboardMode("round");
     } else {
       setViewMode("leaderboard");
+      setLeaderboardMode("cumulative");
     }
   };
 
-  const toggleTimer = () => setIsTimerRunning(!isTimerRunning);
-  const resetTimer = () => {
-    setIsTimerRunning(false);
-    setTimerSeconds(15 * 60);
+  const toggleActivity = () => {
+    if (activitySeconds > 0) setIsActivityRunning(!isActivityRunning);
+  };
+  const resetActivity = () => {
+    setIsActivityRunning(false);
+    setActivitySeconds(activityDuration);
+  };
+  const adjustActivity = (delta) => {
+    const newDuration = Math.max(60, activityDuration + delta);
+    const diff = newDuration - activityDuration;
+    setActivityDuration(newDuration);
+    setActivitySeconds(prev => Math.max(0, prev + diff));
+  };
+
+  const toggleWobble = () => {
+    if (wobbleSeconds > 0) {
+      setWobbleStarted(true);
+      setIsWobbleRunning(!isWobbleRunning);
+    }
+  };
+  const resetWobble = () => {
+    setIsWobbleRunning(false);
+    setWobbleStarted(false);
+    setWobbleSeconds(wobbleDuration);
+  };
+  const adjustWobble = (delta) => {
+    const newDuration = Math.max(60, wobbleDuration + delta);
+    const diff = newDuration - wobbleDuration;
+    setWobbleDuration(newDuration);
+    setWobbleSeconds(prev => Math.max(0, prev + diff));
   };
 
   const roundInfo = theme.rounds[currentRound];
@@ -964,15 +1191,26 @@ function PresenterView() {
                 Timer
               </button>
               <button
-                onClick={() => setViewMode("leaderboard")}
+                onClick={() => { setViewMode("leaderboard"); setLeaderboardMode("round"); }}
                 className="px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 rounded-lg"
                 style={{
-                  backgroundColor: viewMode === "leaderboard" ? `${roundColor}15` : 'transparent',
-                  color: viewMode === "leaderboard" ? roundColor : theme.subtle,
+                  backgroundColor: viewMode === "leaderboard" && leaderboardMode === "round" ? `${roundColor}15` : 'transparent',
+                  color: viewMode === "leaderboard" && leaderboardMode === "round" ? roundColor : theme.subtle,
+                }}
+              >
+                <Trophy className="w-3 h-3" />
+                Round
+              </button>
+              <button
+                onClick={() => { setViewMode("leaderboard"); setLeaderboardMode("cumulative"); }}
+                className="px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1.5 rounded-lg"
+                style={{
+                  backgroundColor: viewMode === "leaderboard" && leaderboardMode === "cumulative" ? `${roundColor}15` : 'transparent',
+                  color: viewMode === "leaderboard" && leaderboardMode === "cumulative" ? roundColor : theme.subtle,
                 }}
               >
                 <BarChart3 className="w-3 h-3" />
-                Scores
+                Overall
               </button>
             </div>
           )}
@@ -1027,13 +1265,22 @@ function PresenterView() {
         ) : viewMode === "activity" ? (
           <ActivityInProgress
             currentRound={currentRound}
-            timerSeconds={timerSeconds}
-            isTimerRunning={isTimerRunning}
-            onToggleTimer={toggleTimer}
-            onResetTimer={resetTimer}
+            activitySeconds={activitySeconds}
+            activityDuration={activityDuration}
+            isActivityRunning={isActivityRunning}
+            wobbleSeconds={wobbleSeconds}
+            wobbleDuration={wobbleDuration}
+            isWobbleRunning={isWobbleRunning}
+            wobbleStarted={wobbleStarted}
+            onToggleActivity={toggleActivity}
+            onResetActivity={resetActivity}
+            onAdjustActivity={adjustActivity}
+            onToggleWobble={toggleWobble}
+            onResetWobble={resetWobble}
+            onAdjustWobble={adjustWobble}
           />
         ) : (
-          <LeaderboardDisplay teams={teams} currentRound={currentRound} />
+          <LeaderboardDisplay teams={teams} currentRound={currentRound} leaderboardMode={leaderboardMode} />
         )}
       </main>
 
