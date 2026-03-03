@@ -495,10 +495,10 @@ function ActivityInProgress({
 
   return (
     <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: '65vh', gap: '32px' }}>
-      {/* Round context */}
+      {/* Round context — motion pill only */}
       <div className="text-center">
         <div
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold mb-4"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold"
           style={{
             background: `linear-gradient(135deg, ${roundColor}18, ${roundColor}08)`,
             color: roundColor,
@@ -510,21 +510,6 @@ function ActivityInProgress({
           <Target className="w-4 h-4" />
           {roundInfo?.motion}
         </div>
-        <h2
-          style={{
-            fontSize: 'clamp(2rem, 4vw, 3.2rem)',
-            fontWeight: 900,
-            color: theme.white,
-            marginBottom: '4px',
-            lineHeight: 1.1,
-            letterSpacing: '-0.02em',
-          }}
-        >
-          {roundInfo?.customer}
-        </h2>
-        <p style={{ fontSize: '1.1rem', fontWeight: 500, color: theme.subtle }}>
-          {roundInfo?.subtitle}
-        </p>
       </div>
 
       {/* Fitness Rings + Timer Display */}
