@@ -206,16 +206,18 @@ function LeaderboardDisplay({ teams, currentRound, leaderboardMode }) {
   const roundColor = theme.rounds[currentRound]?.color || theme.orange;
   const isRoundView = leaderboardMode === 'round';
 
-  // Sort by round score or total score depending on mode
+  // Sort by round score or total score depending on mode — stable tiebreaker by team name
   const sortedTeams = [...teams].sort((a, b) => {
     if (isRoundView) {
       const aRound = a.scores?.[currentRound] || 0;
       const bRound = b.scores?.[currentRound] || 0;
-      return bRound - aRound;
+      if (bRound !== aRound) return bRound - aRound;
+      return a.teamName.localeCompare(b.teamName);
     }
     const aTotal = Object.values(a.scores || {}).reduce((sum, s) => sum + s, 0) + (a.bonusPoints || 0);
     const bTotal = Object.values(b.scores || {}).reduce((sum, s) => sum + s, 0) + (b.bonusPoints || 0);
-    return bTotal - aTotal;
+    if (bTotal !== aTotal) return bTotal - aTotal;
+    return a.teamName.localeCompare(b.teamName);
   });
 
   // Filter teams with scores in this round for round view
@@ -311,7 +313,6 @@ function LeaderboardDisplay({ teams, currentRound, leaderboardMode }) {
               style={{
                 backgroundColor: theme.bgCard,
                 border: `1px solid ${isTop3 ? `${roundColor}15` : theme.faint}`,
-                animation: `rowSlideIn 0.4s ease-out ${index * 0.05}s both`,
               }}
             >
               {/* Score bar background */}
@@ -418,12 +419,6 @@ function LeaderboardDisplay({ teams, currentRound, leaderboardMode }) {
         })}
       </div>
 
-      <style jsx>{`
-        @keyframes rowSlideIn {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
     </div>
   );
 }
@@ -1024,6 +1019,7 @@ function PresenterView() {
   };
 
   const toggleWobble = () => {
+    if (activitySeconds > 0) return; // Block until activity timer is done
     if (wobbleSeconds > 0) {
       setWobbleStarted(true);
       setIsWobbleRunning(!isWobbleRunning);
