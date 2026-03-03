@@ -1268,7 +1268,7 @@ function GenesysSimulation() {
         });
       }
 
-      // Add small random delay (0-2s) to spread out concurrent requests
+      // Add small random delay (0-2s) to slightly spread out concurrent requests
       await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
 
       const response = await fetchWithRetry("/api/score", {
@@ -1363,7 +1363,7 @@ function GenesysSimulation() {
       // Get final score with AI evaluation
       const currentSubmission = submissions[currentRound.id];
 
-      // Add small random delay to spread out concurrent requests
+      // Add small random delay (0-2s) to slightly spread out concurrent requests
       await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
 
       const response = await fetchWithRetry("/api/score", {
