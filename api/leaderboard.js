@@ -117,23 +117,35 @@ export default async function handler(req, res) {
 
         const key = `leaderboard:room:${room}`;
         const teamKey = `${room}-${table}`;
-        const existing = await redis.hget(key, teamKey);
 
-        if (!existing) {
-          return res.status(404).json({ error: 'Team not found' });
+        // Retry loop to handle concurrent bonus awards (optimistic locking)
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const existing = await redis.hget(key, teamKey);
+
+          if (!existing) {
+            return res.status(404).json({ error: 'Team not found' });
+          }
+
+          const currentBonus = existing.bonusPoints || 0;
+          const bonusLog = existing.bonusLog || [];
+          bonusLog.push({ points, reason: reason || '', time: Date.now() });
+
+          const updated = {
+            ...existing,
+            bonusPoints: currentBonus + points,
+            bonusLog,
+            lastUpdated: Date.now()
+          };
+          await redis.hset(key, { [teamKey]: updated });
+
+          // Verify the write stuck (read-after-write check)
+          const verify = await redis.hget(key, teamKey);
+          if (verify && verify.bonusPoints === currentBonus + points) {
+            break; // Write succeeded
+          }
+          // If mismatch, retry
+          console.log(`Bonus write conflict for ${teamKey}, retrying (attempt ${attempt + 1})`);
         }
-
-        const currentBonus = existing.bonusPoints || 0;
-        const bonusLog = existing.bonusLog || [];
-        bonusLog.push({ points, reason: reason || '', time: Date.now() });
-
-        const updated = {
-          ...existing,
-          bonusPoints: currentBonus + points,
-          bonusLog,
-          lastUpdated: Date.now()
-        };
-        await redis.hset(key, { [teamKey]: updated });
 
         const leaderboard = await getRoomLeaderboard(room);
         return res.status(200).json({ success: true, leaderboard });
