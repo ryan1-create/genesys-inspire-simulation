@@ -26,7 +26,7 @@ function addJitter(baseDelay, jitterPercent = 0.3) {
 }
 
 // Enhanced retry helper with exponential backoff and jitter
-async function callWithRetry(fn, maxRetries = 5) {
+async function callWithRetry(fn, maxRetries = 3) {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
@@ -36,7 +36,7 @@ async function callWithRetry(fn, maxRetries = 5) {
       const isTimeout = error.code === 'ETIMEDOUT' || error.message?.includes('timeout');
 
       if ((isRateLimit || isOverloaded || isTimeout) && attempt < maxRetries) {
-        const baseDelay = Math.pow(2, attempt + 1) * 1000;
+        const baseDelay = Math.min(Math.pow(2, attempt + 1) * 1000, 5000); // Cap at 5s to stay within Vercel 15s timeout
         const delay = addJitter(baseDelay);
         console.log(`API issue (${error.status || error.code}), retrying in ${Math.round(delay/1000)}s (attempt ${attempt + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
