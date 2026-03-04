@@ -318,7 +318,7 @@ const simulationRounds = [
     title: "Shape the Vision",
     subtitle: "New Logo Opportunity",
     motion: "Legacy Displacement",
-    description: "Regional healthcare system with immature CX perspective",
+    description: "Regional healthcare system with narrow Patient Experience perspective",
     customer: {
       name: "Everwell Health Services",
       industry: "Healthcare Services",
@@ -342,14 +342,14 @@ const simulationRounds = [
     // Layout: 3 columns top row, 1 full-width bottom
     inputLayout: "threeColumnPlusOne",
     inputFields: [
-      { id: "valueGaps", label: "Value Gaps", sublabel: "How could the current Contact Center model be creating risk or friction in the Patient Experience?", type: "textarea", placeholder: "Identify risks, friction points, and hidden constraints...", column: "left" },
-      { id: "artOfPossible", label: "Art of the Possible", sublabel: "How could we improve the Patient Experience through AI-powered orchestration capabilities?", type: "textarea", placeholder: "Describe the AI-powered future state...", column: "center" },
-      { id: "impact", label: "Impact", sublabel: "What might be the impact of our solution on Patient Experience and overall business metrics?", type: "textarea", placeholder: "Quantify the business value...", column: "right" },
-      { id: "customerStory", label: "Customer Example or Story", sublabel: "What is a customer example or story to illustrate this POV?", type: "textarea", placeholder: "Share a compelling customer story that mirrors Everwell's situation...", fullWidth: true },
+      { id: "valueGaps", label: "Value Gaps", type: "textarea", placeholder: "How could the current Contact Center model be creating risk or friction in the Patient Experience?", column: "left" },
+      { id: "artOfPossible", label: "Art of the Possible", type: "textarea", placeholder: "How could we improve the Patient Experience through AI-powered orchestration capabilities?", column: "center" },
+      { id: "impact", label: "Impact", type: "textarea", placeholder: "What might be the impact of our solution on Patient Experience and overall business metrics?", column: "right" },
+      { id: "customerStory", label: "Customer Example or Story", type: "textarea", placeholder: "What is a customer example or story to illustrate this POV?", fullWidth: true },
     ],
     wobble: {
       title: "Enterprise Platform Influence",
-      description: "While meeting with the VP of Patient Experience, you learn that ServiceNow is already engaged: Supporting a broader digital and data transformation initiative. Focused on improving how work, requests, and issues flow across the organization. Not formally leading Patient Experience initiatives, but actively shaping enterprise platform standards, modernization principles, and investment criteria for future initiatives. Operating with direct access to the C-suite, including the CIO and COO.",
+      description: "While meeting with the VP of Patient Experience, you learn that ServiceNow is already engaged:\n• Supporting a broader digital and data transformation initiative\n• Focused on improving how work, requests, and issues flow across the organization\n• Not formally leading Patient Experience initiatives, but actively shaping enterprise platform standards, modernization principles, and investment criteria for future initiatives\n• Operating with direct access to the C-suite, including the CIO and COO",
       question: "How should we adapt our approach to capitalize on the ServiceNow transformation initiative?",
       type: "choice",
       shuffleOptions: true,
@@ -401,8 +401,8 @@ const simulationRounds = [
     id: 2,
     title: "Disrupt Status Quo",
     subtitle: "New Logo Opportunity",
-    motion: "CCaaS Replacement",
-    description: "Multinational financial services with embedded legacy Avaya",
+    motion: "Legacy Replacement",
+    description: "Multinational financial services with legacy on-prem Avaya",
     customer: {
       name: "Aureon Financial Holdings",
       industry: "Financial Services: Banking & Payments",
@@ -429,36 +429,36 @@ const simulationRounds = [
         id: "biasMigration",
         biasLabel: "\"A global platform migration is too disruptive.\"",
         biasContext: "(People, process, regional operations, etc.)",
-        riskLabel: "What are the unconsidered risks of this bias?",
-        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        riskLabel: "What are the unconsidered current-state risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk more tangible and credible?",
         type: "dual-textarea",
       },
       {
         id: "biasBudget",
         biasLabel: "\"Every new platform deployment runs over budget – it's going to be too expensive.\"",
-        riskLabel: "What are the unconsidered risks of this bias?",
-        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        riskLabel: "What are the unconsidered current-state risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk more tangible and credible?",
         type: "dual-textarea",
       },
       {
         id: "biasAlignment",
         biasLabel: "\"It will be too hard to get everyone aligned – executive team, IT, regional leaders, etc.\"",
-        riskLabel: "What are the unconsidered risks of this bias?",
-        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        riskLabel: "What are the unconsidered current-state risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk more tangible and credible?",
         type: "dual-textarea",
       },
       {
         id: "biasAvaya",
         biasLabel: "\"Avaya is working and they're continuously bringing new ideas. Why stop working with them?\"",
-        riskLabel: "What are the unconsidered risks of this bias?",
-        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        riskLabel: "What are the unconsidered current-state risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk more tangible and credible?",
         type: "dual-textarea",
       },
       {
         id: "biasOther",
         biasLabel: "Other:",
-        riskLabel: "What are the unconsidered risks of this bias?",
-        evidenceLabel: "What data, comparison, or diagnostic action will make this risk tangible and credible?",
+        riskLabel: "What are the unconsidered current-state risks of this bias?",
+        evidenceLabel: "What data, comparison, or diagnostic action will make this risk more tangible and credible?",
         type: "dual-textarea",
       },
     ],
@@ -500,7 +500,7 @@ const simulationRounds = [
     id: 3,
     title: "Hold the High Ground",
     subtitle: "Account Defense",
-    motion: "Expansion",
+    motion: "Account Defense",
     description: "Defend incumbent position against AI pure-play insurgent",
     customer: {
       name: "Summit Ridge Retail Group",
@@ -521,13 +521,13 @@ const simulationRounds = [
       "Sierra is positioning itself as an AI layer that could sit above existing platforms and potentially reduce reliance on traditional CCaaS",
     ],
     objective: "Develop a competitive strategy focused on preserving our position. Our objective is to secure CIO-level alignment and defend against the AI Pure Play insurgent.",
-    challenge: "Define a strategy that protects our strategic position with the account.",
+    challenge: "Define a strategy that protects our position with the account.",
     inputLayout: "stackedQuestions",
     inputFields: [
       { id: "keyMessages", label: "What messages reinforce and differentiate our position?", type: "textarea", placeholder: "Draft key messaging points that elevate our AI-powered CX positioning..." },
-      { id: "sierraCounterplay", label: "In what ways may Sierra position us as the risk? How can we proactively address these?", type: "textarea", placeholder: "Anticipate Sierra's narrative and prepare counterpoints..." },
+      { id: "sierraCounterplay", label: "How could Sierra position against us? How can we proactively address these?", type: "textarea", placeholder: "Anticipate Sierra's narrative and prepare counterpoints..." },
       { id: "keyActions", label: "What 2-3 actions can we take in the next 30 days to drive this strategy?", type: "textarea", placeholder: "List specific, actionable steps with clear ownership..." },
-      { id: "infoNeeded", label: "What other information do we need to understand to determine the right strategy?", type: "textarea", placeholder: "Identify gaps in our knowledge and how to fill them..." },
+      { id: "infoNeeded", label: "What other information do we need to determine the right strategy?", type: "textarea", placeholder: "Identify gaps in our knowledge and how to fill them..." },
     ],
     // Account Plan Snapshot and Selected Customer Data (printed materials, referenced by AI for evaluation)
     accountPlanSnapshot: {
@@ -554,18 +554,18 @@ const simulationRounds = [
       type: "ranking",
       shuffleOptions: true,
       options: [
-        { id: "A", text: "Broaden the executive conversation beyond an AI agent pilot", detail: "Broaden the executive conversation from an AI agent pilot to enterprise CX orchestration – positioning Genesys as the layer that connects AI, humans, journeys, and systems across channels and regions (regardless of cloud provider). Reframe the evaluation criteria from 'which AI agent tool do we pilot?' to 'how do we orchestrate AI-driven customer experiences at enterprise scale?'" },
-        { id: "B", text: "Discourage the Sierra pilot", detail: "Discourage the Sierra pilot by emphasizing that Genesys already delivers comparable AI capabilities – positioning Sierra as redundant and introducing unnecessary complexity into the tech stack. Highlight the risk of adding yet another vendor when consolidation is the stated enterprise direction." },
-        { id: "C", text: "Actively partner with AWS leadership", detail: "Actively partner with AWS leadership to reinforce alignment with the CIO's cloud consolidation strategy – positioning Genesys as the preferred CX orchestration partner within the AWS ecosystem. Demonstrate that Genesys natively runs on AWS, integrates with AWS AI/ML services, and enables the CIO's consolidation vision without requiring a separate AI layer. Discourage the need for an external AI Pure Play by proving enterprise CX orchestration is already available within the AWS stack." },
-        { id: "D", text: "Allow the Sierra pilot to proceed", detail: "Allow the Sierra pilot to proceed, but reposition Genesys as the enterprise orchestration and governance layer that integrates and operationalizes AI agents at scale. Frame Genesys as the system that ensures AI agents (from any source, including Sierra) deliver measurable business outcomes, workforce integration, compliance, and enterprise-grade reliability – not just experimentation." },
+        { id: "A", text: "Actively partner with AWS leadership", detail: "Actively partner with AWS leadership to reinforce alignment with the CIO's cloud consolidation strategy – positioning Genesys as the preferred CX orchestration partner within AWS and discouraging the need for an external AI Pure Play." },
+        { id: "B", text: "Discourage the Sierra pilot", detail: "Discourage the Sierra pilot by emphasizing that Genesys already delivers comparable AI capabilities – positioning Sierra as redundant and introducing unnecessary complexity into the stack." },
+        { id: "C", text: "Allow the Sierra pilot to proceed", detail: "Allow the Sierra pilot to proceed, but reposition Genesys as the enterprise orchestration and governance layer that integrates and operationalizes AI agents – ensuring scale, workforce integration, and measurable business outcomes." },
+        { id: "D", text: "Broaden the executive conversation", detail: "Broaden the executive conversation from an AI agent pilot to enterprise CX orchestration – positioning Genesys as the layer that connects AI, humans, journeys, and systems across channels and regions (regardless of cloud provider)." },
       ],
       rankingScores: {
-        "C,A,B,D": 10, "C,A,D,B": 8, "C,B,A,D": 8, "C,B,D,A": 6,
-        "C,D,A,B": 6, "C,D,B,A": 4, "A,C,B,D": 4, "A,C,D,B": 4,
-        "A,B,C,D": 2, "A,B,D,C": -2, "A,D,C,B": 2, "A,D,B,C": -3,
-        "B,C,A,D": 0, "B,C,D,A": 0, "B,A,C,D": 0, "B,A,D,C": 0,
-        "B,D,C,A": -5, "B,D,A,C": -2, "D,C,A,B": -5, "D,C,B,A": -5,
-        "D,A,C,B": -5, "D,A,B,C": -5, "D,B,C,A": -5, "D,B,A,C": -5,
+        "A,D,B,C": 10, "A,D,C,B": 8, "A,B,D,C": 8, "A,B,C,D": 6,
+        "A,C,D,B": 6, "A,C,B,D": 4, "D,A,B,C": 4, "D,A,C,B": 4,
+        "D,B,A,C": 2, "D,B,C,A": -2, "D,C,A,B": 2, "D,C,B,A": -3,
+        "B,A,D,C": 0, "B,A,C,D": 0, "B,D,A,C": 0, "B,D,C,A": 0,
+        "B,C,A,D": -5, "B,C,D,A": -2, "C,A,D,B": -5, "C,A,B,D": -5,
+        "C,D,A,B": -5, "C,D,B,A": -5, "C,B,A,D": -5, "C,B,D,A": -5,
       },
     },
     scoringCriteria: [
@@ -588,7 +588,7 @@ const simulationRounds = [
     id: 4,
     title: "Capture More Share",
     subtitle: "Account Expansion",
-    motion: "Pure-Play AI",
+    motion: "Global Expansion",
     description: "Expand global CX platform footprint and build executive confidence",
     customer: {
       name: "Orion Global Logistics",
@@ -1192,7 +1192,7 @@ function GenesysSimulation() {
 
   const currentRound = simulationRounds[currentRoundIndex];
   const roundColor = theme.rounds[currentRound?.id]?.color || theme.orange;
-  const phases = ["intro", "work", "feedback1", "wobble", "feedback2", "discussion"];
+  const phases = ["intro", "work", "feedback1", "wobble", "discussion"];
   const phaseIndex = phases.indexOf(roundPhase);
 
   const goToPhase = useCallback((phase) => {
@@ -1422,12 +1422,12 @@ function GenesysSimulation() {
         },
       };
       setSubmissions(newSubmissions);
-      saveProgress(newSubmissions, currentRoundIndex, "feedback2");
+      saveProgress(newSubmissions, currentRoundIndex, "discussion");
 
       // Update leaderboard with final score (replaces initial score)
       await updateLeaderboard(teamName, tableNumber, roomNumber, finalScore, currentRound.id, "final");
 
-      goToPhase("feedback2");
+      goToPhase("discussion");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -1567,7 +1567,7 @@ function GenesysSimulation() {
                     Room {roomNumber} • Table {tableNumber}
                   </div>
                   <p className="text-lg" style={{ color: theme.muted }}>
-                    {serverTeamData ? 'Welcome back! Resume your session or register a new team name.' : 'Discuss with your table and choose a team name!'}
+                    {serverTeamData ? 'Welcome back! Resume your session or register a new team name.' : 'As a group, choose a team name!'}
                   </p>
                 </div>
 
@@ -1598,6 +1598,9 @@ function GenesysSimulation() {
                     <span className="text-xs font-bold uppercase tracking-widest">or register new</span>
                     <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
                   </div>
+                  <p className="text-xs text-center" style={{ color: theme.subtle }}>
+                    Note: This will override any existing progress your team has made.
+                  </p>
                 )}
 
                 <div className="space-y-4">
@@ -1677,7 +1680,7 @@ function GenesysSimulation() {
                 >
                   <p className="text-sm" style={{ color: theme.muted }}>
                     Look for your team name on the big screen!<br />
-                    Wait for the facilitator to begin The Game.
+                    We'll get started when all teams have registered.
                   </p>
                 </div>
 
@@ -1813,20 +1816,19 @@ function GenesysSimulation() {
                 </div>
               </Card>
 
-              {/* Customer Context Card - Show first 5 items */}
+              {/* Our Opportunity + The Challenge on intro page */}
               <Card className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <MessageSquare className="w-6 h-6" style={{ color: roundColor }} />
-                  <h3 className="text-lg font-bold" style={{ color: theme.white }}>Customer Context</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <Target className="w-6 h-6" style={{ color: roundColor }} />
+                  <h2 className="text-xl font-bold" style={{ color: theme.white }}>Our Opportunity</h2>
                 </div>
-                <ul className="space-y-2.5">
-                  {currentRound.context.map((ctx, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: theme.light }}>
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: roundColor }} />
-                      {ctx}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-base mb-4 pb-4 border-b" style={{ color: theme.light, borderColor: theme.darkMuted }}>
+                  {currentRound.objective}
+                </p>
+                <div>
+                  <h3 className="text-sm font-bold mb-2" style={{ color: theme.muted }}>THE CHALLENGE</h3>
+                  <p className="text-base" style={{ color: theme.white }}>{currentRound.challenge}</p>
+                </div>
               </Card>
 
               <GlowButton onClick={() => goToPhase("work")} color={roundColor} className="w-full">
@@ -1838,17 +1840,17 @@ function GenesysSimulation() {
           {/* WORK PHASE */}
           {roundPhase === "work" && (
             <div className="space-y-6">
-              {/* Selling Objective Header */}
+              {/* Our Opportunity Header */}
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <Target className="w-6 h-6" style={{ color: roundColor }} />
-                  <h2 className="text-xl font-bold" style={{ color: theme.white }}>Selling Objective</h2>
+                  <h2 className="text-xl font-bold" style={{ color: theme.white }}>Our Opportunity</h2>
                 </div>
                 <p className="text-base mb-4 pb-4 border-b" style={{ color: theme.light, borderColor: theme.darkMuted }}>
                   {currentRound.objective}
                 </p>
                 <div>
-                  <h3 className="text-sm font-bold mb-2" style={{ color: theme.muted }}>YOUR TASK</h3>
+                  <h3 className="text-sm font-bold mb-2" style={{ color: theme.muted }}>THE CHALLENGE</h3>
                   <p className="text-base" style={{ color: theme.white }}>{currentRound.challenge}</p>
                 </div>
               </Card>
@@ -2026,7 +2028,7 @@ function GenesysSimulation() {
                               {columnFields.map((field) => (
                                 <div key={field.id}>
                                   <h3 className="text-base font-bold mb-1" style={{ color: roundColor }}>{field.label}</h3>
-                                  <p className="text-xs mb-2" style={{ color: theme.muted }}>{field.sublabel}</p>
+                                  {field.sublabel && <p className="text-xs mb-2" style={{ color: theme.muted }}>{field.sublabel}</p>}
                                   <textarea
                                     value={formData[field.id] || ''}
                                     onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
@@ -2041,7 +2043,7 @@ function GenesysSimulation() {
                             {fullWidthFields.map((field) => (
                               <div key={field.id}>
                                 <h3 className="text-base font-bold mb-1" style={{ color: roundColor }}>{field.label}</h3>
-                                <p className="text-xs mb-2" style={{ color: theme.muted }}>{field.sublabel}</p>
+                                {field.sublabel && <p className="text-xs mb-2" style={{ color: theme.muted }}>{field.sublabel}</p>}
                                 <textarea
                                   value={formData[field.id] || ''}
                                   onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
@@ -2375,7 +2377,7 @@ function GenesysSimulation() {
                     </p>
                     {wobbleRanking.length < 4 && (
                       <div className="space-y-2 mb-4">
-                        <p className="text-xs font-medium" style={{ color: theme.subtle }}>Click to add to ranking:</p>
+                        {/* Options to rank */}
                         {(currentRound.wobble.shuffleOptions ? shuffledWobbleOptions : currentRound.wobble.options)
                           .filter(o => !wobbleRanking.includes(o.id))
                           .map((option) => (
@@ -2427,7 +2429,7 @@ function GenesysSimulation() {
                 {currentRound.wobble.type === "multi-select" && (
                   <div className="space-y-3">
                     <p className="text-sm mb-4" style={{ color: theme.muted }}>
-                      Select exactly {currentRound.wobble.maxSelections} options.
+                      Select your top {currentRound.wobble.maxSelections}.
                     </p>
                     {currentRound.wobble.options.map((option) => {
                       const isSelected = wobbleMultiSelect.includes(option.id);
@@ -2621,10 +2623,18 @@ function GenesysSimulation() {
                       {submissions[currentRound.id].finalFeedback?.scoreInterpretation}
                     </div>
                   </div>
-                  <div className="text-right pl-4">
-                    <div className="text-sm" style={{ color: theme.muted }}>Wobble</div>
-                    <div className="font-bold" style={{ color: submissions[currentRound.id].wobblePoints >= 0 ? "#10B981" : theme.orange }}>
-                      {submissions[currentRound.id].wobblePoints >= 0 ? "+" : ""}{submissions[currentRound.id].wobblePoints}
+                  <div className="text-right pl-4 space-y-1">
+                    <div>
+                      <div className="text-xs" style={{ color: theme.subtle }}>Base</div>
+                      <div className="font-bold text-sm" style={{ color: theme.white }}>
+                        {submissions[currentRound.id].finalScore - submissions[currentRound.id].wobblePoints}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs" style={{ color: theme.subtle }}>Wobble</div>
+                      <div className="font-bold text-sm" style={{ color: submissions[currentRound.id].wobblePoints >= 0 ? "#10B981" : theme.orange }}>
+                        {submissions[currentRound.id].wobblePoints >= 0 ? "+" : ""}{submissions[currentRound.id].wobblePoints}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2683,7 +2693,7 @@ function GenesysSimulation() {
                   {/* Role-based reflection */}
                   <div className="p-4 rounded-xl mb-4" style={{ backgroundColor: theme.dark }}>
                     <p className="text-sm font-bold mb-3" style={{ color: theme.white }}>
-                      Each person: from your role's perspective, what is one specific thing you would do differently to increase our chances of winning in similar situations?
+                      From your role's perspective, what is one specific thing you would do differently to increase our chances of winning in similar situations?
                     </p>
                     <div className="grid grid-cols-5 gap-2">
                       {[
@@ -2786,58 +2796,6 @@ function GenesysSimulation() {
                               Base: {submission.initialScore} | Wobble: {submission.wobblePoints > 0 ? '+' : ''}{submission.wobblePoints}
                             </div>
                           )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-
-              {/* Leaderboard Preview */}
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold flex items-center gap-3" style={{ color: theme.white }}>
-                    <Trophy className="w-6 h-6" style={{ color: "#FFD700" }} />
-                    Room Leaderboard
-                  </h2>
-                  <button
-                    onClick={() => fetchLeaderboard(roomNumber)}
-                    className="text-sm px-3 py-1 rounded-lg transition-colors hover:bg-white/10"
-                    style={{ color: theme.muted }}
-                  >
-                    <RefreshCw className="w-4 h-4 inline-block mr-1" /> Refresh
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {leaderboard.slice(0, 20).map((team, idx) => {
-                    const isCurrentTeam = team.teamName === teamName && team.table === tableNumber;
-                    const totalScore = Object.values(team.scores || {}).reduce((sum, s) => sum + s, 0) + (team.bonusPoints || 0);
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-center gap-4 p-3 rounded-xl transition-all ${isCurrentTeam ? 'ring-2' : ''}`}
-                        style={{
-                          backgroundColor: isCurrentTeam ? `${theme.orange}20` : theme.dark,
-                          ringColor: theme.orange,
-                        }}
-                      >
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
-                          style={{
-                            backgroundColor: idx === 0 ? "#FFD700" : idx === 1 ? "#C0C0C0" : idx === 2 ? "#CD7F32" : theme.darkMuted,
-                            color: idx < 3 ? theme.black : theme.muted,
-                          }}
-                        >
-                          {idx + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold truncate" style={{ color: theme.white }}>
-                            {team.teamName} {isCurrentTeam && <span style={{ color: theme.orange }}>(You)</span>}
-                          </div>
-                          <div className="text-xs" style={{ color: theme.subtle }}>Table {team.table}</div>
-                        </div>
-                        <div className="text-2xl font-black" style={{ color: isCurrentTeam ? theme.orange : theme.white }}>
-                          {totalScore}
                         </div>
                       </div>
                     );
