@@ -586,7 +586,7 @@ function ActivityInProgress({
       <div className="flex flex-col items-center gap-4" style={{ width: '100%', maxWidth: '600px' }}>
         {/* Activity Controls */}
         <div className="flex items-center gap-3">
-          <span style={{ fontSize: '11px', fontWeight: 700, color: roundColor, letterSpacing: '0.1em', width: '100px', textAlign: 'right' }}>THE CHALLENGE</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: roundColor, letterSpacing: '0.1em', width: '110px', textAlign: 'right', whiteSpace: 'nowrap' }}>THE CHALLENGE</span>
           <button
             onClick={() => onAdjustActivity(-60)}
             disabled={activitySeconds <= 0}
@@ -634,7 +634,7 @@ function ActivityInProgress({
 
         {/* Wobble Controls */}
         <div className="flex items-center gap-3">
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#8B5CF6', letterSpacing: '0.1em', width: '70px', textAlign: 'right' }}>WOBBLE</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#8B5CF6', letterSpacing: '0.1em', width: '110px', textAlign: 'right', whiteSpace: 'nowrap' }}>WOBBLE</span>
           <button
             onClick={() => onAdjustWobble(-60)}
             disabled={wobbleSeconds <= 0}
