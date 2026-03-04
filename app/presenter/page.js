@@ -89,9 +89,9 @@ const theme = {
   rounds: {
     0: { color: "#F59E0B", name: "Registration", subtitle: "", customer: "", motion: "", icon: "☰" },
     1: { color: "#10B981", name: "Shape the Vision", subtitle: "New Logo Opportunity", customer: "Everwell Health Services", motion: "Legacy Displacement" },
-    2: { color: "#FF4F1F", name: "Disrupt Status Quo", subtitle: "New Logo Opportunity", customer: "Aureon Financial Holdings", motion: "CCaaS Replacement" },
-    3: { color: "#3B82F6", name: "Hold the High Ground", subtitle: "Account Defense", customer: "Summit Ridge Retail Group", motion: "Expansion" },
-    4: { color: "#8B5CF6", name: "Capture More Share", subtitle: "Account Expansion", customer: "Orion Global Logistics", motion: "Pure-Play AI" },
+    2: { color: "#FF4F1F", name: "Disrupt Status Quo", subtitle: "New Logo Opportunity", customer: "Aureon Financial Holdings", motion: "Legacy Replacement" },
+    3: { color: "#3B82F6", name: "Hold the High Ground", subtitle: "Account Defense", customer: "Summit Ridge Retail Group", motion: "Account Defense" },
+    4: { color: "#8B5CF6", name: "Capture More Share", subtitle: "Account Expansion", customer: "Orion Global Logistics", motion: "Global Expansion" },
   },
 };
 
@@ -495,7 +495,7 @@ function ActivityInProgress({
 
   return (
     <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: '65vh', gap: '32px' }}>
-      {/* Round context — motion pill only */}
+      {/* Round context — customer name */}
       <div className="text-center">
         <div
           className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold"
@@ -508,7 +508,7 @@ function ActivityInProgress({
           }}
         >
           <Target className="w-4 h-4" />
-          {roundInfo?.motion}
+          {roundInfo?.customer}
         </div>
       </div>
 
@@ -557,7 +557,7 @@ function ActivityInProgress({
             {activityComplete ? '✓' : `${String(activityMin).padStart(2, '0')}:${String(activitySec).padStart(2, '0')}`}
           </div>
           <div style={{ fontSize: '11px', fontWeight: 700, color: theme.subtle, letterSpacing: '0.15em', marginTop: '4px' }}>
-            ACTIVITY
+            THE CHALLENGE
           </div>
 
           {/* Divider */}
@@ -586,7 +586,7 @@ function ActivityInProgress({
       <div className="flex flex-col items-center gap-4" style={{ width: '100%', maxWidth: '600px' }}>
         {/* Activity Controls */}
         <div className="flex items-center gap-3">
-          <span style={{ fontSize: '11px', fontWeight: 700, color: roundColor, letterSpacing: '0.1em', width: '70px', textAlign: 'right' }}>ACTIVITY</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: roundColor, letterSpacing: '0.1em', width: '100px', textAlign: 'right' }}>THE CHALLENGE</span>
           <button
             onClick={() => onAdjustActivity(-60)}
             disabled={activitySeconds <= 0}
@@ -685,8 +685,8 @@ function ActivityInProgress({
       {/* Status */}
       <p style={{ fontSize: '14px', color: theme.subtle, letterSpacing: '0.05em', textAlign: 'center' }}>
         {!isActivityRunning && !wobbleStarted && activitySeconds === activityDuration && 'READY TO START'}
-        {isActivityRunning && 'ACTIVITY IN PROGRESS'}
-        {activityComplete && !wobbleStarted && 'ACTIVITY COMPLETE — START WOBBLE'}
+        {isActivityRunning && 'THE CHALLENGE IN PROGRESS'}
+        {activityComplete && !wobbleStarted && 'THE CHALLENGE COMPLETE — START WOBBLE'}
         {isWobbleRunning && 'WOBBLE IN PROGRESS'}
         {wobbleComplete && <span style={{ color: '#10B981', fontWeight: 700 }}>ROUND COMPLETE</span>}
         {!isActivityRunning && !isWobbleRunning && activitySeconds < activityDuration && activitySeconds > 0 && !wobbleStarted && 'PAUSED'}
