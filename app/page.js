@@ -1593,14 +1593,16 @@ function GenesysSimulation() {
                 )}
 
                 {serverTeamData && (
-                  <div className="flex items-center gap-3" style={{ color: theme.subtle }}>
-                    <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
-                    <span className="text-xs font-bold uppercase tracking-widest">or register new</span>
-                    <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
-                  </div>
-                  <p className="text-xs text-center" style={{ color: theme.subtle }}>
-                    Note: This will override any existing progress your team has made.
-                  </p>
+                  <>
+                    <div className="flex items-center gap-3" style={{ color: theme.subtle }}>
+                      <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
+                      <span className="text-xs font-bold uppercase tracking-widest">or register new</span>
+                      <div className="flex-1 h-px" style={{ backgroundColor: theme.darkMuted }} />
+                    </div>
+                    <p className="text-xs text-center" style={{ color: theme.subtle }}>
+                      Note: This will override any existing progress your team has made.
+                    </p>
+                  </>
                 )}
 
                 <div className="space-y-4">
