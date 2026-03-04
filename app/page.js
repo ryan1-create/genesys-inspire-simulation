@@ -1818,19 +1818,15 @@ function GenesysSimulation() {
                 </div>
               </Card>
 
-              {/* Our Opportunity + The Challenge on intro page */}
+              {/* Our Opportunity on intro page (no Challenge — it references inputs that aren't on this page) */}
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <Target className="w-6 h-6" style={{ color: roundColor }} />
                   <h2 className="text-xl font-bold" style={{ color: theme.white }}>Our Opportunity</h2>
                 </div>
-                <p className="text-base mb-4 pb-4 border-b" style={{ color: theme.light, borderColor: theme.darkMuted }}>
+                <p className="text-base" style={{ color: theme.light }}>
                   {currentRound.objective}
                 </p>
-                <div>
-                  <h3 className="text-sm font-bold mb-2" style={{ color: theme.muted }}>THE CHALLENGE</h3>
-                  <p className="text-base" style={{ color: theme.white }}>{currentRound.challenge}</p>
-                </div>
               </Card>
 
               <GlowButton onClick={() => goToPhase("work")} color={roundColor} className="w-full">
