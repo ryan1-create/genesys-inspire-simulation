@@ -2116,31 +2116,44 @@ function GenesysSimulation() {
                               </div>
                             ))}
 
-                            {/* Optional "Other" bias */}
+                            {/* Optional "Other" bias — same 3-col layout as rows above */}
                             {otherField && (
                               <div
-                                className="rounded-b-xl p-4 mt-3"
-                                style={{ backgroundColor: theme.dark, border: `1px dashed ${theme.darkMuted}` }}
+                                className="grid grid-cols-[1fr_1fr_1fr] gap-0 rounded-b-xl overflow-hidden"
+                                style={{
+                                  borderBottom: `1px dashed ${theme.darkMuted}`,
+                                  borderLeft: `1px dashed ${theme.darkMuted}`,
+                                  borderRight: `1px dashed ${theme.darkMuted}`,
+                                  backgroundColor: theme.dark,
+                                  marginTop: '12px',
+                                }}
                               >
-                                <p className="text-xs font-medium mb-3" style={{ color: theme.subtle }}>
-                                  Optional: Identify another status quo bias not listed above
-                                </p>
-                                <div className="grid md:grid-cols-2 gap-3">
+                                {/* Bias label cell */}
+                                <div className="px-4 py-3 flex items-start" style={{ borderRight: `1px solid ${theme.darkMuted}` }}>
+                                  <p className="text-xs font-medium" style={{ color: theme.subtle }}>
+                                    Optional: Identify another status quo bias not listed above
+                                  </p>
+                                </div>
+                                {/* Risk textarea cell */}
+                                <div className="p-2" style={{ borderRight: `1px solid ${theme.darkMuted}` }}>
                                   <textarea
                                     value={formData[`${otherField.id}_risk`] || ''}
                                     onChange={(e) => setFormData({ ...formData, [`${otherField.id}_risk`]: e.target.value })}
                                     placeholder="Additional bias & its unconsidered risks..."
                                     className="w-full px-3 py-2 rounded-lg text-sm resize-none"
-                                    rows={2}
-                                    style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                    rows={3}
+                                    style={{ backgroundColor: `${theme.black}80`, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
                                   />
+                                </div>
+                                {/* Evidence textarea cell */}
+                                <div className="p-2">
                                   <textarea
                                     value={formData[`${otherField.id}_evidence`] || ''}
                                     onChange={(e) => setFormData({ ...formData, [`${otherField.id}_evidence`]: e.target.value })}
                                     placeholder="Evidence or diagnostic action..."
                                     className="w-full px-3 py-2 rounded-lg text-sm resize-none"
-                                    rows={2}
-                                    style={{ backgroundColor: theme.darker, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
+                                    rows={3}
+                                    style={{ backgroundColor: `${theme.black}80`, border: `1px solid ${theme.darkMuted}`, color: theme.white }}
                                   />
                                 </div>
                               </div>
@@ -2426,9 +2439,6 @@ function GenesysSimulation() {
                 {/* MULTI-SELECT TYPE */}
                 {currentRound.wobble.type === "multi-select" && (
                   <div className="space-y-3">
-                    <p className="text-sm mb-4" style={{ color: theme.muted }}>
-                      Select your top {currentRound.wobble.maxSelections}.
-                    </p>
                     {currentRound.wobble.options.map((option) => {
                       const isSelected = wobbleMultiSelect.includes(option.id);
                       const canSelect = isSelected || wobbleMultiSelect.length < currentRound.wobble.maxSelections;
