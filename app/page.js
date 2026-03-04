@@ -550,7 +550,7 @@ const simulationRounds = [
     wobble: {
       title: "AI Pure-Play Threat Escalation",
       description: "The VP of Customer Experience shares new information:\n• The CIO is accelerating a cloud consolidation strategy centered on AWS\n• The AI Committee is close to approving a pilot of Sierra – positioned as an AI-native CX layer running on AWS infrastructure\n• The framing is shifting from 'customer experience platform' to 'AI-driven automation and cost efficiency aligned to AWS'",
-      question: "Rank the following strategic adjustments from most effective to least effective.",
+      question: "Rank the following strategic adjustments from most effective (1st) to least effective (4th).",
       type: "ranking",
       shuffleOptions: true,
       options: [
@@ -2383,9 +2383,6 @@ function GenesysSimulation() {
                 {/* RANKING TYPE */}
                 {currentRound.wobble.type === "ranking" && (
                   <div className="space-y-3">
-                    <p className="text-sm mb-4" style={{ color: theme.muted }}>
-                      Click the options below in order from most effective (1st) to least effective (4th).
-                    </p>
                     {wobbleRanking.length < 4 && (
                       <div className="space-y-2 mb-4">
                         {/* Options to rank */}
@@ -2487,9 +2484,6 @@ function GenesysSimulation() {
                   <div className="space-y-5">
                     {currentRound.wobble.textQuestions.map((question) => (
                       <div key={question.id}>
-                        <label className="text-sm font-medium mb-2 block" style={{ color: theme.white }}>
-                          {question.label}
-                        </label>
                         <textarea
                           value={wobbleTextAnswers[question.id] || ''}
                           onChange={(e) => setWobbleTextAnswers({
