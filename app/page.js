@@ -772,6 +772,64 @@ const STORAGE_KEYS = {
 // ============================================================================
 
 export default function GenesysSimulationWrapper() {
+  if (process.env.NEXT_PUBLIC_EVENT_CONCLUDED === "true") {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0A0A0F',
+        color: 'white',
+        fontFamily: 'system-ui, sans-serif',
+        padding: '24px',
+        textAlign: 'center',
+      }}>
+        <div style={{ maxWidth: '560px' }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px' }}>🏆</div>
+          <h1 style={{
+            fontSize: '36px',
+            fontWeight: 800,
+            marginBottom: '8px',
+            background: 'linear-gradient(135deg, #FF4F1F, #FF8F6B)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>
+            Game Over
+          </h1>
+          <p style={{
+            fontSize: '20px',
+            fontWeight: 600,
+            color: '#E0E0E8',
+            marginBottom: '16px',
+          }}>
+            INSPIRE FY27
+          </p>
+          <p style={{
+            color: '#9898A6',
+            fontSize: '16px',
+            lineHeight: 1.7,
+            marginBottom: '32px',
+          }}>
+            The Game has concluded. Thank you for playing!
+            <br />
+            We hope you enjoyed the experience.
+          </p>
+          <div style={{
+            padding: '16px 24px',
+            borderRadius: '12px',
+            background: 'rgba(255, 79, 31, 0.08)',
+            border: '1px solid rgba(255, 79, 31, 0.2)',
+          }}>
+            <p style={{ color: '#FF8F6B', fontSize: '14px', fontWeight: 600 }}>
+              Check your final standings with your facilitator
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <GenesysSimulation />
