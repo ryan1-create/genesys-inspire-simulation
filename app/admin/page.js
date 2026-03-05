@@ -102,13 +102,26 @@ export default function AdminPanel() {
 
   const clearAll = async () => {
     if (!confirm("⚠️ DANGER: This will delete ALL leaderboard data for ALL rooms. Are you absolutely sure?")) return;
-    if (!confirm("FINAL WARNING: This cannot be undone. Type 'yes' in the next prompt to confirm.")) return;
-    const data = await apiCall("clear-all");
-    if (data) {
+    const superkey = prompt("Enter the super admin key to confirm:");
+    if (!superkey) return;
+    setLoading(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${password}` },
+        body: JSON.stringify({ action: "clear-all", superkey }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
       setMessage(data.message);
       setRooms([]);
       setSelectedRoom(null);
       setLeaderboard([]);
+    } catch (err) {
+      setMessage(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
