@@ -1142,22 +1142,36 @@ function GenesysSimulation() {
         // Fall through to server-based reconstruction below
       }
     }
+
+    // Backfill: if server has scores for rounds that local submissions are missing, add them
+    // This handles the case where a team resumes on a device with stale/partial localStorage
+    if (serverTeam?.scores) {
+      for (const [roundId, score] of Object.entries(serverTeam.scores)) {
+        if (!resumeSubmissions[roundId]) {
+          resumeSubmissions[roundId] = { finalScore: score, initialScore: score, wobblePoints: 0 };
+        }
+      }
+    }
     if (Object.keys(resumeSubmissions).length === 0 && resumePhase === "intro" && resumeRoundIndex === 0) {
-      // No local progress — reconstruct position from server scores
-      // Figure out what round they should be on based on completed scores
+      // No local progress — reconstruct position and scores from server
       const teamData = serverTeam || null;
       if (teamData && teamData.scores) {
         const completedRounds = Object.keys(teamData.scores).map(Number).sort((a, b) => a - b);
+        // Populate submissions with server scores so header total works
+        for (const roundId of completedRounds) {
+          resumeSubmissions[roundId] = {
+            finalScore: teamData.scores[roundId],
+            initialScore: teamData.scores[roundId],
+            wobblePoints: 0,
+          };
+        }
         if (completedRounds.length > 0) {
           const highestCompleted = completedRounds[completedRounds.length - 1];
-          // Position them at the intro of the NEXT round (or last round's debrief if all done)
           if (highestCompleted >= 4) {
-            // All rounds done — put them at round 4 final celebration
-            resumeRoundIndex = 3; // index of round 4
+            resumeRoundIndex = 3;
             resumePhase = "final";
           } else {
-            // Put them at the intro of the next round
-            resumeRoundIndex = highestCompleted; // e.g., completed R1 → index 1 = R2
+            resumeRoundIndex = highestCompleted;
             resumePhase = "intro";
           }
         }
