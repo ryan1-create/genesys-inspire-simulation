@@ -811,12 +811,17 @@ function GenesysSimulation() {
 
   // Load team info on mount
   useEffect(() => {
-    const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-    if (savedTeam) {
-      const team = JSON.parse(savedTeam);
-      setTeamName(team.name);
-      setTableNumber(team.table);
-      setRoomNumber(team.room);
+    try {
+      const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+      if (savedTeam) {
+        const team = JSON.parse(savedTeam);
+        setTeamName(team.name || "");
+        setTableNumber(team.table || "");
+        setRoomNumber(team.room || "");
+      }
+    } catch (err) {
+      console.error("Failed to load saved team info:", err);
+      localStorage.removeItem(STORAGE_KEYS.TEAM_INFO);
     }
   }, []);
 
@@ -928,8 +933,14 @@ function GenesysSimulation() {
   }, [winnerMembers, submissions, roomNumber, tableNumber, teamName]);
 
   // Helpers
-  const saveProgress = useCallback((newSubmissions, roundIdx, phase) => {
-    const progress = { submissions: newSubmissions, currentRound: roundIdx, currentPhase: phase };
+  const saveProgress = useCallback((newSubmissions, roundIdx, phase, extraState) => {
+    const progress = {
+      submissions: newSubmissions,
+      currentRound: roundIdx,
+      currentPhase: phase,
+      // Persist in-progress form state so device switches don't lose work
+      ...(extraState || {}),
+    };
     localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
   }, []);
 
@@ -988,12 +999,16 @@ function GenesysSimulation() {
     if (tableNumber.trim() && roomNumber.trim()) {
       // If a different team was previously saved, clear their progress
       // This prevents accidentally resuming another team's session
-      const previousTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-      if (previousTeam) {
-        const prev = JSON.parse(previousTeam);
-        if (prev.room !== roomNumber || prev.table !== tableNumber) {
-          localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+      try {
+        const previousTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+        if (previousTeam) {
+          const prev = JSON.parse(previousTeam);
+          if (prev.room !== roomNumber || prev.table !== tableNumber) {
+            localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+          }
         }
+      } catch (e) {
+        localStorage.removeItem(STORAGE_KEYS.PROGRESS);
       }
 
       // Check server for an already-registered team at this room/table
@@ -1082,13 +1097,22 @@ function GenesysSimulation() {
 
   const handleResumeSession = useCallback(async (serverTeam) => {
     // Determine team info — use provided serverTeam, or fall back to localStorage
-    const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-    const teamInfo = serverTeam
-      ? { room: serverTeam.room, table: serverTeam.table, name: serverTeam.teamName }
-      : (savedTeam ? JSON.parse(savedTeam) : null);
+    let teamInfo = null;
+    try {
+      if (serverTeam) {
+        teamInfo = { room: serverTeam.room, table: serverTeam.table, name: serverTeam.teamName };
+      } else {
+        const savedTeam = localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
+        teamInfo = savedTeam ? JSON.parse(savedTeam) : null;
+      }
+    } catch (err) {
+      console.error("Failed to parse saved team info:", err);
+      localStorage.removeItem(STORAGE_KEYS.TEAM_INFO);
+      localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+    }
 
     if (!teamInfo) {
-      setCurrentView("simulation");
+      setCurrentView("home");
       return;
     }
 
@@ -1107,11 +1131,18 @@ function GenesysSimulation() {
     let resumePhase = "intro";
 
     if (savedProgress) {
-      const progress = JSON.parse(savedProgress);
-      resumeSubmissions = progress.submissions || {};
-      resumeRoundIndex = progress.currentRound || 0;
-      resumePhase = progress.currentPhase || "intro";
-    } else {
+      try {
+        const progress = JSON.parse(savedProgress);
+        resumeSubmissions = progress.submissions || {};
+        resumeRoundIndex = progress.currentRound || 0;
+        resumePhase = progress.currentPhase || "intro";
+      } catch (err) {
+        console.error("Failed to parse saved progress:", err);
+        localStorage.removeItem(STORAGE_KEYS.PROGRESS);
+        // Fall through to server-based reconstruction below
+      }
+    }
+    if (Object.keys(resumeSubmissions).length === 0 && resumePhase === "intro" && resumeRoundIndex === 0) {
       // No local progress — reconstruct position from server scores
       // Figure out what round they should be on based on completed scores
       const teamData = serverTeam || null;
@@ -1121,9 +1152,9 @@ function GenesysSimulation() {
           const highestCompleted = completedRounds[completedRounds.length - 1];
           // Position them at the intro of the NEXT round (or last round's debrief if all done)
           if (highestCompleted >= 4) {
-            // All rounds done — put them at round 4 debrief
+            // All rounds done — put them at round 4 final celebration
             resumeRoundIndex = 3; // index of round 4
-            resumePhase = "debrief";
+            resumePhase = "final";
           } else {
             // Put them at the intro of the next round
             resumeRoundIndex = highestCompleted; // e.g., completed R1 → index 1 = R2
@@ -1140,9 +1171,11 @@ function GenesysSimulation() {
       localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(reconstructedProgress));
     }
 
-    // Check if the admin has issued a reset-to-round for this team
+    // Check if the admin has issued a reset-to-round for this team (5s timeout)
+    const resetController = new AbortController();
+    const resetTimeout = setTimeout(() => resetController.abort(), 5000);
     try {
-      const res = await fetch(`/api/leaderboard?action=check-reset&teamKey=${encodeURIComponent(teamKey)}`);
+      const res = await fetch(`/api/leaderboard?action=check-reset&teamKey=${encodeURIComponent(teamKey)}`, { signal: resetController.signal });
       if (res.ok) {
         const data = await res.json();
         if (data.hasReset) {
@@ -1173,13 +1206,33 @@ function GenesysSimulation() {
         }
       }
     } catch (err) {
-      console.error("Failed to check for admin reset:", err);
-      // Continue with normal resume if check fails
+      if (err.name !== 'AbortError') console.error("Failed to check for admin reset:", err);
+      // Continue with normal resume if check fails or times out
+    } finally {
+      clearTimeout(resetTimeout);
     }
 
     setSubmissions(resumeSubmissions);
     setCurrentRoundIndex(resumeRoundIndex);
     setRoundPhase(resumePhase);
+
+    // Restore in-progress form state if available (critical for device switches mid-work)
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress);
+        const form = progress.inProgressForm;
+        if (form) {
+          if (form.formData && Object.keys(form.formData).length > 0) setFormData(form.formData);
+          if (form.wobbleChoice !== null && form.wobbleChoice !== undefined) setWobbleChoice(form.wobbleChoice);
+          if (form.wobbleRanking && form.wobbleRanking.length > 0) setWobbleRanking(form.wobbleRanking);
+          if (form.wobbleMultiSelect && form.wobbleMultiSelect.length > 0) setWobbleMultiSelect(form.wobbleMultiSelect);
+          if (form.wobbleTextAnswers && Object.keys(form.wobbleTextAnswers).length > 0) setWobbleTextAnswers(form.wobbleTextAnswers);
+          if (form.dealReviewAnswers && Object.keys(form.dealReviewAnswers).length > 0) setDealReviewAnswers(form.dealReviewAnswers);
+        }
+      } catch (e) {
+        console.error("Failed to restore in-progress form state:", e);
+      }
+    }
 
     // If resuming into a wobble phase, ensure shuffled options are initialized
     const resumeRound = simulationRounds[resumeRoundIndex];
@@ -1195,13 +1248,34 @@ function GenesysSimulation() {
   const phases = ["intro", "work", "feedback1", "wobble", "discussion"];
   const phaseIndex = phases.indexOf(roundPhase);
 
+  // Auto-save in-progress form data every 5 seconds so device switches don't lose work
+  const formStateRef = useRef({ formData: {}, wobbleChoice: null, wobbleRanking: [], wobbleMultiSelect: [], wobbleTextAnswers: {}, dealReviewAnswers: {} });
+  formStateRef.current = { formData, wobbleChoice, wobbleRanking, wobbleMultiSelect, wobbleTextAnswers, dealReviewAnswers };
+
+  useEffect(() => {
+    if (currentView !== "simulation") return;
+    const interval = setInterval(() => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+        if (saved) {
+          const progress = JSON.parse(saved);
+          progress.inProgressForm = formStateRef.current;
+          localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
+        }
+      } catch (e) {
+        console.error("Auto-save form state failed:", e);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [currentView]);
+
   const goToPhase = useCallback((phase) => {
     // Shuffle wobble options when entering wobble phase
     if (phase === "wobble" && currentRound?.wobble?.shuffleOptions && currentRound.wobble.options) {
       setShuffledWobbleOptions(shuffleArray(currentRound.wobble.options));
     }
     setRoundPhase(phase);
-    saveProgress(submissions, currentRoundIndex, phase);
+    saveProgress(submissions, currentRoundIndex, phase, { inProgressForm: formStateRef.current });
   }, [submissions, currentRoundIndex, saveProgress, currentRound]);
 
   // Submit initial response
@@ -1462,7 +1536,8 @@ function GenesysSimulation() {
   // Check for saved session on home screen — local progress OR server-registered team
   const savedSessionRaw = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.PROGRESS);
   const savedTeamRaw = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEYS.TEAM_INFO);
-  const savedTeamInfo = savedTeamRaw ? JSON.parse(savedTeamRaw) : null;
+  let savedTeamInfo = null;
+  try { savedTeamInfo = savedTeamRaw ? JSON.parse(savedTeamRaw) : null; } catch (e) { savedTeamInfo = null; }
   const hasLocalSession = !!savedSessionRaw && savedTeamInfo?.name;
   const hasSavedSession = hasLocalSession;
 
@@ -2558,7 +2633,7 @@ function GenesysSimulation() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm" style={{ color: theme.muted }}>Base Score</span>
                     <span className="font-bold" style={{ color: theme.white }}>
-                      {submissions[currentRound.id].finalScore - submissions[currentRound.id].wobblePoints}
+                      {(submissions[currentRound.id].finalScore || 0) - (submissions[currentRound.id].wobblePoints || 0)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -2629,7 +2704,7 @@ function GenesysSimulation() {
                     <div>
                       <div className="text-xs" style={{ color: theme.subtle }}>Base</div>
                       <div className="font-bold text-sm" style={{ color: theme.white }}>
-                        {submissions[currentRound.id].finalScore - submissions[currentRound.id].wobblePoints}
+                        {(submissions[currentRound.id].finalScore || 0) - (submissions[currentRound.id].wobblePoints || 0)}
                       </div>
                     </div>
                     <div>
