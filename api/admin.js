@@ -125,8 +125,12 @@ export default async function handler(req, res) {
         });
       }
 
-      // Clear ALL data
+      // Clear ALL data — requires superkey (only event owner)
       case 'clear-all': {
+        const superkey = req.body.superkey || '';
+        if (!process.env.ADMIN_SUPERKEY || superkey !== process.env.ADMIN_SUPERKEY) {
+          return res.status(403).json({ error: 'This action requires the super admin key.' });
+        }
         const keys = await redis.keys('leaderboard:room:*');
         for (const k of keys) {
           await redis.del(k);
