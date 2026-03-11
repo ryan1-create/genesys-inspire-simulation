@@ -24,6 +24,77 @@ export default function AdminPanel() {
   const [showWinners, setShowWinners] = useState(false);
   const [winners, setWinners] = useState([]);
 
+  const exportAllScores = async () => {
+    setLoading(true);
+    setMessage("Exporting scores...");
+    try {
+      const data = await apiCall("export-all-scores");
+      if (!data || !data.rooms) return;
+
+      // Build CSV rows
+      const headers = ["Room", "Table", "Team Name", "R1", "R2", "R3", "R4", "Bonus", "Total"];
+      const rows = [headers.join(",")];
+
+      // Sort rooms numerically
+      const sortedRooms = data.rooms.sort((a, b) => {
+        const numA = parseInt(a.room) || 0;
+        const numB = parseInt(b.room) || 0;
+        return numA - numB;
+      });
+
+      for (const roomData of sortedRooms) {
+        const teams = roomData.teams || [];
+        // Sort teams by total score descending
+        const sorted = teams.sort((a, b) => {
+          const totalA = Object.values(a.scores || {}).reduce((s, v) => s + v, 0) + (a.bonusPoints || 0);
+          const totalB = Object.values(b.scores || {}).reduce((s, v) => s + v, 0) + (b.bonusPoints || 0);
+          return totalB - totalA;
+        });
+
+        for (const team of sorted) {
+          const scores = team.scores || {};
+          const bonus = team.bonusPoints || 0;
+          const roundTotal = Object.values(scores).reduce((s, v) => s + v, 0);
+          const total = roundTotal + bonus;
+          const escapeCsv = (val) => {
+            const str = String(val ?? "");
+            return str.includes(",") || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
+          };
+          rows.push([
+            roomData.room,
+            team.table || "",
+            escapeCsv(team.teamName || team.teamKey || ""),
+            scores[1] ?? "",
+            scores[2] ?? "",
+            scores[3] ?? "",
+            scores[4] ?? "",
+            bonus || "",
+            total,
+          ].join(","));
+        }
+      }
+
+      // Trigger download
+      const csvContent = "\uFEFF" + rows.join("\n"); // BOM for Excel UTF-8
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const timestamp = new Date().toISOString().slice(0, 16).replace(/[T:]/g, "-");
+      link.download = `game-scores-all-rooms-${timestamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      const totalTeams = sortedRooms.reduce((sum, r) => sum + (r.teams?.length || 0), 0);
+      setMessage(`Exported ${totalTeams} teams across ${sortedRooms.length} rooms.`);
+    } catch (err) {
+      setMessage(`Export error: ${err.message}`);
+    }
+    setLoading(false);
+  };
+
   const apiCall = async (action, extra = {}) => {
     setLoading(true);
     setMessage("");
@@ -278,6 +349,21 @@ export default function AdminPanel() {
               }}
             >
               Refresh
+            </button>
+            <button
+              onClick={exportAllScores}
+              disabled={loading}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "8px",
+                background: "#0e4429",
+                color: "#4ade80",
+                border: "1px solid #4ade8040",
+                cursor: "pointer",
+                fontWeight: "bold"
+              }}
+            >
+              📊 Export All Scores
             </button>
             <button
               onClick={clearAll}
