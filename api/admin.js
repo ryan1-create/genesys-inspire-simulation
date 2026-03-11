@@ -125,6 +125,18 @@ export default async function handler(req, res) {
         });
       }
 
+      // Export all scores across all rooms
+      case 'export-all-scores': {
+        const allKeys = await redis.keys('leaderboard:room:*');
+        const allRooms = [];
+        for (const k of allKeys) {
+          const roomId = k.replace('leaderboard:room:', '');
+          const teams = await getRoomTeams(roomId);
+          allRooms.push({ room: roomId, teams });
+        }
+        return res.status(200).json({ rooms: allRooms });
+      }
+
       // Clear ALL data — requires superkey (only event owner)
       case 'clear-all': {
         const superkey = req.body.superkey || '';
@@ -141,7 +153,7 @@ export default async function handler(req, res) {
       default:
         return res.status(400).json({
           error: 'Invalid action',
-          validActions: ['list-rooms', 'get-room', 'clear-room', 'remove-team', 'reset-team', 'reset-to-round', 'clear-all']
+          validActions: ['list-rooms', 'get-room', 'clear-room', 'remove-team', 'reset-team', 'reset-to-round', 'export-all-scores', 'clear-all']
         });
     }
 
