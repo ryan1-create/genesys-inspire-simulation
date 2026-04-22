@@ -111,4 +111,4 @@ Update colors in the `colors` object at the top of `app/page.js`
 
 ## Support
 
-Built by [Your Company] for Genesys FY27 INSPIRE
+Built by The Brevet Group for Genesys FY27 INSPIRE
